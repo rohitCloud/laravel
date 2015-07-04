@@ -55,6 +55,6 @@ class Comment extends Controller
     public function index()
     {
         return $this->getCommentContract()
-                    ->get(\Input::only('fields'));
+                    ->get(\Input::only('fields', 'limit', 'offset'));
     }
 }

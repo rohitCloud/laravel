@@ -8,6 +8,7 @@ namespace App\Repositories;
 use App\Contracts\Adapter;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Query\Builder;
 
 /**
  * @author  Rohit Arora
@@ -89,7 +90,7 @@ abstract class Repository
      *
      * @param $offset
      *
-     * @return Model
+     * @return Builder
      */
     public function offset($offset)
     {
@@ -102,7 +103,7 @@ abstract class Repository
      *
      * @param $limit
      *
-     * @return Model
+     * @return Builder
      */
     public function limit($limit)
     {
@@ -121,5 +122,47 @@ abstract class Repository
     {
         return $this->getQueryBuilder()
                     ->get($columns);
+    }
+
+    /**
+     * @author Rohit Arora
+     *
+     * @param $parameters
+     *
+     * @return array
+     */
+    public function getFields($parameters)
+    {
+        $parameters = $this->Adapter->filter(isset($parameters['fields']) ? explode(',', $parameters['fields']) : ['*']);
+        return $parameters;
+    }
+
+    /**
+     * @author Rohit Arora
+     *
+     * @param $fields
+     * @param $postList
+     *
+     * @return array
+     */
+    public function bindData($fields, $postList)
+    {
+        return $this->Adapter->reFilter($fields, $postList);
+    }
+
+    /**
+     * @author Rohit Arora
+     *
+     * @param $parameters
+     *
+     * @return $this
+     */
+    public function bindOffsetLimit($parameters)
+    {
+        $limit  = isset($parameters['limit']) ? (int) $parameters['limit'] : constant(get_called_class() . "::LIMIT");
+        $offset = isset($parameters['offset']) ? (int) $parameters['offset'] : constant(get_called_class() . "::OFFSET");
+
+        return $this->limit($limit)
+                    ->offset($offset);
     }
 }

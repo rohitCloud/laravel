@@ -16,6 +16,9 @@ use App\Repositories\Repository;
  */
 class Post extends Repository implements PostContract
 {
+    const OFFSET = 0;
+    const LIMIT  = 10;
+
     /**
      * @param PostModel   $Model
      *
@@ -37,13 +40,16 @@ class Post extends Repository implements PostContract
      */
     public function get($parameters)
     {
-        $parameters = $this->Adapter->filter(isset($parameters['fields']) ? explode(',', $parameters['fields']) : ['*']);
+        $fields = $this->getFields($parameters);
 
-        if (!$parameters) {
+        if (!$fields) {
             return [];
         }
 
-        return $this->Adapter->reFilter($parameters, $this->fetch($parameters)
-                                                          ->toArray());
+        $postList = $this->bindOffsetLimit($parameters)
+                         ->fetch($fields)
+                         ->toArray();
+
+        return $this->bindData($fields, $postList);
     }
 }

@@ -16,6 +16,9 @@ use App\Repositories\Repository;
  */
 class Comment extends Repository implements CommentContract
 {
+    const OFFSET = 0;
+    const LIMIT  = 10;
+
     /**
      * @param CommentModel   $Model
      *
@@ -37,13 +40,16 @@ class Comment extends Repository implements CommentContract
      */
     public function get($parameters)
     {
-        $parameters = $this->Adapter->filter(isset($parameters['fields']) ? explode(',', $parameters['fields']) : ['*']);
+        $fields = $this->getFields($parameters);
 
-        if (!$parameters) {
+        if (!$fields) {
             return [];
         }
 
-        return $this->Adapter->reFilter($parameters, $this->fetch($parameters)
-                                                          ->toArray());
+        $commentList = $this->bindOffsetLimit($parameters)
+                            ->fetch($fields)
+                            ->toArray();
+
+        return $this->bindData($fields, $commentList);
     }
 }

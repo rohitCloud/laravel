@@ -55,6 +55,6 @@ class User extends Controller
     public function index()
     {
         return $this->getUserContract()
-                    ->get(\Input::only('fields'));
+                    ->get(\Input::only('fields', 'limit', 'offset'));
     }
 }
