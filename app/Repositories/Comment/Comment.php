@@ -4,26 +4,26 @@
  * @author Rohit Arora
  */
 
-namespace App\Repositories\Post;
+namespace App\Repositories\Comment;
 
-use App\Adapters\Post as PostAdapter;
-use App\Contracts\Repositories\Post as PostContract;
-use App\Models\Post as PostModel;
+use App\Adapters\Comment as CommentAdapter;
+use App\Contracts\Repositories\Comment as CommentContract;
+use App\Models\Comment as CommentModel;
 use App\Repositories\Repository;
 
 /**
  * @author Rohit Arora
  */
-class Post extends Repository implements PostContract
+class Comment extends Repository implements CommentContract
 {
     /**
-     * @param PostModel   $Model
+     * @param CommentModel   $Model
      *
-     * @param PostAdapter $Adapter
+     * @param CommentAdapter $Adapter
      *
-     * @internal param PostModel $Post
+     * @internal param CommentModel $Comment
      */
-    public function __construct(PostModel $Model, PostAdapter $Adapter)
+    public function __construct(CommentModel $Model, CommentAdapter $Adapter)
     {
         parent::__construct($Model, $Adapter);
     }

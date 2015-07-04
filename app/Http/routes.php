@@ -12,3 +12,5 @@
 */
 
 Route::get('/', 'Post@index');
+Route::get('/users', 'User@index');
+Route::get('/comments', 'Comment@index');

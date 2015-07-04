@@ -4,26 +4,26 @@
  * @author Rohit Arora
  */
 
-namespace App\Repositories\Post;
+namespace App\Repositories\User;
 
-use App\Adapters\Post as PostAdapter;
-use App\Contracts\Repositories\Post as PostContract;
-use App\Models\Post as PostModel;
+use App\Adapters\User as UserAdapter;
+use App\Contracts\Repositories\User as UserContract;
+use App\Models\User as UserModel;
 use App\Repositories\Repository;
 
 /**
  * @author Rohit Arora
  */
-class Post extends Repository implements PostContract
+class User extends Repository implements UserContract
 {
     /**
-     * @param PostModel   $Model
+     * @param UserModel   $Model
      *
-     * @param PostAdapter $Adapter
+     * @param UserAdapter $Adapter
      *
-     * @internal param PostModel $Post
+     * @internal param UserModel $User
      */
-    public function __construct(PostModel $Model, PostAdapter $Adapter)
+    public function __construct(UserModel $Model, UserAdapter $Adapter)
     {
         parent::__construct($Model, $Adapter);
     }

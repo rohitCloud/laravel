@@ -6,7 +6,6 @@
 namespace App\Repositories;
 
 use App\Contracts\Adapter;
-use App\Contracts\Repository as RepositoryContract;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
 
@@ -21,13 +20,14 @@ abstract class Repository
     /**
      * @var Model
      */
-    private $Model;
+    protected $Model;
 
+    /** @var  Model */
     private $QueryBuilder;
     /**
      * @var Adapter
      */
-    private $Adapter;
+    protected $Adapter;
 
     /**
      * @param Model   $Model
@@ -75,7 +75,7 @@ abstract class Repository
      *
      * @param $QueryBuilder
      *
-     * @return RepositoryContract
+     * @return Model
      */
     public function setQueryBuilder($QueryBuilder)
     {
@@ -89,7 +89,7 @@ abstract class Repository
      *
      * @param $offset
      *
-     * @return RepositoryContract
+     * @return Model
      */
     public function offset($offset)
     {
@@ -102,7 +102,7 @@ abstract class Repository
      *
      * @param $limit
      *
-     * @return RepositoryContract
+     * @return Model
      */
     public function limit($limit)
     {
@@ -121,25 +121,5 @@ abstract class Repository
     {
         return $this->getQueryBuilder()
                     ->get($columns);
-    }
-
-
-    /**
-     * @author Rohit Arora
-     *
-     * @param $parameters
-     *
-     * @return array
-     */
-    public function get($parameters)
-    {
-        $parameters = $this->Adapter->filter(isset($parameters['fields']) ? explode(',', $parameters['fields']) : ['*']);
-
-        if (!$parameters) {
-            return [];
-        }
-
-        return $this->Adapter->reFilter($parameters, $this->fetch($parameters)
-                                                          ->toArray());
     }
 }

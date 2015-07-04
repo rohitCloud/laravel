@@ -6,6 +6,7 @@
 namespace App\Adapters;
 
 use App\Contracts\Adapter as AdapterContract;
+use App\Models\Comment;
 use App\Models\Post as PostModel;
 
 /**
@@ -16,10 +17,13 @@ use App\Models\Post as PostModel;
  */
 class Post extends Adapter implements AdapterContract
 {
-    const ID    = 'id';
-    const TITLE = 'title';
-    const BODY  = 'body';
-    const USER  = 'user';
+    const ID         = 'id';
+    const TITLE      = 'title';
+    const BODY       = 'body';
+    const USER       = 'user';
+    const COMMENT    = 'comment';
+    const CREATED_AT = 'created_at';
+    const UPDATED_AT = 'updated_at';
 
     /**
      * @author Rohit Arora
@@ -33,10 +37,13 @@ class Post extends Adapter implements AdapterContract
         $this->fields = $fields;
 
         return $this->clean([
-            $this->keyExists(self::ID)    => PostModel::ID,
-            $this->keyExists(self::TITLE) => PostModel::TITLE,
-            $this->keyExists(self::BODY)  => PostModel::BODY,
-            $this->keyExists(self::USER)  => PostModel::USER_ID
+            $this->keyExists(self::ID)         => PostModel::ID,
+            $this->keyExists(self::TITLE)      => PostModel::TITLE,
+            $this->keyExists(self::BODY)       => PostModel::BODY,
+            $this->keyExists(self::USER)       => PostModel::USER_ID,
+            $this->keyExists(self::COMMENT)    => Comment::ID,
+            $this->keyExists(self::CREATED_AT) => PostModel::CREATED_AT,
+            $this->keyExists(self::UPDATED_AT) => PostModel::UPDATED_AT,
         ]);
     }
 }

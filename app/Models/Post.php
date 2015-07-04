@@ -14,10 +14,16 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  */
 class Post extends Model
 {
-    const ID      = 'id';
-    const USER_ID = 'user_id';
-    const TITLE   = 'title';
-    const BODY    = 'body';
+    const TABLE = 'posts';
+
+    const ID         = 'id';
+    const USER_ID    = 'user_id';
+    const TITLE      = 'title';
+    const BODY       = 'body';
+    const CREATED_AT = 'created_at';
+    const UPDATED_AT = 'updated_at';
+
+    protected $table = self::TABLE;
 
     /**
      * @author Rohit Arora

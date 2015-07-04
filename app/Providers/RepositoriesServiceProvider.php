@@ -2,10 +2,10 @@
 
 namespace App\Providers;
 
-use App\Contracts\Repository;
-use App\Models\Post as PostModel;
-use App\Repositories\Post\Cache;
+use App\Contracts\Repositories;
 use App\Repositories\Post\Post as PostRepository;
+use App\Repositories\User\User as UserRepository;
+use App\Repositories\Comment\Comment as CommentRepository;
 use Illuminate\Support\ServiceProvider;
 
 /**
@@ -33,6 +33,8 @@ class RepositoriesServiceProvider extends ServiceProvider
      */
     public function register()
     {
-        $this->app->bind(Repository::class, PostRepository::class);
+        $this->app->bind(Repositories\Post::class, PostRepository::class);
+        $this->app->bind(Repositories\User::class, UserRepository::class);
+        $this->app->bind(Repositories\Comment::class, CommentRepository::class);
     }
 }

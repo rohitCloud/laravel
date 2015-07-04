@@ -3,7 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests;
-use App\Contracts\Repository;
+use App\Contracts\Repositories\Post as PostContract;
 use Illuminate\Http\Response;
 
 /**
@@ -15,36 +15,36 @@ use Illuminate\Http\Response;
 class Post extends Controller
 {
     /**
-     * @var Repository
+     * @var PostContract
      */
-    private $Repository;
+    private $PostContract;
 
     /**
-     * @param Repository $Repository
+     * @param PostContract $PostContract
      */
-    public function __construct(Repository $Repository)
+    public function __construct(PostContract $PostContract)
     {
-        $this->setRepository($Repository);
+        $this->setPostContract($PostContract);
     }
 
     /**
      * @author Rohit Arora
      *
-     * @return Repository
+     * @return PostContract
      */
-    public function getRepository()
+    public function getPostContract()
     {
-        return $this->Repository;
+        return $this->PostContract;
     }
 
     /**
      * @author Rohit Arora
      *
-     * @param Repository $Repository
+     * @param PostContract $PostContract
      */
-    public function setRepository($Repository)
+    public function setPostContract($PostContract)
     {
-        $this->Repository = $Repository;
+        $this->PostContract = $PostContract;
     }
 
     /**
@@ -54,7 +54,7 @@ class Post extends Controller
      */
     public function index()
     {
-        return $this->getRepository()
+        return $this->getPostContract()
                     ->get(\Input::only('fields'));
     }
 }

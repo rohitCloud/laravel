@@ -4,9 +4,9 @@
  * @author Rohit Arora
  */
 
-namespace App\Repositories\Post;
+namespace App\Repositories\Comment;
 
-use App\Contracts\Repositories\Post as PostContract;
+use App\Contracts\Repositories\Comment as CommentContract;
 use App\Repositories\Repository;
 use Illuminate\Cache\Repository as CacheRepository;
 use Illuminate\Database\Eloquent\Collection;
@@ -14,7 +14,7 @@ use Illuminate\Database\Eloquent\Collection;
 /**
  * @author Rohit Arora
  */
-class Cache extends Repository implements PostContract
+class Cache extends Repository implements CommentContract
 {
     /**
      * @var Repository
@@ -27,10 +27,10 @@ class Cache extends Repository implements PostContract
     private $Cache;
 
     /**
-     * @param PostContract    $ContractContract
+     * @param CommentContract $ContractContract
      * @param CacheRepository $Cache
      */
-    public function __construct(PostContract $ContractContract, CacheRepository $Cache)
+    public function __construct(CommentContract $ContractContract, CacheRepository $Cache)
     {
         $this->ContractContract = $ContractContract;
         $this->Cache            = $Cache;
@@ -45,7 +45,7 @@ class Cache extends Repository implements PostContract
      */
     public function get($columns = ['*'])
     {
-        return $this->Cache->remember('posts-' . implode('-', $columns), 60, function () use ($columns) {
+        return $this->Cache->remember('comment-' . implode('-', $columns), 60, function () use ($columns) {
             return $this->ContractContract->get($columns);
         });
     }
