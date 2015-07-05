@@ -39,7 +39,6 @@ class User extends Adapter implements AdapterContract
             $this->keyExists(self::ID)         => UserModel::ID,
             $this->keyExists(self::NAME)       => UserModel::NAME,
             $this->keyExists(self::EMAIL)      => UserModel::EMAIL,
-            $this->keyExists(self::POST)       => Post::ID,
             $this->keyExists(self::CREATED_AT) => UserModel::CREATED_AT,
             $this->keyExists(self::UPDATED_AT) => UserModel::UPDATED_AT,
         ]);

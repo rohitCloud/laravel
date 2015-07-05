@@ -9,6 +9,7 @@ use App\Contracts\Adapter;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Query\Builder;
+use Illuminate\Support\Facades\Request;
 
 /**
  * @author  Rohit Arora
@@ -397,6 +398,6 @@ abstract class Repository
      */
     private function getPage($fields, $sortBy, $sortType, $limit, $offset)
     {
-        return url('?fields=' . $fields . '&sort_by=' . $sortBy . '&sort_type=' . $sortType . '&limit=' . $limit . '&offset=' . $offset);
+        return Request::url() . '?fields=' . $fields . '&sort_by=' . $sortBy . '&sort_type=' . $sortType . '&limit=' . $limit . '&offset=' . $offset;
     }
 }

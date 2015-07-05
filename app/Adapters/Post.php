@@ -41,7 +41,6 @@ class Post extends Adapter implements AdapterContract
             $this->keyExists(self::TITLE)      => PostModel::TITLE,
             $this->keyExists(self::BODY)       => PostModel::BODY,
             $this->keyExists(self::USER)       => PostModel::USER_ID,
-            $this->keyExists(self::COMMENT)    => Comment::ID,
             $this->keyExists(self::CREATED_AT) => PostModel::CREATED_AT,
             $this->keyExists(self::UPDATED_AT) => PostModel::UPDATED_AT,
         ]);
