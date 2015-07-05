@@ -42,6 +42,7 @@ class Post extends Repository implements PostContract
      */
     public function get($parameters)
     {
-        return $this->process($parameters);
+        return $this->setParameters($parameters)
+                    ->process();
     }
 }

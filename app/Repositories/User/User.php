@@ -42,6 +42,7 @@ class User extends Repository implements UserContract
      */
     public function get($parameters)
     {
-        return $this->process($parameters);
+        return $this->setParameters($parameters)
+                    ->process();
     }
 }

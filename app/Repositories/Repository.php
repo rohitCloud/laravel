@@ -25,6 +25,14 @@ abstract class Repository
      * @var Model
      */
     protected $Model;
+    protected $limit;
+    protected $offset;
+    protected $fields;
+    protected $parameters;
+    protected $sortBy;
+    protected $sortType;
+    protected $total;
+    protected $data;
 
     /** @var  Model */
     private $QueryBuilder;
@@ -91,6 +99,30 @@ abstract class Repository
     /**
      * @author Rohit Arora
      *
+     * @return mixed
+     */
+    public function getTotal()
+    {
+        return $this->total;
+    }
+
+    /**
+     * @author Rohit Arora
+     *
+     * @param $total
+     *
+     * @return $this
+     */
+    public function setTotal($total)
+    {
+        $this->total = $total;
+
+        return $this;
+    }
+
+    /**
+     * @author Rohit Arora
+     *
      * @param $offset
      *
      * @return Builder
@@ -150,14 +182,47 @@ abstract class Repository
     /**
      * @author Rohit Arora
      *
-     * @param $parameters
-     *
-     * @return array
+     * @return mixed
      */
-    public function getFields($parameters)
+    public function getFields()
     {
-        $parameters = $this->Adapter->filter(isset($parameters['fields']) ? explode(',', $parameters['fields']) : ['*']);
-        return $parameters;
+        return $this->fields;
+    }
+
+    /**
+     * @author Rohit Arora
+     *
+     * @return $this
+     */
+    public function setFields()
+    {
+        $this->fields = $this->Adapter->filter(isset($this->getParameters()['fields']) ? explode(',', $this->getParameters()['fields']) : ['*']);
+
+        return $this;
+    }
+
+    /**
+     * @author Rohit Arora
+     *
+     * @return mixed
+     */
+    public function getData()
+    {
+        return $this->data;
+    }
+
+    /**
+     * @author Rohit Arora
+     *
+     * @param $data
+     *
+     * @return $this
+     */
+    public function setData($data)
+    {
+        $this->data = $data;
+
+        return $this;
     }
 
     /**
@@ -168,7 +233,7 @@ abstract class Repository
      *
      * @return array
      */
-    public function bindData($fields, $postList)
+    public function bindFields($fields, $postList)
     {
         return $this->Adapter->reFilter($fields, $postList);
     }
@@ -176,17 +241,24 @@ abstract class Repository
     /**
      * @author Rohit Arora
      *
-     * @param $parameters
-     *
      * @return $this
      */
-    public function bindOffsetLimit($parameters)
+    public function bindOffsetLimit()
     {
-        $limit  = isset($parameters['limit']) ? (int) $parameters['limit'] : constant(get_called_class() . "::LIMIT");
-        $offset = isset($parameters['offset']) ? (int) $parameters['offset'] : constant(get_called_class() . "::OFFSET");
+        $this->limit = isset($this->getParameters()['limit']) ? (int) $this->getParameters()['limit'] : constant(get_called_class() . "::LIMIT");
 
-        return $this->limit($limit)
-                    ->offset($offset);
+        if ($this->limit > $this->getTotal()) {
+            $this->limit = $this->getTotal();
+        }
+
+        $this->offset = isset($this->getParameters()['offset']) ? (int) $this->getParameters()['offset'] : constant(get_called_class() . "::OFFSET");
+
+        if ($this->offset > $this->limit && ($this->getTotal() - $this->limit) > $this->offset) {
+            $this->offset = $this->getTotal() - $this->limit;
+        }
+
+        return $this->limit($this->limit)
+                    ->offset($this->offset);
     }
 
     /**
@@ -201,6 +273,71 @@ abstract class Repository
         return in_array($type, [self::SORT_ASC, self::SORT_DESC]);
     }
 
+
+    /**
+     * @author Rohit Arora
+     *
+     * @return $this
+     */
+    public function setOrder()
+    {
+        $this->sortBy   = isset($this->getParameters()['sort_by']) ? $this->getParameters()['sort_by'] : constant(get_called_class() . "::SORT_BY");
+        $this->sortType = isset($this->getParameters()['sort_type']) ? $this->getParameters()['sort_type'] : constant(get_called_class() . "::SORT_TYPE");
+
+        return $this->order($this->sortBy, $this->sortType);
+    }
+
+    /**
+     * @author Rohit Arora
+     *
+     * @return array
+     */
+    public function process()
+    {
+        $this->setFields()
+             ->setDataFromModel();
+
+        $response['data'] = $this->bindFields($this->getFields(), $this->getData());
+
+        // Use after getDataFromModel
+        $response['total']  = $this->getTotal();
+        $response['offset'] = $this->offset;
+        $response['limit']  = $this->limit;
+
+        if ($response['data']) {
+            $response = array_merge($response, $this->processPages());
+        }
+
+        return $response;
+    }
+
+    /**
+     * @author Rohit Arora
+     *
+     * @return array
+     */
+    public function setDataFromModel()
+    {
+        $this->setTotal($this->getModel()
+                             ->count())
+             ->setData($this->bindOffsetLimit()
+                            ->setOrder()
+                            ->fetch($this->getFields())
+                            ->toArray());
+
+        return $this;
+    }
+
+    /**
+     * @author Rohit Arora
+     *
+     * @return mixed
+     */
+    public function getParameters()
+    {
+        return $this->parameters;
+    }
+
     /**
      * @author Rohit Arora
      *
@@ -208,35 +345,42 @@ abstract class Repository
      *
      * @return $this
      */
-    public function setOrder($parameters)
+    public function setParameters($parameters)
     {
-        $by   = isset($parameters['sort_by']) ? $parameters['sort_by'] : constant(get_called_class() . "::SORT_BY");
-        $type = isset($parameters['sort_type']) ? $parameters['sort_type'] : constant(get_called_class() . "::SORT_TYPE");
+        $this->parameters = $parameters;
 
-        return $this->order($by, $type);
+        return $this;
     }
-
 
     /**
      * @author Rohit Arora
      *
-     * @param $parameters
-     *
-     * @return array
      */
-    public function process($parameters)
+    public function processPages()
     {
-        $fields = $this->getFields($parameters);
+        $fields   = implode(',', $this->getFields());
+        $response = [];
 
-        if (!$fields) {
-            return [];
-        }
+        $response['current_url'] = $this->getPage($fields, $this->sortBy, $this->sortType, $this->limit, $this->offset);
+        $response['last_url']    = $this->getPage($fields, $this->sortBy, $this->sortType, $this->getTotal(),
+            (($this->getTotal() - $this->limit < $this->offset) ? $this->offset : ($this->getTotal() - $this->limit)));
 
-        $list = $this->bindOffsetLimit($parameters)
-                     ->setOrder($parameters)
-                     ->fetch($fields)
-                     ->toArray();
+        return $response;
+    }
 
-        return $this->bindData($fields, $list);
+    /**
+     * @author Rohit Arora
+     *
+     * @param $fields
+     * @param $sortBy
+     * @param $sortType
+     * @param $limit
+     * @param $offset
+     *
+     * @return string
+     */
+    private function getPage($fields, $sortBy, $sortType, $limit, $offset)
+    {
+        return '?fields=' . $fields . '&sort_by=' . $sortBy . '&sort_type=' . $sortType . '&limit=' . $limit . '&offset=' . $offset;
     }
 }

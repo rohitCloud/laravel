@@ -42,6 +42,7 @@ class Comment extends Repository implements CommentContract
      */
     public function get($parameters)
     {
-        return $this->process($parameters);
+        return $this->setParameters($parameters)
+                    ->process();
     }
 }
