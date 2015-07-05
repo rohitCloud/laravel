@@ -196,7 +196,8 @@ abstract class Repository
      */
     public function setFields()
     {
-        $this->fields = $this->Adapter->filter(isset($this->getParameters()['fields']) ? explode(',', $this->getParameters()['fields']) : ['*']);
+        $this->fields = $this->Adapter->filter(isset($this->getParameters()['fields']) && $this->getParameters()['fields'] ? explode(',',
+            $this->getParameters()['fields']) : ['*']);
 
         return $this;
     }
@@ -245,15 +246,15 @@ abstract class Repository
      */
     public function bindOffsetLimit()
     {
-        $this->limit = isset($this->getParameters()['limit']) ? (int) $this->getParameters()['limit'] : constant(get_called_class() . "::LIMIT");
+        $this->limit = (isset($this->getParameters()['limit']) && $this->getParameters()['limit'] > 0) ? (int) $this->getParameters()['limit'] : constant(get_called_class() . "::LIMIT");
 
         if ($this->limit > $this->getTotal()) {
             $this->limit = $this->getTotal();
         }
 
-        $this->offset = isset($this->getParameters()['offset']) ? (int) $this->getParameters()['offset'] : constant(get_called_class() . "::OFFSET");
+        $this->offset = isset($this->getParameters()['offset']) && $this->getParameters()['offset'] > 0 ? (int) $this->getParameters()['offset'] : constant(get_called_class() . "::OFFSET");
 
-        if ($this->offset > $this->limit && ($this->getTotal() - $this->limit) > $this->offset) {
+        if ($this->offset > $this->getTotal()) {
             $this->offset = $this->getTotal() - $this->limit;
         }
 
@@ -362,8 +363,23 @@ abstract class Repository
         $response = [];
 
         $response['current_url'] = $this->getPage($fields, $this->sortBy, $this->sortType, $this->limit, $this->offset);
-        $response['last_url']    = $this->getPage($fields, $this->sortBy, $this->sortType, $this->getTotal(),
-            (($this->getTotal() - $this->limit < $this->offset) ? $this->offset : ($this->getTotal() - $this->limit)));
+
+        if (!($this->limit + $this->offset >= $this->getTotal())) {
+            $response['last_url'] = $this->getPage($fields, $this->sortBy, $this->sortType, $this->limit,
+                (($this->getTotal() - $this->limit < $this->offset) ? $this->offset : ($this->getTotal() - $this->limit)));
+        }
+
+        if ($this->offset > 0) {
+            $response['previous_url'] = $this->getPage($fields, $this->sortBy, $this->sortType, $this->limit,
+                ($this->offset - $this->limit) > 0 ? ($this->offset - $this->limit) : 0);
+
+            $response['first_url'] = $this->getPage($fields, $this->sortBy, $this->sortType, $this->limit, 0);
+        }
+
+        if ($this->limit < $this->getTotal() && !($this->limit + $this->offset >= $this->getTotal())) {
+            $response['next_url'] = $this->getPage($fields, $this->sortBy, $this->sortType, $this->limit,
+                (($this->offset + $this->limit) < $this->getTotal()) ? $this->offset + $this->limit : $this->getTotal() - $this->limit);
+        }
 
         return $response;
     }
@@ -381,6 +397,6 @@ abstract class Repository
      */
     private function getPage($fields, $sortBy, $sortType, $limit, $offset)
     {
-        return '?fields=' . $fields . '&sort_by=' . $sortBy . '&sort_type=' . $sortType . '&limit=' . $limit . '&offset=' . $offset;
+        return url('?fields=' . $fields . '&sort_by=' . $sortBy . '&sort_type=' . $sortType . '&limit=' . $limit . '&offset=' . $offset);
     }
 }
