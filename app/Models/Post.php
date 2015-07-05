@@ -30,6 +30,18 @@ class Post extends Model
     /**
      * @author Rohit Arora
      *
+     * @param $by
+     *
+     * @return bool
+     */
+    public static function isValidOrderBy($by)
+    {
+        return in_array($by, [self::ID, self::TITLE, self::CREATED_AT, self::UPDATED_AT]);
+    }
+
+    /**
+     * @author Rohit Arora
+     *
      * @return HasMany
      */
     public function comments()

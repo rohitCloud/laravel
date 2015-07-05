@@ -16,8 +16,10 @@ use App\Repositories\Repository;
  */
 class Comment extends Repository implements CommentContract
 {
-    const OFFSET = 0;
-    const LIMIT  = 10;
+    const OFFSET    = 0;
+    const LIMIT     = 10;
+    const SORT_BY   = CommentModel::ID;
+    const SORT_TYPE = Repository::SORT_ASC;
 
     /**
      * @param CommentModel   $Model
@@ -40,16 +42,6 @@ class Comment extends Repository implements CommentContract
      */
     public function get($parameters)
     {
-        $fields = $this->getFields($parameters);
-
-        if (!$fields) {
-            return [];
-        }
-
-        $commentList = $this->bindOffsetLimit($parameters)
-                            ->fetch($fields)
-                            ->toArray();
-
-        return $this->bindData($fields, $commentList);
+        return $this->process($parameters);
     }
 }

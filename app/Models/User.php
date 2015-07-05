@@ -57,6 +57,18 @@ class User extends Model implements AuthenticatableContract, CanResetPasswordCon
     /**
      * @author Rohit Arora
      *
+     * @param $by
+     *
+     * @return bool
+     */
+    public static function isValidOrderBy($by)
+    {
+        return in_array($by, [self::ID, self::EMAIL, self::CREATED_AT, self::UPDATED_AT]);
+    }
+
+    /**
+     * @author Rohit Arora
+     *
      * @return HasMany
      */
     public function posts()

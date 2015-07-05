@@ -18,6 +18,9 @@ use Illuminate\Database\Query\Builder;
  */
 abstract class Repository
 {
+    const SORT_ASC  = 'asc';
+    const SORT_DESC = 'desc';
+
     /**
      * @var Model
      */
@@ -114,6 +117,26 @@ abstract class Repository
     /**
      * @author Rohit Arora
      *
+     * @param $by
+     * @param $type
+     *
+     * @return Model
+     */
+    public function order($by = 'id', $type = self::SORT_ASC)
+    {
+        if (!self::isValidOrderType($type) || !$this->getModel()
+                                                    ->isValidOrderBy($by)
+        ) {
+            return $this;
+        }
+
+        return $this->setQueryBuilder($this->getQueryBuilder()
+                                           ->orderBy($by, $type));
+    }
+
+    /**
+     * @author Rohit Arora
+     *
      * @param array $columns
      *
      * @return Collection
@@ -164,5 +187,56 @@ abstract class Repository
 
         return $this->limit($limit)
                     ->offset($offset);
+    }
+
+    /**
+     * @author Rohit Arora
+     *
+     * @param $type
+     *
+     * @return bool
+     */
+    public static function isValidOrderType($type)
+    {
+        return in_array($type, [self::SORT_ASC, self::SORT_DESC]);
+    }
+
+    /**
+     * @author Rohit Arora
+     *
+     * @param $parameters
+     *
+     * @return $this
+     */
+    public function setOrder($parameters)
+    {
+        $by   = isset($parameters['sort_by']) ? $parameters['sort_by'] : constant(get_called_class() . "::SORT_BY");
+        $type = isset($parameters['sort_type']) ? $parameters['sort_type'] : constant(get_called_class() . "::SORT_TYPE");
+
+        return $this->order($by, $type);
+    }
+
+
+    /**
+     * @author Rohit Arora
+     *
+     * @param $parameters
+     *
+     * @return array
+     */
+    public function process($parameters)
+    {
+        $fields = $this->getFields($parameters);
+
+        if (!$fields) {
+            return [];
+        }
+
+        $list = $this->bindOffsetLimit($parameters)
+                     ->setOrder($parameters)
+                     ->fetch($fields)
+                     ->toArray();
+
+        return $this->bindData($fields, $list);
     }
 }

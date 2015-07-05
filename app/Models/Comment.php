@@ -26,6 +26,18 @@ class Comment extends Model
     /**
      * @author Rohit Arora
      *
+     * @param $by
+     *
+     * @return bool
+     */
+    public static function isValidOrderBy($by)
+    {
+        return in_array($by, [self::ID, self::COMMENT, self::CREATED_AT, self::UPDATED_AT]);
+    }
+
+    /**
+     * @author Rohit Arora
+     *
      * @return BelongsTo
      */
     public function post()

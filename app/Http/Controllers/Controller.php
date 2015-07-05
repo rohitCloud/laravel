@@ -15,4 +15,14 @@ use Illuminate\Foundation\Validation\ValidatesRequests;
 abstract class Controller extends BaseController
 {
     use DispatchesJobs, ValidatesRequests;
+
+    /**
+     * @author Rohit Arora
+     *
+     * @return array
+     */
+    protected function inputFilter()
+    {
+        return \Input::only('fields', 'limit', 'offset', 'sort_by', 'sort_type');
+    }
 }

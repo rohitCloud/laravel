@@ -16,8 +16,10 @@ use App\Repositories\Repository;
  */
 class User extends Repository implements UserContract
 {
-    const OFFSET = 0;
-    const LIMIT  = 10;
+    const OFFSET    = 0;
+    const LIMIT     = 10;
+    const SORT_BY   = UserModel::ID;
+    const SORT_TYPE = Repository::SORT_ASC;
 
     /**
      * @param UserModel   $Model
@@ -40,16 +42,6 @@ class User extends Repository implements UserContract
      */
     public function get($parameters)
     {
-        $fields = $this->getFields($parameters);
-
-        if (!$fields) {
-            return [];
-        }
-
-        $userList = $this->bindOffsetLimit($parameters)
-                         ->fetch($fields)
-                         ->toArray();
-
-        return $this->bindData($fields, $userList);
+        return $this->process($parameters);
     }
 }

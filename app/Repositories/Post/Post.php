@@ -16,8 +16,10 @@ use App\Repositories\Repository;
  */
 class Post extends Repository implements PostContract
 {
-    const OFFSET = 0;
-    const LIMIT  = 10;
+    const OFFSET    = 0;
+    const LIMIT     = 10;
+    const SORT_BY   = PostModel::ID;
+    const SORT_TYPE = Repository::SORT_ASC;
 
     /**
      * @param PostModel   $Model
@@ -40,16 +42,6 @@ class Post extends Repository implements PostContract
      */
     public function get($parameters)
     {
-        $fields = $this->getFields($parameters);
-
-        if (!$fields) {
-            return [];
-        }
-
-        $postList = $this->bindOffsetLimit($parameters)
-                         ->fetch($fields)
-                         ->toArray();
-
-        return $this->bindData($fields, $postList);
+        return $this->process($parameters);
     }
 }

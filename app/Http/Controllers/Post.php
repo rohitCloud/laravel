@@ -55,6 +55,6 @@ class Post extends Controller
     public function index()
     {
         return $this->getPostContract()
-                    ->get(\Input::only('fields', 'limit', 'offset'));
+                    ->get($this->inputFilter());
     }
 }
