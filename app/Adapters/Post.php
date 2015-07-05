@@ -6,7 +6,6 @@
 namespace App\Adapters;
 
 use App\Contracts\Adapter as AdapterContract;
-use App\Models\Comment;
 use App\Models\Post as PostModel;
 
 /**

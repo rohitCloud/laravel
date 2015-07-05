@@ -45,4 +45,18 @@ class Post extends Base implements PostContract
         return $this->setParameters($parameters)
                     ->process();
     }
+
+    /**
+     * @author Rohit Arora
+     *
+     * @param $postID
+     *
+     * @return mixed
+     */
+    public function getCommentsByPost($postID)
+    {
+        return $this->getModel()
+                    ->with('comments')
+                    ->find($postID);
+    }
 }

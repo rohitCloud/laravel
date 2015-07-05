@@ -12,7 +12,12 @@
 */
 
 Route::group(['prefix' => 'api/1.0'], function () {
-    Route::get('/posts', 'Post@index');
-    Route::get('/users', 'User@index');
-    Route::get('/comments', 'Comment@index');
+    Route::resource('/posts', 'Post');
+    Route::resource('/users', 'User');
+    Route::resource('/comments', 'Comment');
+    Route::group(['prefix' => 'posts'], function () {
+        Route::group(['prefix' => '{postID}'], function ($postID) {
+            Route::resource('/comments', 'Post\Comment');
+        });
+    });
 });

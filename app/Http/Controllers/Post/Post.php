@@ -1,7 +1,8 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\Post;
 
+use App\Http\Controllers\Controller;
 use App\Http\Requests;
 use App\Contracts\Repositories\Post as PostContract;
 use Illuminate\Http\Response;
