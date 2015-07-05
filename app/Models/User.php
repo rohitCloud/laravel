@@ -7,7 +7,11 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Auth\Passwords\CanResetPassword;
 use Illuminate\Contracts\Auth\Authenticatable as AuthenticatableContract;
 use Illuminate\Contracts\Auth\CanResetPassword as CanResetPasswordContract;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasManyThrough;
+use Illuminate\Database\Eloquent\Relations\HasOne;
+use Illuminate\Database\Eloquent\Relations\MorphMany;
 
 /**
  * @author  Rohit Arora
@@ -58,5 +62,45 @@ class User extends Model implements AuthenticatableContract, CanResetPasswordCon
     public function posts()
     {
         return $this->hasMany(Post::class);
+    }
+
+    /**
+     * @author Rohit Arora
+     *
+     * @return HasOne
+     */
+    public function details()
+    {
+        return $this->hasOne(UserDetail::class);
+    }
+
+    /**
+     * @author Rohit Arora
+     *
+     * @return BelongsToMany
+     */
+    public function roles()
+    {
+        return $this->belongsToMany(Role::class);
+    }
+
+    /**
+     * @author Rohit Arora
+     *
+     * @return HasManyThrough
+     */
+    public function comments()
+    {
+        return $this->hasManyThrough(Comment::class, Post::class);
+    }
+
+    /**
+     * @author Rohit Arora
+     *
+     * @return MorphMany
+     */
+    public function documents()
+    {
+        return $this->morphMany(Document::class, 'parent');
     }
 }
