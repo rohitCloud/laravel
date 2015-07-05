@@ -11,6 +11,8 @@
 |
 */
 
-Route::get('/', 'Post@index');
-Route::get('/users', 'User@index');
-Route::get('/comments', 'Comment@index');
+Route::group(['prefix' => 'api/1.0'], function () {
+    Route::get('/posts', 'Post@index');
+    Route::get('/users', 'User@index');
+    Route::get('/comments', 'Comment@index');
+});
