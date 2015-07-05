@@ -7,19 +7,19 @@
 namespace App\Repositories\Post;
 
 use App\Contracts\Repositories\Post as PostContract;
-use App\Repositories\Repository;
+use App\Repositories\Base;
 use Illuminate\Cache\Repository as CacheRepository;
 use Illuminate\Database\Eloquent\Collection;
 
 /**
  * @author Rohit Arora
  */
-class Cache extends Repository implements PostContract
+class Cache extends Base implements PostContract
 {
     /**
-     * @var Repository
+     * @var Base
      */
-    private $ContractContract;
+    private $PostContract;
 
     /**
      * @var CacheRepository
@@ -27,13 +27,13 @@ class Cache extends Repository implements PostContract
     private $Cache;
 
     /**
-     * @param PostContract    $ContractContract
+     * @param PostContract    $PostContract
      * @param CacheRepository $Cache
      */
-    public function __construct(PostContract $ContractContract, CacheRepository $Cache)
+    public function __construct(PostContract $PostContract, CacheRepository $Cache)
     {
-        $this->ContractContract = $ContractContract;
-        $this->Cache            = $Cache;
+        $this->PostContract = $PostContract;
+        $this->Cache        = $Cache;
     }
 
     /**
@@ -46,7 +46,7 @@ class Cache extends Repository implements PostContract
     public function get($columns = ['*'])
     {
         return $this->Cache->remember('posts-' . implode('-', $columns), 60, function () use ($columns) {
-            return $this->ContractContract->get($columns);
+            return $this->PostContract->get($columns);
         });
     }
 }

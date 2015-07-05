@@ -7,19 +7,19 @@
 namespace App\Repositories\User;
 
 use App\Contracts\Repositories\User as UserContract;
-use App\Repositories\Repository;
+use App\Repositories\Base;
 use Illuminate\Cache\Repository as CacheRepository;
 use Illuminate\Database\Eloquent\Collection;
 
 /**
  * @author Rohit Arora
  */
-class Cache extends Repository implements UserContract
+class Cache extends Base implements UserContract
 {
     /**
-     * @var Repository
+     * @var Base
      */
-    private $ContractContract;
+    private $UserContract;
 
     /**
      * @var CacheRepository
@@ -27,13 +27,13 @@ class Cache extends Repository implements UserContract
     private $Cache;
 
     /**
-     * @param UserContract    $ContractContract
+     * @param UserContract    $UserContract
      * @param CacheRepository $Cache
      */
-    public function __construct(UserContract $ContractContract, CacheRepository $Cache)
+    public function __construct(UserContract $UserContract, CacheRepository $Cache)
     {
-        $this->ContractContract = $ContractContract;
-        $this->Cache            = $Cache;
+        $this->UserContract = $UserContract;
+        $this->Cache        = $Cache;
     }
 
     /**
@@ -46,7 +46,7 @@ class Cache extends Repository implements UserContract
     public function get($columns = ['*'])
     {
         return $this->Cache->remember('users-' . implode('-', $columns), 60, function () use ($columns) {
-            return $this->ContractContract->get($columns);
+            return $this->UserContract->get($columns);
         });
     }
 }

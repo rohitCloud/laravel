@@ -15,7 +15,7 @@ use App\Models\Post as PostModel;
  * Class Post
  * @package App\Adapters
  */
-class Post extends Adapter implements AdapterContract
+class Post extends Base implements AdapterContract
 {
     const ID         = 'id';
     const TITLE      = 'title';

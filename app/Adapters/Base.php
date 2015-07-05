@@ -11,7 +11,7 @@ namespace App\Adapters;
  * Class Post
  * @package App\Adapters
  */
-abstract class Adapter
+abstract class Base
 {
     /**
      * @var array

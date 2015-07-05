@@ -9,17 +9,17 @@ namespace App\Repositories\User;
 use App\Adapters\User as UserAdapter;
 use App\Contracts\Repositories\User as UserContract;
 use App\Models\User as UserModel;
-use App\Repositories\Repository;
+use App\Repositories\Base;
 
 /**
  * @author Rohit Arora
  */
-class User extends Repository implements UserContract
+class User extends Base implements UserContract
 {
     const OFFSET    = 0;
     const LIMIT     = 10;
     const SORT_BY   = UserModel::ID;
-    const SORT_TYPE = Repository::SORT_ASC;
+    const SORT_TYPE = Base::SORT_ASC;
 
     /**
      * @param UserModel   $Model

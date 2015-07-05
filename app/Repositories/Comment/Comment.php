@@ -9,17 +9,17 @@ namespace App\Repositories\Comment;
 use App\Adapters\Comment as CommentAdapter;
 use App\Contracts\Repositories\Comment as CommentContract;
 use App\Models\Comment as CommentModel;
-use App\Repositories\Repository;
+use App\Repositories\Base;
 
 /**
  * @author Rohit Arora
  */
-class Comment extends Repository implements CommentContract
+class Comment extends Base implements CommentContract
 {
     const OFFSET    = 0;
     const LIMIT     = 10;
     const SORT_BY   = CommentModel::ID;
-    const SORT_TYPE = Repository::SORT_ASC;
+    const SORT_TYPE = Base::SORT_ASC;
 
     /**
      * @param CommentModel   $Model

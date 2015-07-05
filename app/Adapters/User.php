@@ -15,7 +15,7 @@ use App\Models\User as UserModel;
  * Class User
  * @package App\Adapters
  */
-class User extends Adapter implements AdapterContract
+class User extends Base implements AdapterContract
 {
     const ID         = 'id';
     const EMAIL      = 'email';

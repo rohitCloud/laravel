@@ -14,7 +14,7 @@ use App\Models\Comment as CommentModel;
  * Class Comment
  * @package App\Adapters
  */
-class Comment extends Adapter implements AdapterContract
+class Comment extends Base implements AdapterContract
 {
     const ID         = 'id';
     const COMMENT    = 'comment';

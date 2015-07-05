@@ -17,7 +17,7 @@ use Illuminate\Support\Facades\Request;
  * Class Repositories
  * @package App
  */
-abstract class Repository
+abstract class Base
 {
     const SORT_ASC  = 'asc';
     const SORT_DESC = 'desc';

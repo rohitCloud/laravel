@@ -9,17 +9,17 @@ namespace App\Repositories\Post;
 use App\Adapters\Post as PostAdapter;
 use App\Contracts\Repositories\Post as PostContract;
 use App\Models\Post as PostModel;
-use App\Repositories\Repository;
+use App\Repositories\Base;
 
 /**
  * @author Rohit Arora
  */
-class Post extends Repository implements PostContract
+class Post extends Base implements PostContract
 {
     const OFFSET    = 0;
     const LIMIT     = 10;
     const SORT_BY   = PostModel::ID;
-    const SORT_TYPE = Repository::SORT_ASC;
+    const SORT_TYPE = Base::SORT_ASC;
 
     /**
      * @param PostModel   $Model
