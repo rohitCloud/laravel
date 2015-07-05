@@ -4,7 +4,7 @@ namespace App\Http\Controllers\Post;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests;
-use App\Contracts\Repositories\Post as CommentContract;
+use App\Contracts\Repositories\Post as PostContract;
 
 /**
  * @author  Rohit Arora
@@ -15,36 +15,36 @@ use App\Contracts\Repositories\Post as CommentContract;
 class Comment extends Controller
 {
     /**
-     * @var CommentContract
+     * @var PostContract
      */
-    private $CommentContract;
+    private $PostContract;
 
     /**
-     * @param CommentContract $CommentContract
+     * @param PostContract $PostContract
      */
-    public function __construct(CommentContract $CommentContract)
+    public function __construct(PostContract $PostContract)
     {
-        $this->setCommentContract($CommentContract);
+        $this->setPostContract($PostContract);
     }
 
     /**
      * @author Rohit Arora
      *
-     * @return CommentContract
+     * @return PostContract
      */
-    public function getCommentContract()
+    public function getPostContract()
     {
-        return $this->CommentContract;
+        return $this->PostContract;
     }
 
     /**
      * @author Rohit Arora
      *
-     * @param CommentContract $CommentContract
+     * @param PostContract $PostContract
      */
-    public function setCommentContract($CommentContract)
+    public function setPostContract($PostContract)
     {
-        $this->CommentContract = $CommentContract;
+        $this->PostContract = $PostContract;
     }
 
     /**
@@ -56,7 +56,7 @@ class Comment extends Controller
      */
     public function index($postID)
     {
-        return $this->getCommentContract()
+        return $this->getPostContract()
                     ->getCommentsByPost($postID);
     }
 }
