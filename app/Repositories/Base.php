@@ -360,7 +360,7 @@ abstract class Base
      */
     public function processPages()
     {
-        $fields   = implode(',', $this->getFields());
+        $fields   = implode(',', array_keys($this->getFields()));
         $response = [];
 
         $response['current_url'] = $this->getPage($fields, $this->sortBy, $this->sortType, $this->limit, $this->offset);
