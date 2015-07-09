@@ -296,9 +296,6 @@ abstract class Base
      */
     public function process()
     {
-        $this->setFields()
-             ->setDataFromModel();
-
         $response['data'] = $this->bindFields($this->getFields(), $this->getData());
 
         // Use after getDataFromModel
@@ -316,11 +313,11 @@ abstract class Base
     /**
      * @author Rohit Arora
      *
-     * @return array
+     * @return $this
      */
     public function setDataFromModel()
     {
-        $this->setTotal($this->getModel()
+        $this->setTotal($this->getQueryBuilder()
                              ->count())
              ->setData($this->bindOffsetLimit()
                             ->setOrder()

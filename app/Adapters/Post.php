@@ -44,4 +44,22 @@ class Post extends Base implements AdapterContract
             $this->keyExists(self::UPDATED_AT) => PostModel::UPDATED_AT,
         ]);
     }
+
+    /**
+     * @author Rohit Arora
+     *
+     * @param $fields
+     * @param $list
+     *
+     * @return array
+     */
+    public function reFilter($fields, $list)
+    {
+        if (array_has($fields, self::USER)) {
+            unset($fields[PostModel::USER_ID]);
+            $fields[self::USER] = self::USER;
+        }
+
+        return parent::reFilter($fields, $list);
+    }
 }

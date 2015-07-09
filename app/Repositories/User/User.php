@@ -43,6 +43,8 @@ class User extends Base implements UserContract
     public function get($parameters)
     {
         return $this->setParameters($parameters)
+                    ->setFields()
+                    ->setDataFromModel()
                     ->process();
     }
 }

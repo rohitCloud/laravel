@@ -19,4 +19,14 @@ interface Comment
      * @return Collection
      */
     public function get($parameters);
+
+    /**
+     * @author Rohit Arora
+     *
+     * @param $parameters
+     * @param $postID
+     *
+     * @return mixed
+     */
+    public function getCommentsByPost($parameters, $postID);
 }

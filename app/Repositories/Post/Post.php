@@ -43,20 +43,20 @@ class Post extends Base implements PostContract
     public function get($parameters)
     {
         return $this->setParameters($parameters)
+                    ->withUser()
+                    ->setFields()
+                    ->setDataFromModel()
                     ->process();
     }
 
     /**
      * @author Rohit Arora
      *
-     * @param $postID
-     *
-     * @return mixed
+     * @return Post
      */
-    public function getCommentsByPost($postID)
+    public function withUser()
     {
-        return $this->getModel()
-                    ->with('comments')
-                    ->find($postID);
+        return $this->setQueryBuilder($this->getQueryBuilder()
+                                           ->with('user'));
     }
 }

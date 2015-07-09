@@ -9,7 +9,9 @@ namespace App\Repositories\Comment;
 use App\Adapters\Comment as CommentAdapter;
 use App\Contracts\Repositories\Comment as CommentContract;
 use App\Models\Comment as CommentModel;
+use App\Models\Post;
 use App\Repositories\Base;
+use Illuminate\Database\Query\Builder;
 
 /**
  * @author Rohit Arora
@@ -43,6 +45,55 @@ class Comment extends Base implements CommentContract
     public function get($parameters)
     {
         return $this->setParameters($parameters)
+                    ->withPost()
+                    ->setFields()
+                    ->setDataFromModel()
                     ->process();
+    }
+
+    /**
+     * @author Rohit Arora
+     *
+     * @param $parameters
+     * @param $postID
+     *
+     * @return Comment
+     */
+    public function getCommentsByPost($parameters, $postID)
+    {
+        return $this->setParameters($parameters)
+                    ->withPostAndUser($postID)
+                    ->setFields()
+                    ->setDataFromModel()
+                    ->process();
+    }
+
+    /**
+     * @author Rohit Arora
+     *
+     * @param $postID
+     *
+     * @return Comment
+     */
+    public function withPostAndUser($postID)
+    {
+        return $this->setQueryBuilder($this->getQueryBuilder()
+                                           ->whereHas('post', function ($query) use ($postID) {
+                                               /* @var Builder $query */
+                                               $query->where(Post::ID, '=', $postID);
+                                           })
+                                           ->with('post')
+                                           ->with('post.user'));
+    }
+
+    /**
+     * @author Rohit Arora
+     *
+     * @return Comment
+     */
+    public function withPost()
+    {
+        return $this->setQueryBuilder($this->getQueryBuilder()
+                                           ->with('post'));
     }
 }
