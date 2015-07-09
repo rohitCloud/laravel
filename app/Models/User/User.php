@@ -1,7 +1,12 @@
 <?php
 
-namespace App\Models;
+namespace App\Models\User;
 
+use App\Models\Comment;
+use App\Models\Document;
+use App\Models\Post;
+use App\Models\Role;
+use App\Models\User\Details;
 use Illuminate\Auth\Authenticatable;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Auth\Passwords\CanResetPassword;
@@ -83,7 +88,7 @@ class User extends Model implements AuthenticatableContract, CanResetPasswordCon
      */
     public function details()
     {
-        return $this->hasOne(UserDetail::class);
+        return $this->hasOne(Details::class);
     }
 
     /**

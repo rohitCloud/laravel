@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Models;
+namespace App\Models\User;
 
 use Illuminate\Database\Eloquent\Model;
 
@@ -10,7 +10,7 @@ use Illuminate\Database\Eloquent\Model;
  * Class UserRole
  * @package App\Models
  */
-class UserRole extends Model
+class Roles extends Model
 {
     const TABLE = 'user_roles';
 

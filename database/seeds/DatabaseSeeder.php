@@ -2,7 +2,7 @@
 
 use App\Models\Comment;
 use App\Models\Post;
-use App\Models\User;
+use App\Models\User\User;
 use Illuminate\Database\Seeder;
 use Illuminate\Database\Eloquent\Model;
 

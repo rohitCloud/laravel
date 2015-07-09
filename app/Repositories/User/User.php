@@ -8,7 +8,7 @@ namespace App\Repositories\User;
 
 use App\Adapters\User as UserAdapter;
 use App\Contracts\Repositories\User as UserContract;
-use App\Models\User as UserModel;
+use App\Models\User\User as UserModel;
 use App\Repositories\Base;
 
 /**

@@ -7,7 +7,7 @@ namespace App\Adapters;
 
 use App\Contracts\Adapter as AdapterContract;
 use App\Models\Post;
-use App\Models\User as UserModel;
+use App\Models\User\User as UserModel;
 
 /**
  * @author  Rohit Arora
