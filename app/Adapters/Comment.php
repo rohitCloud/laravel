@@ -41,22 +41,4 @@ class Comment extends Base implements AdapterContract
             $this->keyExists(self::UPDATED_AT) => CommentModel::UPDATED_AT,
         ]);
     }
-
-    /**
-     * @author Rohit Arora
-     *
-     * @param $fields
-     * @param $list
-     *
-     * @return array
-     */
-    public function reFilter($fields, $list)
-    {
-        if (array_has($fields, self::POST)) {
-            unset($fields[CommentModel::POST_ID]);
-            $fields[self::POST] = self::POST;
-        }
-
-        return parent::reFilter($fields, $list);
-    }
 }

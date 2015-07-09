@@ -43,20 +43,8 @@ class Post extends Base implements PostContract
     public function get($parameters)
     {
         return $this->setParameters($parameters)
-                    ->withUser()
                     ->setFields()
                     ->setDataFromModel()
                     ->process();
-    }
-
-    /**
-     * @author Rohit Arora
-     *
-     * @return Post
-     */
-    public function withUser()
-    {
-        return $this->setQueryBuilder($this->getQueryBuilder()
-                                           ->with('user'));
     }
 }

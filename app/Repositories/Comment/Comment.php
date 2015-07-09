@@ -45,7 +45,6 @@ class Comment extends Base implements CommentContract
     public function get($parameters)
     {
         return $this->setParameters($parameters)
-                    ->withPost()
                     ->setFields()
                     ->setDataFromModel()
                     ->process();
@@ -81,19 +80,6 @@ class Comment extends Base implements CommentContract
                                            ->whereHas('post', function ($query) use ($postID) {
                                                /* @var Builder $query */
                                                $query->where(Post::ID, '=', $postID);
-                                           })
-                                           ->with('post')
-                                           ->with('post.user'));
-    }
-
-    /**
-     * @author Rohit Arora
-     *
-     * @return Comment
-     */
-    public function withPost()
-    {
-        return $this->setQueryBuilder($this->getQueryBuilder()
-                                           ->with('post'));
+                                           }));
     }
 }
