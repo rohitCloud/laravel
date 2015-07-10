@@ -57,4 +57,17 @@ class Comment extends Controller
         return $this->getCommentContract()
                     ->get($this->inputFilter());
     }
+
+    /**
+     * @author Rohit Arora
+     *
+     * @param $id
+     *
+     * @return mixed
+     */
+    public function show($id)
+    {
+        return $this->getCommentContract()
+                    ->getByID($id);
+    }
 }
