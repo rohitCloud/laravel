@@ -19,7 +19,7 @@ class Post extends Base implements AdapterContract
 {
     const ID         = 'id';
     const TITLE      = 'title';
-    const BODY       = 'bodys';
+    const BODY       = 'body';
     const USER       = 'user';
     const USER_ID    = 'user_id';
     const COMMENT    = 'comment';
