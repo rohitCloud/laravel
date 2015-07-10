@@ -317,6 +317,11 @@ abstract class Base
      */
     public function setDataFromModel()
     {
+        if(!$this->fields)
+        {
+            return $this;
+        }
+
         $this->setTotal($this->getQueryBuilder()
                              ->count())
              ->setData($this->bindOffsetLimit()

@@ -27,12 +27,13 @@ abstract class Base implements Adapter
     /**
      * @author Rohit Arora
      *
-     * @param $fields
-     * @param $list
+     * @param array $fields
+     * @param array $list
+     * @param bool  $embed
      *
-     * @return array
+     * @return array|bool
      */
-    public function reFilter($fields, $list)
+    public function reFilter($fields, $list, $embed = false)
     {
         if (!$fields || !$list) {
             return false;
@@ -44,7 +45,7 @@ abstract class Base implements Adapter
             foreach ($this->getBindings() as $key => $binding) {
                 if (isset($binding[self::PROPERTY]) && in_array($key, $fields)) {
                     $returnData[$key] = $value[$binding[self::PROPERTY]];
-                } else if (isset($binding[self::CALLBACK])) {
+                } else if (isset($binding[self::CALLBACK]) && $embed) {
                     $returnData[$key] = call_user_func([\App::make($binding[self::CALLBACK]['class']),
                                                         $binding[self::CALLBACK]['function']], $value[$binding[self::CALLBACK][self::PROPERTY]]);
                 }
