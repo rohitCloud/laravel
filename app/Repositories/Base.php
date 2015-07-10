@@ -88,7 +88,7 @@ abstract class Base
      *
      * @param $QueryBuilder
      *
-     * @return Model
+     * @return $this
      */
     public function setQueryBuilder($QueryBuilder)
     {
@@ -185,9 +185,9 @@ abstract class Base
      *
      * @return mixed
      */
-    public function getFields()
+    public function getFilteredFields()
     {
-        return $this->fields;
+        return $this->Adapter->getFilteredFields($this->fields);
     }
 
     /**
@@ -197,7 +197,7 @@ abstract class Base
      */
     public function setFields()
     {
-        $this->fields = $this->Adapter->filter(isset($this->getParameters()['fields']) && $this->getParameters()['fields'] ? explode(',',
+        $this->fields = $this->Adapter->getModelFields(isset($this->getParameters()['fields']) && $this->getParameters()['fields'] ? explode(',',
             $this->getParameters()['fields']) : ['*']);
 
         return $this;
@@ -296,7 +296,7 @@ abstract class Base
      */
     public function process()
     {
-        $response['data'] = $this->bindFields($this->getFields(), $this->getData());
+        $response['data'] = $this->bindFields($this->getFilteredFields(), $this->getData());
 
         // Use after getDataFromModel
         $response['total']  = $this->getTotal();
@@ -321,7 +321,7 @@ abstract class Base
                              ->count())
              ->setData($this->bindOffsetLimit()
                             ->setOrder()
-                            ->fetch($this->getFields())
+                            ->fetch($this->fields)
                             ->toArray());
 
         return $this;
@@ -344,11 +344,11 @@ abstract class Base
      *
      * @return $this
      */
-    public function setParameters($parameters)
+    public function setRequestParameters($parameters)
     {
         $this->parameters = $parameters;
 
-        return $this;
+        return $this->setFields();
     }
 
     /**
@@ -357,7 +357,7 @@ abstract class Base
      */
     public function processPages()
     {
-        $fields   = implode(',', array_keys($this->getFields()));
+        $fields   = implode(',', $this->getFilteredFields());
         $response = [];
 
         $response['current_url'] = $this->getPage($fields, $this->sortBy, $this->sortType, $this->limit, $this->offset);

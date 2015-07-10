@@ -19,7 +19,7 @@ class Post extends Base implements AdapterContract
 {
     const ID         = 'id';
     const TITLE      = 'title';
-    const BODY       = 'body';
+    const BODY       = 'bodys';
     const USER       = 'user';
     const USER_ID    = 'user_id';
     const COMMENT    = 'comment';
@@ -29,14 +29,10 @@ class Post extends Base implements AdapterContract
     /**
      * @author Rohit Arora
      *
-     * @param array $fields
-     *
      * @return array
      */
-    public function filter($fields = ['*'])
+    public function getBindings()
     {
-        $this->fields = $fields;
-
         return [
             self::ID         => [self::PROPERTY  => PostModel::ID,
                                  self::DATA_TYPE => self::TYPE_INTEGER],
@@ -47,7 +43,9 @@ class Post extends Base implements AdapterContract
             self::USER_ID    => [self::PROPERTY  => PostModel::USER_ID,
                                  self::DATA_TYPE => self::TYPE_INTEGER],
             self::USER       => [self::DATA_TYPE => self::TYPE_RESOURCE,
-                                 self::CALLBACK  => [User::class, 'getByID']],
+                                 self::CALLBACK  => ['class'        => User::class,
+                                                     'function'     => 'getByID',
+                                                     self::PROPERTY => PostModel::USER_ID]],
             self::CREATED_AT => [self::PROPERTY  => PostModel::CREATED_AT,
                                  self::DATA_TYPE => self::TYPE_DATETIME],
             self::UPDATED_AT => [self::PROPERTY  => PostModel::UPDATED_AT,

@@ -27,8 +27,6 @@ class Comment extends Base implements CommentContract
      * @param CommentModel   $Model
      *
      * @param CommentAdapter $Adapter
-     *
-     * @internal param CommentModel $Comment
      */
     public function __construct(CommentModel $Model, CommentAdapter $Adapter)
     {
@@ -44,8 +42,7 @@ class Comment extends Base implements CommentContract
      */
     public function get($parameters)
     {
-        return $this->setParameters($parameters)
-                    ->setFields()
+        return $this->setRequestParameters($parameters)
                     ->setDataFromModel()
                     ->process();
     }
@@ -60,7 +57,7 @@ class Comment extends Base implements CommentContract
      */
     public function getCommentsByPost($parameters, $postID)
     {
-        return $this->setParameters($parameters)
+        return $this->setRequestParameters($parameters)
                     ->getCommentsRelatedToPost($postID);
     }
 
@@ -73,7 +70,9 @@ class Comment extends Base implements CommentContract
      */
     public function getCommentsRelatedToPost($postID)
     {
-        if (!Post::find($postID)) {
+        if (!$this->getQueryBuilder()
+                  ->find($postID)
+        ) {
             return [];
         }
 
@@ -82,7 +81,6 @@ class Comment extends Base implements CommentContract
                                                /* @var Builder $query */
                                                $query->where(Post::ID, '=', $postID);
                                            }))
-                    ->setFields()
                     ->setDataFromModel()
                     ->process();
     }

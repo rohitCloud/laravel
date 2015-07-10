@@ -25,8 +25,6 @@ class Post extends Base implements PostContract
      * @param PostModel   $Model
      *
      * @param PostAdapter $Adapter
-     *
-     * @internal param PostModel $Post
      */
     public function __construct(PostModel $Model, PostAdapter $Adapter)
     {
@@ -42,8 +40,7 @@ class Post extends Base implements PostContract
      */
     public function get($parameters)
     {
-        return $this->setParameters($parameters)
-                    ->setFields()
+        return $this->setRequestParameters($parameters)
                     ->setDataFromModel()
                     ->process();
     }

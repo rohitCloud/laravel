@@ -26,14 +26,10 @@ class User extends Base implements AdapterContract
     /**
      * @author Rohit Arora
      *
-     * @param array $fields
-     *
      * @return array
      */
-    public function filter($fields = ['*'])
+    public function getBindings()
     {
-        $this->fields = $fields;
-
         return [
             self::ID         => [self::PROPERTY  => UserModel::ID,
                                  self::DATA_TYPE => self::TYPE_INTEGER],

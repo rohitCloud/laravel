@@ -14,7 +14,7 @@ use Illuminate\Database\Eloquent\Collection;
 /**
  * @author Rohit Arora
  */
-class Cache extends Base implements CommentContract
+class Cache implements CommentContract
 {
     /**
      * @var Base

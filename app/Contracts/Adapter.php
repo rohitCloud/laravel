@@ -16,18 +16,9 @@ interface Adapter
     /**
      * @author Rohit Arora
      *
-     * @param $columns
+     * @return array
      */
-    public function clean($columns);
-
-    /**
-     * @author Rohit Arora
-     *
-     * @param string $key
-     *
-     * @return string
-     */
-    public function keyExists($key);
+    public function getBindings();
 
     /**
      * @author Rohit Arora
@@ -46,5 +37,14 @@ interface Adapter
      *
      * @return array
      */
-    public function filter($fields = ['*']);
+    public function getModelFields($fields = ['*']);
+
+    /**
+     * @author Rohit Arora
+     *
+     * @param $modelFields
+     *
+     * @return array
+     */
+    public function getFilteredFields($modelFields);
 }

@@ -27,14 +27,10 @@ class Comment extends Base implements AdapterContract
     /**
      * @author Rohit Arora
      *
-     * @param array $fields
-     *
      * @return array
      */
-    public function filter($fields = ['*'])
+    public function getBindings()
     {
-        $this->fields = $fields;
-
         return [
             self::ID         => [self::PROPERTY  => CommentModel::ID,
                                  self::DATA_TYPE => self::TYPE_INTEGER],
@@ -43,7 +39,7 @@ class Comment extends Base implements AdapterContract
             self::POST_ID    => [self::PROPERTY  => CommentModel::POST_ID,
                                  self::DATA_TYPE => self::TYPE_INTEGER],
             self::POST       => [self::DATA_TYPE => self::TYPE_RESOURCE,
-                                 self::CALLBACK  => [Post::class, 'getByID']],
+                                 self::CALLBACK  => [Post::class, 'getByID', CommentModel::POST_ID]],
             self::CREATED_AT => [self::PROPERTY  => CommentModel::CREATED_AT,
                                  self::DATA_TYPE => self::TYPE_DATETIME],
             self::UPDATED_AT => [self::PROPERTY  => CommentModel::UPDATED_AT,
