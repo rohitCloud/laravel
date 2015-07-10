@@ -55,7 +55,7 @@ class Comment extends Controller
     public function index()
     {
         return $this->getCommentContract()
-                    ->get($this->inputFilter());
+                    ->fetch($this->inputFilter());
     }
 
     /**

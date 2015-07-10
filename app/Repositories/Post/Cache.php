@@ -43,7 +43,7 @@ class Cache implements PostContract
      *
      * @return Collection
      */
-    public function get($columns = ['*'])
+    public function fetch($columns = ['*'])
     {
         return $this->Cache->remember('posts-' . implode('-', $columns), 60, function () use ($columns) {
             return $this->PostContract->get($columns);

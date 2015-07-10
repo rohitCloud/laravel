@@ -43,7 +43,7 @@ class Cache implements UserContract
      *
      * @return Collection
      */
-    public function get($columns = ['*'])
+    public function fetch($columns = ['*'])
     {
         return $this->Cache->remember('users-' . implode('-', $columns), 60, function () use ($columns) {
             return $this->UserContract->get($columns);

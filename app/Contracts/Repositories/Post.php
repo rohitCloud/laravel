@@ -18,14 +18,14 @@ interface Post
      *
      * @return Collection
      */
-    public function get($parameters);
+    public function fetch($parameters);
 
     /**
      * @author Rohit Arora
      *
      * @param $postID
      *
-     * @return mixed
+     * @return Post
      */
     public function getByID($postID);
 }

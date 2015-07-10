@@ -18,7 +18,7 @@ interface Comment
      *
      * @return Collection
      */
-    public function get($parameters);
+    public function fetch($parameters);
 
     /**
      * @author Rohit Arora
@@ -35,7 +35,7 @@ interface Comment
      *
      * @param $commentID
      *
-     * @return mixed
+     * @return Comment
      */
     public function getByID($commentID);
 }

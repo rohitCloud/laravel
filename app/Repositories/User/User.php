@@ -38,7 +38,7 @@ class User extends Base implements UserContract
      *
      * @return array
      */
-    public function get($parameters)
+    public function fetch($parameters)
     {
         return $this->setRequestParameters($parameters)
                     ->setDataFromModel()
@@ -50,11 +50,11 @@ class User extends Base implements UserContract
      *
      * @param $userID
      *
-     * @return mixed
+     * @return User
      */
     public function getByID($userID)
     {
-        return $this->getQueryBuilder()
+        return $this->setRequestParameters(['*'])
                     ->find($userID);
     }
 }

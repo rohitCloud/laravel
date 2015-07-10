@@ -27,9 +27,9 @@ abstract class Base implements Adapter
     /**
      * @author Rohit Arora
      *
-     * @param array $fields
-     * @param array $list
-     * @param bool  $embed
+     * @param array  $fields
+     * @param array  $list
+     * @param string $embed
      *
      * @return array|bool
      */

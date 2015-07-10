@@ -43,7 +43,7 @@ class Cache implements CommentContract
      *
      * @return Collection
      */
-    public function get($columns = ['*'])
+    public function fetch($columns = ['*'])
     {
         return $this->Cache->remember('comment-' . implode('-', $columns), 60, function () use ($columns) {
             return $this->CommentContract->get($columns);

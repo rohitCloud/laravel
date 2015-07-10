@@ -56,7 +56,7 @@ class Post extends Controller
     public function index()
     {
         return $this->getPostContract()
-                    ->get($this->inputFilter());
+                    ->fetch($this->inputFilter());
     }
 
     /**

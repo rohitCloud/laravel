@@ -38,7 +38,7 @@ class Post extends Base implements PostContract
      *
      * @return array
      */
-    public function get($parameters)
+    public function fetch($parameters)
     {
         return $this->setRequestParameters($parameters)
                     ->setDataFromModel()
@@ -50,11 +50,11 @@ class Post extends Base implements PostContract
      *
      * @param $postID
      *
-     * @return mixed
+     * @return Post
      */
     public function getByID($postID)
     {
-        return $this->getQueryBuilder()
-                    ->find($postID)->toArray();
+        return $this->setRequestParameters(['embed' => true])
+                    ->find($postID);
     }
 }

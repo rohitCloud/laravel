@@ -55,7 +55,7 @@ class User extends Controller
     public function index()
     {
         return $this->getUserContract()
-                    ->get($this->inputFilter());
+                    ->fetch($this->inputFilter());
     }
 
     /**

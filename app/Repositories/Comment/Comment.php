@@ -40,7 +40,7 @@ class Comment extends Base implements CommentContract
      *
      * @return array
      */
-    public function get($parameters)
+    public function fetch($parameters)
     {
         return $this->setRequestParameters($parameters)
                     ->setDataFromModel()
@@ -90,11 +90,11 @@ class Comment extends Base implements CommentContract
      *
      * @param $commentID
      *
-     * @return mixed
+     * @return Comment
      */
     public function getByID($commentID)
     {
-        return $this->getQueryBuilder()
+        return $this->setRequestParameters(['*'])
                     ->find($commentID);
     }
 }

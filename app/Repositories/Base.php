@@ -175,10 +175,9 @@ abstract class Base
      *
      * @return Collection
      */
-    public function fetch($columns = ['*'])
+    public function get($columns = ['*'])
     {
-        return $this->getQueryBuilder()
-                    ->get($columns);
+        return $this->getQueryBuilder()->get($columns);
     }
 
     /**
@@ -260,10 +259,8 @@ abstract class Base
     public function setRequestParameters($parameters)
     {
         $this->parameters = $parameters;
-
-        $this->setEmbed();
-
-        return $this->setFields();
+        return $this->setEmbed()
+                    ->setFields();
     }
 
 
@@ -331,19 +328,39 @@ abstract class Base
     /**
      * @author Rohit Arora
      *
+     * @param $id
+     *
+     * @return $this
+     */
+    public function find($id)
+    {
+        $this->setData([$this->getQueryBuilder()
+                             ->find($id)
+                             ->toArray()]);
+
+        return $this->process(true);
+    }
+
+    /**
+     * @author Rohit Arora
+     *
+     * @param bool|false $single
+     *
      * @return array
      */
-    public function process()
+    public function process($single = false)
     {
         $response['data'] = $this->bindFields($this->getFilteredFields(), $this->getData());
 
-        // Use after getDataFromModel
-        $response['total']  = $this->getTotal();
-        $response['offset'] = $this->offset;
-        $response['limit']  = $this->limit;
+        if (!$single) {
+            // Use after getDataFromModel
+            $response['total']  = $this->getTotal();
+            $response['offset'] = $this->offset;
+            $response['limit']  = $this->limit;
 
-        if ($response['data']) {
-            $response = array_merge($response, $this->processPages());
+            if ($response['data']) {
+                $response = array_merge($response, $this->processPages());
+            }
         }
 
         return $response;
@@ -364,7 +381,7 @@ abstract class Base
                              ->count())
              ->setData($this->bindOffsetLimit()
                             ->setOrder()
-                            ->fetch($this->fields)
+                            ->get($this->fields)
                             ->toArray());
 
         return $this;
