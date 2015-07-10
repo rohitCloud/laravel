@@ -19,4 +19,13 @@ interface User
      * @return Collection
      */
     public function get($parameters);
+
+    /**
+     * @author Rohit Arora
+     *
+     * @param $userID
+     *
+     * @return mixed
+     */
+    public function getByID($userID);
 }

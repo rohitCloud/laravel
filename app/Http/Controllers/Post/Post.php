@@ -58,4 +58,17 @@ class Post extends Controller
         return $this->getPostContract()
                     ->get($this->inputFilter());
     }
+
+    /**
+     * @author Rohit Arora
+     *
+     * @param $id
+     *
+     * @return mixed
+     */
+    public function show($id)
+    {
+        return $this->getPostContract()
+                    ->getByID($id);
+    }
 }

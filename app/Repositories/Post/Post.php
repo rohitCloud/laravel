@@ -25,8 +25,6 @@ class Post extends Base implements PostContract
      * @param PostModel   $Model
      *
      * @param PostAdapter $Adapter
-     *
-     * @internal param PostModel $Post
      */
     public function __construct(PostModel $Model, PostAdapter $Adapter)
     {
@@ -42,9 +40,21 @@ class Post extends Base implements PostContract
      */
     public function get($parameters)
     {
-        return $this->setParameters($parameters)
-                    ->setFields()
+        return $this->setRequestParameters($parameters)
                     ->setDataFromModel()
                     ->process();
+    }
+
+    /**
+     * @author Rohit Arora
+     *
+     * @param $postID
+     *
+     * @return mixed
+     */
+    public function getByID($postID)
+    {
+        return $this->getQueryBuilder()
+                    ->find($postID)->toArray();
     }
 }

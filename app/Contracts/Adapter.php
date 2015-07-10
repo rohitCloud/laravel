@@ -16,28 +16,20 @@ interface Adapter
     /**
      * @author Rohit Arora
      *
-     * @param $columns
-     */
-    public function clean($columns);
-
-    /**
-     * @author Rohit Arora
-     *
-     * @param string $key
-     *
-     * @return string
-     */
-    public function keyExists($key);
-
-    /**
-     * @author Rohit Arora
-     *
-     * @param $fields
-     * @param $list
-     *
      * @return array
      */
-    public function reFilter($fields, $list);
+    public function getBindings();
+
+    /**
+     * @author Rohit Arora
+     *
+     * @param array $fields
+     * @param array $list
+     * @param bool  $embed
+     *
+     * @return array|bool
+     */
+    public function reFilter($fields, $list, $embed = false);
 
     /**
      * @author Rohit Arora
@@ -46,5 +38,14 @@ interface Adapter
      *
      * @return array
      */
-    public function filter($fields = ['*']);
+    public function getModelFields($fields = ['*']);
+
+    /**
+     * @author Rohit Arora
+     *
+     * @param $modelFields
+     *
+     * @return array
+     */
+    public function getFilteredFields($modelFields);
 }

@@ -34,6 +34,7 @@ abstract class Base
     protected $sortType;
     protected $total;
     protected $data;
+    protected $embed;
 
     /** @var  Model */
     private $QueryBuilder;
@@ -88,7 +89,7 @@ abstract class Base
      *
      * @param $QueryBuilder
      *
-     * @return Model
+     * @return $this
      */
     public function setQueryBuilder($QueryBuilder)
     {
@@ -185,9 +186,9 @@ abstract class Base
      *
      * @return mixed
      */
-    public function getFields()
+    public function getFilteredFields()
     {
-        return $this->fields;
+        return $this->Adapter->getFilteredFields($this->fields);
     }
 
     /**
@@ -197,7 +198,7 @@ abstract class Base
      */
     public function setFields()
     {
-        $this->fields = $this->Adapter->filter(isset($this->getParameters()['fields']) && $this->getParameters()['fields'] ? explode(',',
+        $this->fields = $this->Adapter->getModelFields(isset($this->getParameters()['fields']) && $this->getParameters()['fields'] ? explode(',',
             $this->getParameters()['fields']) : ['*']);
 
         return $this;
@@ -230,6 +231,45 @@ abstract class Base
     /**
      * @author Rohit Arora
      *
+     * @return $this
+     */
+    private function setEmbed()
+    {
+        $this->embed = isset($this->getParameters()['embed']) && $this->getParameters()['embed'] == 'true' ? 'true' : 'false';
+
+        return $this;
+    }
+
+    /**
+     * @author Rohit Arora
+     *
+     * @return mixed
+     */
+    public function getParameters()
+    {
+        return $this->parameters;
+    }
+
+    /**
+     * @author Rohit Arora
+     *
+     * @param $parameters
+     *
+     * @return $this
+     */
+    public function setRequestParameters($parameters)
+    {
+        $this->parameters = $parameters;
+
+        $this->setEmbed();
+
+        return $this->setFields();
+    }
+
+
+    /**
+     * @author Rohit Arora
+     *
      * @param $fields
      * @param $postList
      *
@@ -237,7 +277,7 @@ abstract class Base
      */
     public function bindFields($fields, $postList)
     {
-        return $this->Adapter->reFilter($fields, $postList);
+        return $this->Adapter->reFilter($fields, $postList, $this->embed);
     }
 
     /**
@@ -275,7 +315,6 @@ abstract class Base
         return in_array($type, [self::SORT_ASC, self::SORT_DESC]);
     }
 
-
     /**
      * @author Rohit Arora
      *
@@ -296,7 +335,7 @@ abstract class Base
      */
     public function process()
     {
-        $response['data'] = $this->bindFields($this->getFields(), $this->getData());
+        $response['data'] = $this->bindFields($this->getFilteredFields(), $this->getData());
 
         // Use after getDataFromModel
         $response['total']  = $this->getTotal();
@@ -317,36 +356,16 @@ abstract class Base
      */
     public function setDataFromModel()
     {
+        if (!$this->fields) {
+            return $this;
+        }
+
         $this->setTotal($this->getQueryBuilder()
                              ->count())
              ->setData($this->bindOffsetLimit()
                             ->setOrder()
-                            ->fetch($this->getFields())
+                            ->fetch($this->fields)
                             ->toArray());
-
-        return $this;
-    }
-
-    /**
-     * @author Rohit Arora
-     *
-     * @return mixed
-     */
-    public function getParameters()
-    {
-        return $this->parameters;
-    }
-
-    /**
-     * @author Rohit Arora
-     *
-     * @param $parameters
-     *
-     * @return $this
-     */
-    public function setParameters($parameters)
-    {
-        $this->parameters = $parameters;
 
         return $this;
     }
@@ -357,26 +376,26 @@ abstract class Base
      */
     public function processPages()
     {
-        $fields   = implode(',', array_keys($this->getFields()));
+        $fields   = implode(',', $this->getFilteredFields());
         $response = [];
 
-        $response['current_url'] = $this->getPage($fields, $this->sortBy, $this->sortType, $this->limit, $this->offset);
+        $response['current_url'] = $this->getPage($fields, $this->sortBy, $this->sortType, $this->limit, $this->offset, $this->embed);
 
         if (!($this->limit + $this->offset >= $this->getTotal())) {
             $response['last_url'] = $this->getPage($fields, $this->sortBy, $this->sortType, $this->limit,
-                (($this->getTotal() - $this->limit < $this->offset) ? $this->offset : ($this->getTotal() - $this->limit)));
+                (($this->getTotal() - $this->limit < $this->offset) ? $this->offset : ($this->getTotal() - $this->limit)), $this->embed);
         }
 
         if ($this->offset > 0) {
             $response['previous_url'] = $this->getPage($fields, $this->sortBy, $this->sortType, $this->limit,
-                ($this->offset - $this->limit) > 0 ? ($this->offset - $this->limit) : 0);
+                ($this->offset - $this->limit) > 0 ? ($this->offset - $this->limit) : 0, $this->embed);
 
-            $response['first_url'] = $this->getPage($fields, $this->sortBy, $this->sortType, $this->limit, 0);
+            $response['first_url'] = $this->getPage($fields, $this->sortBy, $this->sortType, $this->limit, 0, $this->embed);
         }
 
         if ($this->limit < $this->getTotal() && !($this->limit + $this->offset >= $this->getTotal())) {
             $response['next_url'] = $this->getPage($fields, $this->sortBy, $this->sortType, $this->limit,
-                (($this->offset + $this->limit) < $this->getTotal()) ? $this->offset + $this->limit : $this->getTotal() - $this->limit);
+                (($this->offset + $this->limit) < $this->getTotal()) ? $this->offset + $this->limit : $this->getTotal() - $this->limit, $this->embed);
         }
 
         return $response;
@@ -385,16 +404,17 @@ abstract class Base
     /**
      * @author Rohit Arora
      *
-     * @param $fields
-     * @param $sortBy
-     * @param $sortType
-     * @param $limit
-     * @param $offset
+     * @param        $fields
+     * @param        $sortBy
+     * @param        $sortType
+     * @param        $limit
+     * @param        $offset
+     * @param string $embed
      *
      * @return string
      */
-    private function getPage($fields, $sortBy, $sortType, $limit, $offset)
+    private function getPage($fields, $sortBy, $sortType, $limit, $offset, $embed = 'false')
     {
-        return Request::url() . '?fields=' . $fields . '&sort_by=' . $sortBy . '&sort_type=' . $sortType . '&limit=' . $limit . '&offset=' . $offset;
+        return Request::url() . '?fields=' . $fields . '&sort_by=' . $sortBy . '&sort_type=' . $sortType . '&limit=' . $limit . '&offset=' . $offset . '&embed=' . $embed;
     }
 }

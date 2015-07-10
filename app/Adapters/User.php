@@ -26,20 +26,21 @@ class User extends Base implements AdapterContract
     /**
      * @author Rohit Arora
      *
-     * @param array $fields
-     *
      * @return array
      */
-    public function filter($fields = ['*'])
+    public function getBindings()
     {
-        $this->fields = $fields;
-
-        return $this->clean([
-            $this->keyExists(self::ID)         => UserModel::ID,
-            $this->keyExists(self::NAME)       => UserModel::NAME,
-            $this->keyExists(self::EMAIL)      => UserModel::EMAIL,
-            $this->keyExists(self::CREATED_AT) => UserModel::CREATED_AT,
-            $this->keyExists(self::UPDATED_AT) => UserModel::UPDATED_AT,
-        ]);
+        return [
+            self::ID         => [self::PROPERTY  => UserModel::ID,
+                                 self::DATA_TYPE => self::TYPE_INTEGER],
+            self::NAME       => [self::PROPERTY  => UserModel::NAME,
+                                 self::DATA_TYPE => self::TYPE_STRING],
+            self::EMAIL      => [self::PROPERTY  => UserModel::EMAIL,
+                                 self::DATA_TYPE => self::TYPE_STRING],
+            self::CREATED_AT => [self::PROPERTY  => UserModel::CREATED_AT,
+                                 self::DATA_TYPE => self::TYPE_DATETIME],
+            self::UPDATED_AT => [self::PROPERTY  => UserModel::UPDATED_AT,
+                                 self::DATA_TYPE => self::TYPE_DATETIME]
+        ];
     }
 }

@@ -14,7 +14,7 @@ use Illuminate\Database\Eloquent\Collection;
 /**
  * @author Rohit Arora
  */
-class Cache extends Base implements UserContract
+class Cache implements UserContract
 {
     /**
      * @var Base
@@ -48,5 +48,17 @@ class Cache extends Base implements UserContract
         return $this->Cache->remember('users-' . implode('-', $columns), 60, function () use ($columns) {
             return $this->UserContract->get($columns);
         });
+    }
+
+    /**
+     * @author Rohit Arora
+     *
+     * @param $userID
+     *
+     * @return mixed
+     */
+    public function getByID($userID)
+    {
+        // TODO: Implement getByID() method.
     }
 }

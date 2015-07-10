@@ -25,8 +25,6 @@ class User extends Base implements UserContract
      * @param UserModel   $Model
      *
      * @param UserAdapter $Adapter
-     *
-     * @internal param UserModel $User
      */
     public function __construct(UserModel $Model, UserAdapter $Adapter)
     {
@@ -42,9 +40,21 @@ class User extends Base implements UserContract
      */
     public function get($parameters)
     {
-        return $this->setParameters($parameters)
-                    ->setFields()
+        return $this->setRequestParameters($parameters)
                     ->setDataFromModel()
                     ->process();
+    }
+
+    /**
+     * @author Rohit Arora
+     *
+     * @param $userID
+     *
+     * @return mixed
+     */
+    public function getByID($userID)
+    {
+        return $this->getQueryBuilder()
+                    ->find($userID);
     }
 }

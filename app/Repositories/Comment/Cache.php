@@ -14,7 +14,7 @@ use Illuminate\Database\Eloquent\Collection;
 /**
  * @author Rohit Arora
  */
-class Cache extends Base implements CommentContract
+class Cache implements CommentContract
 {
     /**
      * @var Base
@@ -48,5 +48,30 @@ class Cache extends Base implements CommentContract
         return $this->Cache->remember('comment-' . implode('-', $columns), 60, function () use ($columns) {
             return $this->CommentContract->get($columns);
         });
+    }
+
+    /**
+     * @author Rohit Arora
+     *
+     * @param $parameters
+     * @param $postID
+     *
+     * @return mixed
+     */
+    public function getCommentsByPost($parameters, $postID)
+    {
+        // TODO: Implement getCommentsByPost() method.
+    }
+
+    /**
+     * @author Rohit Arora
+     *
+     * @param $userID
+     *
+     * @return mixed
+     */
+    public function getByID($userID)
+    {
+        // TODO: Implement getByID() method.
     }
 }
