@@ -55,6 +55,6 @@ class Post extends Base implements PostContract
     public function getByID($postID)
     {
         return $this->getQueryBuilder()
-                    ->find($postID);
+                    ->find($postID)->toArray();
     }
 }

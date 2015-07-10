@@ -33,7 +33,7 @@ abstract class Base implements Adapter
      *
      * @return array|bool
      */
-    public function reFilter($fields, $list, $embed = false)
+    public function reFilter($fields, $list, $embed = 'false')
     {
         if (!$fields || !$list) {
             return false;
@@ -45,7 +45,7 @@ abstract class Base implements Adapter
             foreach ($this->getBindings() as $key => $binding) {
                 if (isset($binding[self::PROPERTY]) && in_array($key, $fields)) {
                     $returnData[$key] = $value[$binding[self::PROPERTY]];
-                } else if (isset($binding[self::CALLBACK]) && $embed) {
+                } else if (isset($binding[self::CALLBACK]) && $embed == 'true') {
                     $returnData[$key] = call_user_func([\App::make($binding[self::CALLBACK]['class']),
                                                         $binding[self::CALLBACK]['function']], $value[$binding[self::CALLBACK][self::PROPERTY]]);
                 }

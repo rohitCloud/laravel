@@ -23,6 +23,6 @@ abstract class Controller extends BaseController
      */
     protected function inputFilter()
     {
-        return \Input::only('fields', 'limit', 'offset', 'sort_by', 'sort_type');
+        return \Input::all();
     }
 }
