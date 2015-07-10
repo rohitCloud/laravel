@@ -47,14 +47,4 @@ class Post extends Base implements PostContract
                     ->setDataFromModel()
                     ->process();
     }
-
-    /**
-     * @author Rohit Arora
-     *
-     * @return Post
-     */
-    public function withUser()
-    {
-        return $this->setQueryBuilder($this->getQueryBuilder()->join('users', 'users.id', '=', 'posts.id'));
-    }
 }

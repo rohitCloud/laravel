@@ -61,10 +61,7 @@ class Comment extends Base implements CommentContract
     public function getCommentsByPost($parameters, $postID)
     {
         return $this->setParameters($parameters)
-                    ->withPostAndUser($postID)
-                    ->setFields()
-                    ->setDataFromModel()
-                    ->process();
+                    ->getCommentsRelatedToPost($postID);
     }
 
     /**
@@ -74,12 +71,19 @@ class Comment extends Base implements CommentContract
      *
      * @return Comment
      */
-    public function withPostAndUser($postID)
+    public function getCommentsRelatedToPost($postID)
     {
+        if (!Post::find($postID)) {
+            return [];
+        }
+
         return $this->setQueryBuilder($this->getQueryBuilder()
                                            ->whereHas('post', function ($query) use ($postID) {
                                                /* @var Builder $query */
                                                $query->where(Post::ID, '=', $postID);
-                                           }));
+                                           }))
+                    ->setFields()
+                    ->setDataFromModel()
+                    ->process();
     }
 }
