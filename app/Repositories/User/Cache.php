@@ -49,4 +49,16 @@ class Cache extends Base implements UserContract
             return $this->UserContract->get($columns);
         });
     }
+
+    /**
+     * @author Rohit Arora
+     *
+     * @param $userID
+     *
+     * @return mixed
+     */
+    public function getByID($userID)
+    {
+        // TODO: Implement getByID() method.
+    }
 }

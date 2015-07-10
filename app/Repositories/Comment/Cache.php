@@ -49,4 +49,29 @@ class Cache extends Base implements CommentContract
             return $this->CommentContract->get($columns);
         });
     }
+
+    /**
+     * @author Rohit Arora
+     *
+     * @param $parameters
+     * @param $postID
+     *
+     * @return mixed
+     */
+    public function getCommentsByPost($parameters, $postID)
+    {
+        // TODO: Implement getCommentsByPost() method.
+    }
+
+    /**
+     * @author Rohit Arora
+     *
+     * @param $userID
+     *
+     * @return mixed
+     */
+    public function getByID($userID)
+    {
+        // TODO: Implement getByID() method.
+    }
 }

@@ -7,6 +7,7 @@ namespace App\Adapters;
 
 use App\Contracts\Adapter as AdapterContract;
 use App\Models\Comment as CommentModel;
+use App\Repositories\Post\Post;
 
 /**
  * @author  Rohit Arora
@@ -19,6 +20,7 @@ class Comment extends Base implements AdapterContract
     const ID         = 'id';
     const COMMENT    = 'comment';
     const POST       = 'post';
+    const POST_ID    = 'post_id';
     const CREATED_AT = 'created_at';
     const UPDATED_AT = 'updated_at';
 
@@ -33,12 +35,19 @@ class Comment extends Base implements AdapterContract
     {
         $this->fields = $fields;
 
-        return $this->clean([
-            $this->keyExists(self::ID)         => CommentModel::ID,
-            $this->keyExists(self::COMMENT)    => CommentModel::COMMENT,
-            $this->keyExists(self::POST)       => CommentModel::POST_ID,
-            $this->keyExists(self::CREATED_AT) => CommentModel::CREATED_AT,
-            $this->keyExists(self::UPDATED_AT) => CommentModel::UPDATED_AT,
-        ]);
+        return [
+            self::ID         => [self::PROPERTY  => CommentModel::ID,
+                                 self::DATA_TYPE => self::TYPE_INTEGER],
+            self::COMMENT    => [self::PROPERTY  => CommentModel::COMMENT,
+                                 self::DATA_TYPE => self::TYPE_STRING],
+            self::POST_ID    => [self::PROPERTY  => CommentModel::POST_ID,
+                                 self::DATA_TYPE => self::TYPE_INTEGER],
+            self::POST       => [self::DATA_TYPE => self::TYPE_RESOURCE,
+                                 self::CALLBACK  => [Post::class, 'getByID']],
+            self::CREATED_AT => [self::PROPERTY  => CommentModel::CREATED_AT,
+                                 self::DATA_TYPE => self::TYPE_DATETIME],
+            self::UPDATED_AT => [self::PROPERTY  => CommentModel::UPDATED_AT,
+                                 self::DATA_TYPE => self::TYPE_DATETIME]
+        ];
     }
 }

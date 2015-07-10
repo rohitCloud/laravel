@@ -86,4 +86,17 @@ class Comment extends Base implements CommentContract
                     ->setDataFromModel()
                     ->process();
     }
+
+    /**
+     * @author Rohit Arora
+     *
+     * @param $commentID
+     *
+     * @return mixed
+     */
+    public function getByID($commentID)
+    {
+        return $this->getQueryBuilder()
+                    ->find($commentID);
+    }
 }

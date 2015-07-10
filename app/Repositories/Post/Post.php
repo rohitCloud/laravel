@@ -47,4 +47,17 @@ class Post extends Base implements PostContract
                     ->setDataFromModel()
                     ->process();
     }
+
+    /**
+     * @author Rohit Arora
+     *
+     * @param $postID
+     *
+     * @return mixed
+     */
+    public function getByID($postID)
+    {
+        return $this->getQueryBuilder()
+                    ->find($postID);
+    }
 }

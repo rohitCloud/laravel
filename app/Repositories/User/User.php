@@ -47,4 +47,17 @@ class User extends Base implements UserContract
                     ->setDataFromModel()
                     ->process();
     }
+
+    /**
+     * @author Rohit Arora
+     *
+     * @param $userID
+     *
+     * @return mixed
+     */
+    public function getByID($userID)
+    {
+        return $this->getQueryBuilder()
+                    ->find($userID);
+    }
 }

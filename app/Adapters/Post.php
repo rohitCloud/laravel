@@ -7,6 +7,7 @@ namespace App\Adapters;
 
 use App\Contracts\Adapter as AdapterContract;
 use App\Models\Post as PostModel;
+use App\Repositories\User\User;
 
 /**
  * @author  Rohit Arora
@@ -20,6 +21,7 @@ class Post extends Base implements AdapterContract
     const TITLE      = 'title';
     const BODY       = 'body';
     const USER       = 'user';
+    const USER_ID    = 'user_id';
     const COMMENT    = 'comment';
     const CREATED_AT = 'created_at';
     const UPDATED_AT = 'updated_at';
@@ -35,13 +37,21 @@ class Post extends Base implements AdapterContract
     {
         $this->fields = $fields;
 
-        return $this->clean([
-            $this->keyExists(self::ID)         => PostModel::ID,
-            $this->keyExists(self::TITLE)      => PostModel::TITLE,
-            $this->keyExists(self::BODY)       => PostModel::BODY,
-            $this->keyExists(self::USER)       => PostModel::USER_ID,
-            $this->keyExists(self::CREATED_AT) => PostModel::CREATED_AT,
-            $this->keyExists(self::UPDATED_AT) => PostModel::UPDATED_AT,
-        ]);
+        return [
+            self::ID         => [self::PROPERTY  => PostModel::ID,
+                                 self::DATA_TYPE => self::TYPE_INTEGER],
+            self::TITLE      => [self::PROPERTY  => PostModel::TITLE,
+                                 self::DATA_TYPE => self::TYPE_STRING],
+            self::BODY       => [self::PROPERTY  => PostModel::BODY,
+                                 self::DATA_TYPE => self::TYPE_STRING],
+            self::USER_ID    => [self::PROPERTY  => PostModel::USER_ID,
+                                 self::DATA_TYPE => self::TYPE_INTEGER],
+            self::USER       => [self::DATA_TYPE => self::TYPE_RESOURCE,
+                                 self::CALLBACK  => [User::class, 'getByID']],
+            self::CREATED_AT => [self::PROPERTY  => PostModel::CREATED_AT,
+                                 self::DATA_TYPE => self::TYPE_DATETIME],
+            self::UPDATED_AT => [self::PROPERTY  => PostModel::UPDATED_AT,
+                                 self::DATA_TYPE => self::TYPE_DATETIME]
+        ];
     }
 }

@@ -4,7 +4,6 @@
  */
 namespace App\Adapters;
 
-
 /**
  * @author  Rohit Arora
  *
@@ -13,6 +12,16 @@ namespace App\Adapters;
  */
 abstract class Base
 {
+    const PROPERTY  = 'property';
+    const DATA_TYPE = 'data_type';
+    const CALLBACK  = 'callback';
+
+    const TYPE_INTEGER  = 'integer';
+    const TYPE_STRING   = 'string';
+    const TYPE_BOOLEAN  = 'boolean';
+    const TYPE_RESOURCE = 'resource';
+    const TYPE_DATETIME = 'datetime';
+
     /**
      * @var array
      */
@@ -58,8 +67,7 @@ abstract class Base
      */
     public function reFilter($fields, $list)
     {
-        if(!$fields || !$list)
-        {
+        if (!$fields || !$list) {
             return false;
         }
 

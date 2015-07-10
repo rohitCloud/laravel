@@ -57,4 +57,17 @@ class User extends Controller
         return $this->getUserContract()
                     ->get($this->inputFilter());
     }
+
+    /**
+     * @author Rohit Arora
+     *
+     * @param $id
+     *
+     * @return mixed
+     */
+    public function show($id)
+    {
+        return $this->getUserContract()
+                    ->getByID($id);
+    }
 }
