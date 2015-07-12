@@ -25,6 +25,7 @@ class Post extends Controller
      */
     public function __construct(PostContract $PostContract)
     {
+        parent::__construct();
         $this->setPostContract($PostContract);
     }
 
@@ -55,8 +56,10 @@ class Post extends Controller
      */
     public function index()
     {
-        return $this->getPostContract()
-                    ->fetch($this->inputFilter());
+        $posts = $this->getPostContract()
+                      ->fetch($this->inputFilter());
+
+        return $this->response->response($posts);
     }
 
     /**
@@ -68,7 +71,9 @@ class Post extends Controller
      */
     public function show($id)
     {
-        return $this->getPostContract()
-                    ->getByID($id, $this->inputFilter());
+        $post = $this->getPostContract()
+                     ->getByID($id, $this->inputFilter());
+
+        return $this->response->response($post);
     }
 }

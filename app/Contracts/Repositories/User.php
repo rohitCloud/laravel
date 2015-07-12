@@ -4,8 +4,6 @@
  */
 namespace App\Contracts\Repositories;
 
-use Illuminate\Database\Eloquent\Collection;
-
 /**
  * @author Rohit Arora
  */
@@ -16,7 +14,7 @@ interface User
      *
      * @param array $parameters
      *
-     * @return Collection
+     * @return array
      */
     public function fetch($parameters);
 
@@ -26,7 +24,7 @@ interface User
      * @param int   $userID
      * @param array $parameters
      *
-     * @return User
+     * @return array
      */
     public function getByID($userID, $parameters = [ALL_FIELDS]);
 }

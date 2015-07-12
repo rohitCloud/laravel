@@ -24,6 +24,7 @@ class Comment extends Controller
      */
     public function __construct(CommentContract $CommentContract)
     {
+        parent::__construct();
         $this->setCommentContract($CommentContract);
     }
 
@@ -54,8 +55,10 @@ class Comment extends Controller
      */
     public function index()
     {
-        return $this->getCommentContract()
-                    ->fetch($this->inputFilter());
+        $comments = $this->getCommentContract()
+                         ->fetch($this->inputFilter());
+
+        return $this->response->response($comments);
     }
 
     /**
@@ -67,7 +70,9 @@ class Comment extends Controller
      */
     public function show($id)
     {
-        return $this->getCommentContract()
-                    ->getByID($id, $this->inputFilter());
+        $comment = $this->getCommentContract()
+                        ->getByID($id, $this->inputFilter());
+
+        return $this->response->response($comment);
     }
 }

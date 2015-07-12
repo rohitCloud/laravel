@@ -24,6 +24,7 @@ class User extends Controller
      */
     public function __construct(UserContract $UserContract)
     {
+        parent::__construct();
         $this->setUserContract($UserContract);
     }
 
@@ -54,8 +55,10 @@ class User extends Controller
      */
     public function index()
     {
-        return $this->getUserContract()
-                    ->fetch($this->inputFilter());
+        $users = $this->getUserContract()
+                      ->fetch($this->inputFilter());
+
+        return $this->response->response($users);
     }
 
     /**
@@ -67,7 +70,9 @@ class User extends Controller
      */
     public function show($id)
     {
-        return $this->getUserContract()
-                    ->getByID($id, $this->inputFilter());
+        $user = $this->getUserContract()
+                     ->getByID($id, $this->inputFilter());
+
+        return $this->response->response($user);
     }
 }

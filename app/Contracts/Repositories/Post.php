@@ -4,8 +4,6 @@
  */
 namespace App\Contracts\Repositories;
 
-use Illuminate\Database\Eloquent\Collection;
-
 /**
  * @author Rohit Arora
  */
@@ -16,7 +14,7 @@ interface Post
      *
      * @param array $parameters
      *
-     * @return Collection
+     * @return array
      */
     public function fetch($parameters);
 
@@ -26,7 +24,7 @@ interface Post
      * @param int   $postID
      * @param array $parameters
      *
-     * @return Post
+     * @return array
      */
     public function getByID($postID, $parameters = [ALL_FIELDS]);
 }

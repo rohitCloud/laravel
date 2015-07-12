@@ -54,6 +54,7 @@ class Response
      */
     public function response($data, $headers = [])
     {
+        $data['status'] = $this->getStatusCode();
         return response($data, $this->getStatusCode(), $headers);
     }
 

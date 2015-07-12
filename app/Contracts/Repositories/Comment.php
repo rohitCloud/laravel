@@ -4,8 +4,6 @@
  */
 namespace App\Contracts\Repositories;
 
-use Illuminate\Database\Eloquent\Collection;
-
 /**
  * @author Rohit Arora
  */
@@ -16,7 +14,7 @@ interface Comment
      *
      * @param array $parameters
      *
-     * @return Collection
+     * @return array
      */
     public function fetch($parameters);
 
@@ -26,7 +24,7 @@ interface Comment
      * @param $parameters
      * @param $postID
      *
-     * @return mixed
+     * @return array
      */
     public function getCommentsByPost($parameters, $postID);
 
@@ -36,7 +34,7 @@ interface Comment
      * @param int   $commentID
      * @param array $parameters
      *
-     * @return Comment
+     * @return array
      */
     public function getByID($commentID, $parameters = [ALL_FIELDS]);
 }
