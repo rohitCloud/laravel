@@ -6,7 +6,6 @@
 namespace App\Repositories;
 
 use App\Contracts\Adapter;
-use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Query\Builder;
 use Illuminate\Support\Facades\Request;
@@ -270,7 +269,7 @@ abstract class Base
      */
     private function setEmbed()
     {
-        $this->embed = isset($this->getParameters()['embed']) && $this->getParameters()['embed'] == 'true' ? 'true' : 'false';
+        $this->embed = isset($this->getParameters()['embed']) ? $this->getParameters()['embed'] : '';
 
         return $this;
     }
@@ -390,7 +389,7 @@ abstract class Base
      */
     public function bindFields($fields, $data, $single)
     {
-        return $this->Adapter->reFilter($fields, $data, $single, $this->embed);
+        return $this->Adapter->reFilter($fields, $data, $single, explode(',', $this->embed));
     }
 
     /**

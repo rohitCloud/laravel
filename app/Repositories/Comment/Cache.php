@@ -46,7 +46,7 @@ class Cache implements CommentContract
     public function fetch($columns = ['*'])
     {
         return $this->Cache->remember('comment-' . implode('-', $columns), 60, function () use ($columns) {
-            return $this->CommentContract->get($columns);
+            return $this->CommentContract->fetch($columns);
         });
     }
 
@@ -66,11 +66,12 @@ class Cache implements CommentContract
     /**
      * @author Rohit Arora
      *
-     * @param $userID
+     * @param int   $commentID
+     * @param array $parameters
      *
-     * @return mixed
+     * @return CommentContract
      */
-    public function getByID($userID)
+    public function getByID($commentID, $parameters = ['*'])
     {
         // TODO: Implement getByID() method.
     }

@@ -46,18 +46,19 @@ class Cache implements UserContract
     public function fetch($columns = ['*'])
     {
         return $this->Cache->remember('users-' . implode('-', $columns), 60, function () use ($columns) {
-            return $this->UserContract->get($columns);
+            return $this->UserContract->fetch($columns);
         });
     }
 
     /**
      * @author Rohit Arora
      *
-     * @param $userID
+     * @param int   $userID
+     * @param array $parameters
      *
-     * @return mixed
+     * @return UserContract
      */
-    public function getByID($userID)
+    public function getByID($userID, $parameters = ['*'])
     {
         // TODO: Implement getByID() method.
     }

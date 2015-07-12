@@ -26,11 +26,11 @@ interface Adapter
      * @param array  $fields
      * @param array  $data
      * @param bool   $single
-     * @param string $embed
+     * @param array $embed
      *
      * @return mixed
      */
-    public function reFilter($fields, $data, $single, $embed = 'false');
+    public function reFilter($fields, $data, $single, $embed = []);
 
     /**
      * @author Rohit Arora

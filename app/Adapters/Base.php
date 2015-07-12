@@ -27,14 +27,14 @@ abstract class Base implements Adapter
     /**
      * @author Rohit Arora
      *
-     * @param array  $fields
-     * @param array  $data
-     * @param bool   $single
-     * @param string $embed
+     * @param array $fields
+     * @param array $data
+     * @param bool  $single
+     * @param array $embed
      *
      * @return array|bool
      */
-    public function reFilter($fields, $data, $single, $embed = 'false')
+    public function reFilter($fields, $data, $single, $embed = [])
     {
         if (!$fields || !$data) {
             return false;
@@ -69,12 +69,14 @@ abstract class Base implements Adapter
         foreach ($this->getBindings() as $key => $binding) {
             if (isset($binding[self::PROPERTY]) && in_array($key, $fields)) {
                 $returnData[$key] = $data[$binding[self::PROPERTY]];
-            } else if (isset($binding[self::CALLBACK]) && $embed == 'true') {
-                $embedData = call_user_func([\App::make($binding[self::CALLBACK]['class']),
-                                             $binding[self::CALLBACK]['function']], $data[$binding[self::CALLBACK][self::PROPERTY]]);
+            } else if (isset($binding[self::CALLBACK]) && in_array($key, $embed)) {
+                if (isset($data[$binding[self::CALLBACK][self::PROPERTY]])) {
+                    $embedData = call_user_func([\App::make($binding[self::CALLBACK]['class']),
+                                                 $binding[self::CALLBACK]['function']], $data[$binding[self::CALLBACK][self::PROPERTY]]);
 
-                if ($embedData && isset($embedData['data'])) {
-                    $returnData[$key] = $embedData['data'];
+                    if ($embedData && isset($embedData['data'])) {
+                        $returnData[$key] = $embedData['data'];
+                    }
                 }
             }
         }
