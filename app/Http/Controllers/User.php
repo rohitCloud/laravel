@@ -68,6 +68,6 @@ class User extends Controller
     public function show($id)
     {
         return $this->getUserContract()
-                    ->getByID($id);
+                    ->getByID($id, $this->inputFilter());
     }
 }

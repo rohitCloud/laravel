@@ -68,6 +68,6 @@ class Comment extends Controller
     public function show($id)
     {
         return $this->getCommentContract()
-                    ->getByID($id);
+                    ->getByID($id, $this->inputFilter());
     }
 }

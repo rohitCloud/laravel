@@ -72,6 +72,6 @@ class Comment extends Controller
     {
         unset($postID);
         return $this->getCommentContract()
-                    ->getByID($id);
+                    ->getByID($id, $this->inputFilter());
     }
 }

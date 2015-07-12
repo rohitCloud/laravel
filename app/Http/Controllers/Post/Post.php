@@ -69,6 +69,6 @@ class Post extends Controller
     public function show($id)
     {
         return $this->getPostContract()
-                    ->getByID($id);
+                    ->getByID($id, $this->inputFilter());
     }
 }

@@ -309,12 +309,16 @@ abstract class Base
     public function find($id)
     {
         if (!$this->fields) {
-            return $this;
+            return [];
         }
 
-        $this->setData($this->getQueryBuilder()
-                            ->find($id)
-                            ->toArray());
+        /** @var Model $data */
+        $data = $this->getQueryBuilder()
+                     ->find($id);
+
+        if ($data) {
+            $this->setData($data->toArray());
+        }
 
         return $this->process(true);
     }
@@ -327,16 +331,25 @@ abstract class Base
     public function get()
     {
         if (!$this->fields) {
-            return $this;
+            return [];
         }
 
-        $this->setTotal($this->getQueryBuilder()
-                                    ->count())
-                    ->setData($this->bindOffsetLimit()
-                                   ->setOrder()
-                                   ->getQueryBuilder()
-                                   ->get($this->fields)
-                                   ->toArray());
+        $total = $this->getQueryBuilder()
+                      ->count();
+
+        if (!$total) {
+            return [];
+        }
+
+        $this->setTotal($total);
+
+        /** @var Model $data */
+        $data = $this->bindOffsetLimit()
+                     ->setOrder()
+                     ->getQueryBuilder()
+                     ->get($this->fields);
+
+        $this->setData($data->toArray());
 
         return $this->process();
     }
