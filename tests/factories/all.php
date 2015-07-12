@@ -4,14 +4,14 @@
  * Created by Rohit Arora
  */
 
-$factory('App\Models\User', [
+$factory('App\Models\User\User', [
     'name'     => $faker->name,
     'email'    => $faker->email,
     'password' => $faker->word
 ]);
 
 $factory('App\Models\Post', [
-    'user_id' => 'factory:App\Models\User',
+    'user_id' => 'factory:App\Models\User\User',
     'title'   => $faker->sentence,
     'body'    => $faker->paragraph
 ]);
