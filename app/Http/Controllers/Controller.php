@@ -18,14 +18,14 @@ abstract class Controller extends BaseController
     use DispatchesJobs, ValidatesRequests;
 
     /** @var Response */
-    protected $response;
+    protected $responseAdapter;
 
     /**
      * @author Rohit Arora
      */
     public function __construct()
     {
-        $this->response = new Response();
+        $this->responseAdapter = new Response();
     }
 
 

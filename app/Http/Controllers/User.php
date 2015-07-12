@@ -58,7 +58,7 @@ class User extends Controller
         $users = $this->getUserContract()
                       ->fetch($this->inputFilter());
 
-        return $this->response->response($users);
+        return $this->responseAdapter->response($users);
     }
 
     /**
@@ -73,6 +73,6 @@ class User extends Controller
         $user = $this->getUserContract()
                      ->getByID($id, $this->inputFilter());
 
-        return $this->response->response($user);
+        return $this->responseAdapter->response($user);
     }
 }

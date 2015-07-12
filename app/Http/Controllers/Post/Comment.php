@@ -60,7 +60,7 @@ class Comment extends Controller
         $comments = $this->getCommentContract()
                          ->getCommentsByPost($this->inputFilter(), $postID);
 
-        return $this->response->response($comments);
+        return $this->responseAdapter->response($comments);
     }
 
     /**
@@ -78,6 +78,6 @@ class Comment extends Controller
         $comment = $this->getCommentContract()
                         ->getByID($id, $this->inputFilter());
 
-        return $this->response->response($comment);
+        return $this->responseAdapter->response($comment);
     }
 }

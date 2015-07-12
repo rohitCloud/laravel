@@ -59,7 +59,7 @@ class Post extends Controller
         $posts = $this->getPostContract()
                       ->fetch($this->inputFilter());
 
-        return $this->response->response($posts);
+        return $this->responseAdapter->response($posts);
     }
 
     /**
@@ -74,6 +74,6 @@ class Post extends Controller
         $post = $this->getPostContract()
                      ->getByID($id, $this->inputFilter());
 
-        return $this->response->response($post);
+        return $this->responseAdapter->response($post);
     }
 }
