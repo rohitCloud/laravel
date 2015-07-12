@@ -125,6 +125,30 @@ abstract class Base
     /**
      * @author Rohit Arora
      *
+     * @return mixed
+     */
+    public function getData()
+    {
+        return $this->data;
+    }
+
+    /**
+     * @author Rohit Arora
+     *
+     * @param $data
+     *
+     * @return $this
+     */
+    public function setData($data)
+    {
+        $this->data = $data;
+
+        return $this;
+    }
+
+    /**
+     * @author Rohit Arora
+     *
      * @param $offset
      *
      * @return Builder
@@ -166,115 +190,6 @@ abstract class Base
 
         return $this->setQueryBuilder($this->getQueryBuilder()
                                            ->orderBy($by, $type));
-    }
-
-    /**
-     * @author Rohit Arora
-     *
-     * @param array $columns
-     *
-     * @return Collection
-     */
-    public function get($columns = ['*'])
-    {
-        return $this->getQueryBuilder()->get($columns);
-    }
-
-    /**
-     * @author Rohit Arora
-     *
-     * @return mixed
-     */
-    public function getFilteredFields()
-    {
-        return $this->Adapter->getFilteredFields($this->fields);
-    }
-
-    /**
-     * @author Rohit Arora
-     *
-     * @return $this
-     */
-    public function setFields()
-    {
-        $this->fields = $this->Adapter->getModelFields(isset($this->getParameters()['fields']) && $this->getParameters()['fields'] ? explode(',',
-            $this->getParameters()['fields']) : ['*']);
-
-        return $this;
-    }
-
-    /**
-     * @author Rohit Arora
-     *
-     * @return mixed
-     */
-    public function getData()
-    {
-        return $this->data;
-    }
-
-    /**
-     * @author Rohit Arora
-     *
-     * @param $data
-     *
-     * @return $this
-     */
-    public function setData($data)
-    {
-        $this->data = $data;
-
-        return $this;
-    }
-
-    /**
-     * @author Rohit Arora
-     *
-     * @return $this
-     */
-    private function setEmbed()
-    {
-        $this->embed = isset($this->getParameters()['embed']) && $this->getParameters()['embed'] == 'true' ? 'true' : 'false';
-
-        return $this;
-    }
-
-    /**
-     * @author Rohit Arora
-     *
-     * @return mixed
-     */
-    public function getParameters()
-    {
-        return $this->parameters;
-    }
-
-    /**
-     * @author Rohit Arora
-     *
-     * @param $parameters
-     *
-     * @return $this
-     */
-    public function setRequestParameters($parameters)
-    {
-        $this->parameters = $parameters;
-        return $this->setEmbed()
-                    ->setFields();
-    }
-
-
-    /**
-     * @author Rohit Arora
-     *
-     * @param $fields
-     * @param $postList
-     *
-     * @return array
-     */
-    public function bindFields($fields, $postList)
-    {
-        return $this->Adapter->reFilter($fields, $postList, $this->embed);
     }
 
     /**
@@ -328,17 +243,102 @@ abstract class Base
     /**
      * @author Rohit Arora
      *
+     * @return $this
+     */
+    public function setFields()
+    {
+        $this->fields = $this->Adapter->getModelFields(isset($this->getParameters()['fields']) && $this->getParameters()['fields'] ? explode(',',
+            $this->getParameters()['fields']) : ['*']);
+
+        return $this;
+    }
+
+    /**
+     * @author Rohit Arora
+     *
+     * @return mixed
+     */
+    public function getFilteredFields()
+    {
+        return $this->Adapter->getFilteredFields($this->fields);
+    }
+
+    /**
+     * @author Rohit Arora
+     *
+     * @return $this
+     */
+    private function setEmbed()
+    {
+        $this->embed = isset($this->getParameters()['embed']) && $this->getParameters()['embed'] == 'true' ? 'true' : 'false';
+
+        return $this;
+    }
+
+    /**
+     * @author Rohit Arora
+     *
+     * @return mixed
+     */
+    public function getParameters()
+    {
+        return $this->parameters;
+    }
+
+    /**
+     * @author Rohit Arora
+     *
+     * @param $parameters
+     *
+     * @return $this
+     */
+    public function setRequestParameters($parameters)
+    {
+        $this->parameters = $parameters;
+        return $this->setEmbed()
+                    ->setFields();
+    }
+
+    /**
+     * @author Rohit Arora
+     *
      * @param $id
      *
      * @return $this
      */
     public function find($id)
     {
-        $this->setData([$this->getQueryBuilder()
-                             ->find($id)
-                             ->toArray()]);
+        if (!$this->fields) {
+            return $this;
+        }
+
+        $this->setData($this->getQueryBuilder()
+                            ->find($id)
+                            ->toArray());
 
         return $this->process(true);
+    }
+
+    /**
+     * @author Rohit Arora
+     *
+     * @return $this
+     */
+    public function get()
+    {
+        if (!$this->fields) {
+            return $this;
+        }
+
+        $this->setTotal($this->getQueryBuilder()
+                                    ->count())
+                    ->setData($this->bindOffsetLimit()
+                                   ->setOrder()
+                                   ->getQueryBuilder()
+                                   ->get($this->fields)
+                                   ->toArray());
+
+        return $this->process();
     }
 
     /**
@@ -350,7 +350,7 @@ abstract class Base
      */
     public function process($single = false)
     {
-        $response['data'] = $this->bindFields($this->getFilteredFields(), $this->getData());
+        $response['data'] = $this->bindFields($this->getFilteredFields(), $this->getData(), $single);
 
         if (!$single) {
             // Use after getDataFromModel
@@ -369,27 +369,21 @@ abstract class Base
     /**
      * @author Rohit Arora
      *
-     * @return $this
+     * @param $fields
+     * @param $data
+     * @param $single
+     *
+     * @return array|bool
      */
-    public function setDataFromModel()
+    public function bindFields($fields, $data, $single)
     {
-        if (!$this->fields) {
-            return $this;
-        }
-
-        $this->setTotal($this->getQueryBuilder()
-                             ->count())
-             ->setData($this->bindOffsetLimit()
-                            ->setOrder()
-                            ->get($this->fields)
-                            ->toArray());
-
-        return $this;
+        return $this->Adapter->reFilter($fields, $data, $single, $this->embed);
     }
 
     /**
      * @author Rohit Arora
      *
+     * @return array
      */
     public function processPages()
     {

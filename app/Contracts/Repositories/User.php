@@ -23,9 +23,10 @@ interface User
     /**
      * @author Rohit Arora
      *
-     * @param $userID
+     * @param int   $userID
+     * @param array $parameters
      *
-     * @return Post
+     * @return User
      */
-    public function getByID($userID);
+    public function getByID($userID, $parameters = ['*']);
 }

@@ -43,8 +43,7 @@ class Comment extends Base implements CommentContract
     public function fetch($parameters)
     {
         return $this->setRequestParameters($parameters)
-                    ->setDataFromModel()
-                    ->process();
+                    ->get();
     }
 
     /**
@@ -58,7 +57,8 @@ class Comment extends Base implements CommentContract
     public function getCommentsByPost($parameters, $postID)
     {
         return $this->setRequestParameters($parameters)
-                    ->getCommentsRelatedToPost($postID);
+                    ->getCommentsRelatedToPost($postID)
+                    ->get();
     }
 
     /**
@@ -80,21 +80,20 @@ class Comment extends Base implements CommentContract
                                            ->whereHas('post', function ($query) use ($postID) {
                                                /* @var Builder $query */
                                                $query->where(Post::ID, '=', $postID);
-                                           }))
-                    ->setDataFromModel()
-                    ->process();
+                                           }));
     }
 
     /**
      * @author Rohit Arora
      *
-     * @param $commentID
+     * @param int   $commentID
+     * @param array $parameters
      *
-     * @return Comment
+     * @return $this
      */
-    public function getByID($commentID)
+    public function getByID($commentID, $parameters = ['*'])
     {
-        return $this->setRequestParameters(['*'])
+        return $this->setRequestParameters($parameters)
                     ->find($commentID);
     }
 }

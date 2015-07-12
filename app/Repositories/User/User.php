@@ -41,20 +41,20 @@ class User extends Base implements UserContract
     public function fetch($parameters)
     {
         return $this->setRequestParameters($parameters)
-                    ->setDataFromModel()
-                    ->process();
+                    ->get();
     }
 
     /**
      * @author Rohit Arora
      *
-     * @param $userID
+     * @param int   $userID
+     * @param array $parameters
      *
      * @return User
      */
-    public function getByID($userID)
+    public function getByID($userID, $parameters = ['*'])
     {
-        return $this->setRequestParameters(['*'])
+        return $this->setRequestParameters($parameters)
                     ->find($userID);
     }
 }

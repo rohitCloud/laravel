@@ -23,13 +23,14 @@ interface Adapter
     /**
      * @author Rohit Arora
      *
-     * @param array $fields
-     * @param array $list
-     * @param bool  $embed
+     * @param array  $fields
+     * @param array  $data
+     * @param bool   $single
+     * @param string $embed
      *
-     * @return array|bool
+     * @return mixed
      */
-    public function reFilter($fields, $list, $embed = false);
+    public function reFilter($fields, $data, $single, $embed = 'false');
 
     /**
      * @author Rohit Arora

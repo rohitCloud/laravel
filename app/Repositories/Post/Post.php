@@ -41,20 +41,20 @@ class Post extends Base implements PostContract
     public function fetch($parameters)
     {
         return $this->setRequestParameters($parameters)
-                    ->setDataFromModel()
-                    ->process();
+                    ->get();
     }
 
     /**
      * @author Rohit Arora
      *
-     * @param $postID
+     * @param int   $postID
+     * @param array $parameters
      *
-     * @return Post
+     * @return $this
      */
-    public function getByID($postID)
+    public function getByID($postID, $parameters = ['*'])
     {
-        return $this->setRequestParameters(['embed' => true])
+        return $this->setRequestParameters($parameters)
                     ->find($postID);
     }
 }

@@ -28,32 +28,58 @@ abstract class Base implements Adapter
      * @author Rohit Arora
      *
      * @param array  $fields
-     * @param array  $list
+     * @param array  $data
+     * @param bool   $single
      * @param string $embed
      *
      * @return array|bool
      */
-    public function reFilter($fields, $list, $embed = 'false')
+    public function reFilter($fields, $data, $single, $embed = 'false')
     {
-        if (!$fields || !$list) {
+        if (!$fields || !$data) {
             return false;
         }
 
-        $returnData = $output = [];
+        if ($single) {
+            return $this->generate($data, $fields, $embed);
+        }
 
-        foreach ($list as $value) {
-            foreach ($this->getBindings() as $key => $binding) {
-                if (isset($binding[self::PROPERTY]) && in_array($key, $fields)) {
-                    $returnData[$key] = $value[$binding[self::PROPERTY]];
-                } else if (isset($binding[self::CALLBACK]) && $embed == 'true') {
-                    $returnData[$key] = call_user_func([\App::make($binding[self::CALLBACK]['class']),
-                                                        $binding[self::CALLBACK]['function']], $value[$binding[self::CALLBACK][self::PROPERTY]]);
-                }
-            }
-            $output[] = $returnData;
+        $output = [];
+
+        foreach ($data as $value) {
+            $output[] = $this->generate($value, $fields, $embed);
         }
 
         return $output;
+    }
+
+    /**
+     * @author Rohit Arora
+     *
+     * @param $data
+     * @param $fields
+     * @param $embed
+     *
+     * @return array
+     */
+    private function generate($data, $fields, $embed)
+    {
+        $returnData = [];
+
+        foreach ($this->getBindings() as $key => $binding) {
+            if (isset($binding[self::PROPERTY]) && in_array($key, $fields)) {
+                $returnData[$key] = $data[$binding[self::PROPERTY]];
+            } else if (isset($binding[self::CALLBACK]) && $embed == 'true') {
+                $embedData = call_user_func([\App::make($binding[self::CALLBACK]['class']),
+                                             $binding[self::CALLBACK]['function']], $data[$binding[self::CALLBACK][self::PROPERTY]]);
+
+                if ($embedData && isset($embedData['data'])) {
+                    $returnData[$key] = $embedData['data'];
+                }
+            }
+        }
+
+        return $returnData;
     }
 
     /**

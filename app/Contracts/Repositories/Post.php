@@ -23,9 +23,10 @@ interface Post
     /**
      * @author Rohit Arora
      *
-     * @param $postID
+     * @param int   $postID
+     * @param array $parameters
      *
      * @return Post
      */
-    public function getByID($postID);
+    public function getByID($postID, $parameters = ['*']);
 }

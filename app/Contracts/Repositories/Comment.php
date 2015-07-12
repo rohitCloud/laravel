@@ -33,9 +33,10 @@ interface Comment
     /**
      * @author Rohit Arora
      *
-     * @param $commentID
+     * @param int   $commentID
+     * @param array $parameters
      *
      * @return Comment
      */
-    public function getByID($commentID);
+    public function getByID($commentID, $parameters = ['*']);
 }
