@@ -52,7 +52,7 @@ class User extends Base implements UserContract
      *
      * @return User
      */
-    public function getByID($userID, $parameters = ['*'])
+    public function getByID($userID, $parameters = [ALL_FIELDS])
     {
         return $this->setRequestParameters($parameters)
                     ->find($userID);

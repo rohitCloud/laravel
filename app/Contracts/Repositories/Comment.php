@@ -38,5 +38,5 @@ interface Comment
      *
      * @return Comment
      */
-    public function getByID($commentID, $parameters = ['*']);
+    public function getByID($commentID, $parameters = [ALL_FIELDS]);
 }

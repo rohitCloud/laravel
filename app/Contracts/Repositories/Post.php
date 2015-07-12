@@ -28,5 +28,5 @@ interface Post
      *
      * @return Post
      */
-    public function getByID($postID, $parameters = ['*']);
+    public function getByID($postID, $parameters = [ALL_FIELDS]);
 }

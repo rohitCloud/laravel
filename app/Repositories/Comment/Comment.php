@@ -79,7 +79,7 @@ class Comment extends Base implements CommentContract
         return $this->setQueryBuilder($this->getQueryBuilder()
                                            ->whereHas('post', function ($query) use ($postID) {
                                                /* @var Builder $query */
-                                               $query->where(Post::ID, '=', $postID);
+                                               $query->where(Post::ID, EQUAL, $postID);
                                            }));
     }
 
@@ -91,7 +91,7 @@ class Comment extends Base implements CommentContract
      *
      * @return $this
      */
-    public function getByID($commentID, $parameters = ['*'])
+    public function getByID($commentID, $parameters = [ALL_FIELDS])
     {
         return $this->setRequestParameters($parameters)
                     ->find($commentID);

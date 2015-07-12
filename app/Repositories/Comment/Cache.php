@@ -43,7 +43,7 @@ class Cache implements CommentContract
      *
      * @return Collection
      */
-    public function fetch($columns = ['*'])
+    public function fetch($columns = [ALL_FIELDS])
     {
         return $this->Cache->remember('comment-' . implode('-', $columns), 60, function () use ($columns) {
             return $this->CommentContract->fetch($columns);
@@ -71,7 +71,7 @@ class Cache implements CommentContract
      *
      * @return CommentContract
      */
-    public function getByID($commentID, $parameters = ['*'])
+    public function getByID($commentID, $parameters = [ALL_FIELDS])
     {
         // TODO: Implement getByID() method.
     }

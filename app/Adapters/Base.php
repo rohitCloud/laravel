@@ -71,11 +71,11 @@ abstract class Base implements Adapter
                 $returnData[$key] = $data[$binding[self::PROPERTY]];
             } else if (isset($binding[self::CALLBACK]) && in_array($key, $embed)) {
                 if (isset($data[$binding[self::CALLBACK][self::PROPERTY]])) {
-                    $embedData = call_user_func([\App::make($binding[self::CALLBACK]['class']),
-                                                 $binding[self::CALLBACK]['function']], $data[$binding[self::CALLBACK][self::PROPERTY]]);
+                    $embedData = call_user_func([\App::make($binding[self::CALLBACK][CALLBACK_CLASS]),
+                                                 $binding[self::CALLBACK][CALLBACK_FUNCTION]], $data[$binding[self::CALLBACK][self::PROPERTY]]);
 
-                    if ($embedData && isset($embedData['data'])) {
-                        $returnData[$key] = $embedData['data'];
+                    if ($embedData && isset($embedData[Response::DATA])) {
+                        $returnData[$key] = $embedData[Response::DATA];
                     }
                 }
             }
@@ -91,11 +91,11 @@ abstract class Base implements Adapter
      *
      * @return array
      */
-    public function getModelFields($fields = ['*'])
+    public function getModelFields($fields = [ALL_FIELDS])
     {
         $modelFields = [];
         foreach ($this->getBindings() as $key => $binding) {
-            if (isset($binding[self::PROPERTY]) && (in_array($key, $fields) || (in_array('*', $fields)))) {
+            if (isset($binding[self::PROPERTY]) && (in_array($key, $fields) || (in_array(ALL_FIELDS, $fields)))) {
                 $modelFields[$key] = $binding[self::PROPERTY];
             }
         }

@@ -28,5 +28,5 @@ interface User
      *
      * @return User
      */
-    public function getByID($userID, $parameters = ['*']);
+    public function getByID($userID, $parameters = [ALL_FIELDS]);
 }

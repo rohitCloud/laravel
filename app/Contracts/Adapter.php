@@ -39,7 +39,7 @@ interface Adapter
      *
      * @return array
      */
-    public function getModelFields($fields = ['*']);
+    public function getModelFields($fields = [ALL_FIELDS]);
 
     /**
      * @author Rohit Arora

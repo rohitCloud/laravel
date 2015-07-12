@@ -43,7 +43,7 @@ class Cache implements UserContract
      *
      * @return Collection
      */
-    public function fetch($columns = ['*'])
+    public function fetch($columns = [ALL_FIELDS])
     {
         return $this->Cache->remember('users-' . implode('-', $columns), 60, function () use ($columns) {
             return $this->UserContract->fetch($columns);
@@ -58,7 +58,7 @@ class Cache implements UserContract
      *
      * @return UserContract
      */
-    public function getByID($userID, $parameters = ['*'])
+    public function getByID($userID, $parameters = [ALL_FIELDS])
     {
         // TODO: Implement getByID() method.
     }

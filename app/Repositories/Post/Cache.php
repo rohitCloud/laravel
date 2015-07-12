@@ -43,7 +43,7 @@ class Cache implements PostContract
      *
      * @return Collection
      */
-    public function fetch($columns = ['*'])
+    public function fetch($columns = [ALL_FIELDS])
     {
         return $this->Cache->remember('posts-' . implode('-', $columns), 60, function () use ($columns) {
             return $this->PostContract->fetch($columns);
@@ -58,7 +58,7 @@ class Cache implements PostContract
      *
      * @return PostContract
      */
-    public function getByID($postID, $parameters = ['*'])
+    public function getByID($postID, $parameters = [ALL_FIELDS])
     {
         // TODO: Implement getByID() method.
     }

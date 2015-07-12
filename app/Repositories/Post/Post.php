@@ -52,7 +52,7 @@ class Post extends Base implements PostContract
      *
      * @return $this
      */
-    public function getByID($postID, $parameters = ['*'])
+    public function getByID($postID, $parameters = [ALL_FIELDS])
     {
         return $this->setRequestParameters($parameters)
                     ->find($postID);

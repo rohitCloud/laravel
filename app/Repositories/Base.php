@@ -5,6 +5,7 @@
 
 namespace App\Repositories;
 
+use App\Adapters\Response;
 use App\Contracts\Adapter;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Query\Builder;
@@ -18,8 +19,21 @@ use Illuminate\Support\Facades\Request;
  */
 abstract class Base
 {
-    const SORT_ASC  = 'asc';
-    const SORT_DESC = 'desc';
+    const ID           = 'id';
+    const SORT_ASC     = 'asc';
+    const SORT_DESC    = 'desc';
+    const LIMIT        = 'limit';
+    const OFFSET       = 'offset';
+    const SORT_BY      = 'sort_by';
+    const SORT_TYPE    = 'sort_type';
+    const FIELDS       = 'fields';
+    const EMBED        = 'embed';
+    const TOTAL        = 'total';
+    const CURRENT_URL  = 'current_url';
+    const LAST_URL     = 'last_url';
+    const PREVIOUS_URL = 'previous_url';
+    const FIRST_URL    = 'first_url';
+    const NEXT_URL     = 'next_url';
 
     /**
      * @var Model
@@ -179,7 +193,7 @@ abstract class Base
      *
      * @return Model
      */
-    public function order($by = 'id', $type = self::SORT_ASC)
+    public function order($by = self::ID, $type = self::SORT_ASC)
     {
         if (!self::isValidOrderType($type) || !$this->getModel()
                                                     ->isValidOrderBy($by)
@@ -198,13 +212,15 @@ abstract class Base
      */
     public function bindOffsetLimit()
     {
-        $this->limit = (isset($this->getParameters()['limit']) && $this->getParameters()['limit'] > 0) ? (int) $this->getParameters()['limit'] : constant(get_called_class() . "::LIMIT");
+        $this->limit = (isset($this->getParameters()[self::LIMIT]) && $this->getParameters()[self::LIMIT] > 0) ? (int) $this->getParameters()[self::LIMIT] :
+            constant(get_called_class() . "::LIMIT");
 
         if ($this->limit > $this->getTotal()) {
             $this->limit = $this->getTotal();
         }
 
-        $this->offset = isset($this->getParameters()['offset']) && $this->getParameters()['offset'] > 0 ? (int) $this->getParameters()['offset'] : constant(get_called_class() . "::OFFSET");
+        $this->offset = isset($this->getParameters()[self::OFFSET]) && $this->getParameters()[self::OFFSET] > 0 ? (int) $this->getParameters()[self::OFFSET] :
+            constant(get_called_class() . "::OFFSET");
 
         if ($this->offset > $this->getTotal()) {
             $this->offset = $this->getTotal() - $this->limit;
@@ -233,8 +249,8 @@ abstract class Base
      */
     public function setOrder()
     {
-        $this->sortBy   = isset($this->getParameters()['sort_by']) ? $this->getParameters()['sort_by'] : constant(get_called_class() . "::SORT_BY");
-        $this->sortType = isset($this->getParameters()['sort_type']) ? $this->getParameters()['sort_type'] : constant(get_called_class() . "::SORT_TYPE");
+        $this->sortBy   = isset($this->getParameters()[self::SORT_BY]) ? $this->getParameters()[self::SORT_BY] : constant(get_called_class() . "::SORT_BY");
+        $this->sortType = isset($this->getParameters()[self::SORT_TYPE]) ? $this->getParameters()[self::SORT_TYPE] : constant(get_called_class() . "::SORT_TYPE");
 
         return $this->order($this->sortBy, $this->sortType);
     }
@@ -246,8 +262,8 @@ abstract class Base
      */
     public function setFields()
     {
-        $this->fields = $this->Adapter->getModelFields(isset($this->getParameters()['fields']) && $this->getParameters()['fields'] ? explode(',',
-            $this->getParameters()['fields']) : ['*']);
+        $this->fields = $this->Adapter->getModelFields(isset($this->getParameters()[self::FIELDS]) && $this->getParameters()[self::FIELDS] ? explode(COMMA,
+            $this->getParameters()[self::FIELDS]) : [ALL_FIELDS]);
 
         return $this;
     }
@@ -269,7 +285,7 @@ abstract class Base
      */
     private function setEmbed()
     {
-        $this->embed = isset($this->getParameters()['embed']) ? $this->getParameters()['embed'] : '';
+        $this->embed = isset($this->getParameters()[self::EMBED]) ? $this->getParameters()[self::EMBED] : '';
 
         return $this;
     }
@@ -362,15 +378,15 @@ abstract class Base
      */
     public function process($single = false)
     {
-        $response['data'] = $this->bindFields($this->getFilteredFields(), $this->getData(), $single);
+        $response[Response::DATA] = $this->bindFields($this->getFilteredFields(), $this->getData(), $single);
 
         if (!$single) {
             // Use after getDataFromModel
-            $response['total']  = $this->getTotal();
-            $response['offset'] = $this->offset;
-            $response['limit']  = $this->limit;
+            $response[self::TOTAL]  = $this->getTotal();
+            $response[self::OFFSET] = $this->offset;
+            $response[self::LIMIT]  = $this->limit;
 
-            if ($response['data']) {
+            if ($response[Response::DATA]) {
                 $response = array_merge($response, $this->processPages());
             }
         }
@@ -389,7 +405,7 @@ abstract class Base
      */
     public function bindFields($fields, $data, $single)
     {
-        return $this->Adapter->reFilter($fields, $data, $single, explode(',', $this->embed));
+        return $this->Adapter->reFilter($fields, $data, $single, explode(COMMA, $this->embed));
     }
 
     /**
@@ -399,25 +415,25 @@ abstract class Base
      */
     public function processPages()
     {
-        $fields   = implode(',', $this->getFilteredFields());
+        $fields   = implode(COMMA, $this->getFilteredFields());
         $response = [];
 
-        $response['current_url'] = $this->getPage($fields, $this->sortBy, $this->sortType, $this->limit, $this->offset, $this->embed);
+        $response[self::CURRENT_URL] = $this->getPage($fields, $this->sortBy, $this->sortType, $this->limit, $this->offset, $this->embed);
 
         if (!($this->limit + $this->offset >= $this->getTotal())) {
-            $response['last_url'] = $this->getPage($fields, $this->sortBy, $this->sortType, $this->limit,
+            $response[self::LAST_URL] = $this->getPage($fields, $this->sortBy, $this->sortType, $this->limit,
                 (($this->getTotal() - $this->limit < $this->offset) ? $this->offset : ($this->getTotal() - $this->limit)), $this->embed);
         }
 
         if ($this->offset > 0) {
-            $response['previous_url'] = $this->getPage($fields, $this->sortBy, $this->sortType, $this->limit,
+            $response[self::PREVIOUS_URL] = $this->getPage($fields, $this->sortBy, $this->sortType, $this->limit,
                 ($this->offset - $this->limit) > 0 ? ($this->offset - $this->limit) : 0, $this->embed);
 
-            $response['first_url'] = $this->getPage($fields, $this->sortBy, $this->sortType, $this->limit, 0, $this->embed);
+            $response[self::FIRST_URL] = $this->getPage($fields, $this->sortBy, $this->sortType, $this->limit, 0, $this->embed);
         }
 
         if ($this->limit < $this->getTotal() && !($this->limit + $this->offset >= $this->getTotal())) {
-            $response['next_url'] = $this->getPage($fields, $this->sortBy, $this->sortType, $this->limit,
+            $response[self::NEXT_URL] = $this->getPage($fields, $this->sortBy, $this->sortType, $this->limit,
                 (($this->offset + $this->limit) < $this->getTotal()) ? $this->offset + $this->limit : $this->getTotal() - $this->limit, $this->embed);
         }
 
@@ -436,7 +452,7 @@ abstract class Base
      *
      * @return string
      */
-    private function getPage($fields, $sortBy, $sortType, $limit, $offset, $embed = 'false')
+    private function getPage($fields, $sortBy, $sortType, $limit, $offset, $embed = '')
     {
         return Request::url() . '?fields=' . $fields . '&sort_by=' . $sortBy . '&sort_type=' . $sortType . '&limit=' . $limit . '&offset=' . $offset . '&embed=' . $embed;
     }
