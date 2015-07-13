@@ -5,6 +5,7 @@
 namespace App\Adapters;
 
 use App\Contracts\Adapter;
+use App\Repositories\Base as BaseRepository;
 
 /**
  * @author  Rohit Arora
@@ -71,8 +72,8 @@ abstract class Base implements Adapter
                 $returnData[$key] = $data[$binding[self::PROPERTY]];
             } else if (isset($binding[self::CALLBACK]) && in_array($key, $embed)) {
                 if (isset($data[$binding[self::CALLBACK][self::PROPERTY]])) {
-                    $embedData = call_user_func([\App::make($binding[self::CALLBACK][CALLBACK_CLASS]),
-                                                 $binding[self::CALLBACK][CALLBACK_FUNCTION]], $data[$binding[self::CALLBACK][self::PROPERTY]]);
+                    $embedData = call_user_func_array([\App::make($binding[self::CALLBACK][CALLBACK_CLASS]), $binding[self::CALLBACK][CALLBACK_FUNCTION]],
+                        [$data[$binding[self::CALLBACK][self::PROPERTY]], [BaseRepository::EMBED => implode(COMMA, $embed)]]);
 
                     if ($embedData && isset($embedData[Response::DATA])) {
                         $returnData[$key] = $embedData[Response::DATA];
