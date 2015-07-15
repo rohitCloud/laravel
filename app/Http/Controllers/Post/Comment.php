@@ -73,10 +73,8 @@ class Comment extends Controller
      */
     public function show($postID, $id)
     {
-        unset($postID);
-
         $comment = $this->getCommentContract()
-                        ->getByID($id, $this->inputFilter());
+                        ->getByPostAndID($postID, $id, $this->inputFilter());
 
         return $this->responseAdapter->response($comment);
     }

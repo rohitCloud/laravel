@@ -69,7 +69,7 @@ abstract class Base implements Adapter
 
         foreach ($this->getBindings() as $key => $binding) {
             if (isset($binding[self::PROPERTY]) && in_array($key, $fields)) {
-                $returnData[$key] = $data[$binding[self::PROPERTY]];
+                $returnData[$key] = $this->typeCast($data[$binding[self::PROPERTY]], $binding[self::DATA_TYPE]);
             } else if (isset($binding[self::CALLBACK]) && in_array($key, $embed)) {
                 if (isset($data[$binding[self::CALLBACK][self::PROPERTY]])) {
                     $embedData = call_user_func_array([\App::make($binding[self::CALLBACK][CALLBACK_CLASS]), $binding[self::CALLBACK][CALLBACK_FUNCTION]],
@@ -120,5 +120,28 @@ abstract class Base implements Adapter
         }
 
         return $filterFields;
+    }
+
+    /**
+     * @author Rohit Arora
+     *
+     * @param $data
+     * @param $type
+     *
+     * @return mixed
+     */
+    private function typeCast($data, $type)
+    {
+        if ($type == self::TYPE_BOOLEAN) {
+            return (bool) $data;
+        } else if ($type == self::TYPE_INTEGER) {
+            return (int) $data;
+        } else if ($type == self::TYPE_STRING) {
+            return (string) $data;
+        } else if ($type == self::TYPE_DATETIME) {
+            return $data;
+        }
+
+        return $data;
     }
 }

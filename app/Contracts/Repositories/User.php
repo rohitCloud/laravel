@@ -27,4 +27,13 @@ interface User
      * @return array
      */
     public function getByID($userID, $parameters = [ALL_FIELDS]);
+
+    /**
+     * @author Rohit Arora
+     *
+     * @param $by
+     *
+     * @return bool
+     */
+    public static function isValidOrderBy($by);
 }

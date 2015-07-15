@@ -27,4 +27,13 @@ interface Post
      * @return array
      */
     public function getByID($postID, $parameters = [ALL_FIELDS]);
+
+    /**
+     * @author Rohit Arora
+     *
+     * @param $by
+     *
+     * @return bool
+     */
+    public static function isValidOrderBy($by);
 }

@@ -18,10 +18,10 @@ use Illuminate\Database\Query\Builder;
  */
 class Comment extends Base implements CommentContract
 {
-    const OFFSET    = 0;
-    const LIMIT     = 10;
-    const SORT_BY   = CommentModel::ID;
-    const SORT_TYPE = Base::SORT_ASC;
+    const DEFAULT_OFFSET    = 0;
+    const DEFAULT_LIMIT     = 10;
+    const DEFAULT_SORT_BY   = CommentModel::ID;
+    const DEFAULT_SORT_TYPE = Base::SORT_ASC;
 
     /**
      * @param CommentModel   $Model
@@ -70,12 +70,6 @@ class Comment extends Base implements CommentContract
      */
     public function getCommentsRelatedToPost($postID)
     {
-        if (!$this->getQueryBuilder()
-                  ->find($postID)
-        ) {
-            return [];
-        }
-
         return $this->setQueryBuilder($this->getQueryBuilder()
                                            ->whereHas('post', function ($query) use ($postID) {
                                                /* @var Builder $query */
@@ -95,5 +89,33 @@ class Comment extends Base implements CommentContract
     {
         return $this->setRequestParameters($parameters)
                     ->find($commentID);
+    }
+
+    /**
+     * @author Rohit Arora
+     *
+     * @param int   $postID
+     * @param int   $commentID
+     * @param array $parameters
+     *
+     * @return array
+     */
+    public function getByPostAndID($postID, $commentID, $parameters = [ALL_FIELDS])
+    {
+        return $this->setRequestParameters($parameters)
+                    ->getCommentsRelatedToPost($postID)
+                    ->find($commentID);
+    }
+
+    /**
+     * @author Rohit Arora
+     *
+     * @param $by
+     *
+     * @return bool
+     */
+    public static function isValidOrderBy($by)
+    {
+        return CommentModel::isValidOrderBy($by);
     }
 }

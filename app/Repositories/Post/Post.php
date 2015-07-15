@@ -16,10 +16,10 @@ use App\Repositories\Base;
  */
 class Post extends Base implements PostContract
 {
-    const OFFSET    = 0;
-    const LIMIT     = 10;
-    const SORT_BY   = PostModel::ID;
-    const SORT_TYPE = Base::SORT_ASC;
+    const DEFAULT_OFFSET    = 0;
+    const DEFAULT_LIMIT     = 10;
+    const DEFAULT_SORT_BY   = PostModel::ID;
+    const DEFAULT_SORT_TYPE = Base::SORT_ASC;
 
     /**
      * @param PostModel   $Model
@@ -56,5 +56,17 @@ class Post extends Base implements PostContract
     {
         return $this->setRequestParameters($parameters)
                     ->find($postID);
+    }
+
+    /**
+     * @author Rohit Arora
+     *
+     * @param $by
+     *
+     * @return bool
+     */
+    public static function isValidOrderBy($by)
+    {
+        return PostModel::isValidOrderBy($by);
     }
 }

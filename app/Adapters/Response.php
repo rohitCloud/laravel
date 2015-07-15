@@ -54,8 +54,13 @@ class Response
      */
     public function response($data, $headers = [])
     {
-        $data['status'] = $this->getStatusCode();
-        return response($data, $this->getStatusCode(), $headers);
+        if (!$data || !isset($data[self::DATA]) || !$data[self::DATA]) {
+            return $this->responseNotFound("Sorry no data is available!");
+        }
+
+        $data = ['status' => $this->getStatusCode()] + $data;
+
+        return $this->respond($data, $headers);
     }
 
     /**
@@ -68,7 +73,7 @@ class Response
     public function responseNotFound($message = "Not Found!")
     {
         return $this->setStatusCode(404)
-                    ->response($message);
+                    ->respondWithError($message);
     }
 
     /**
@@ -81,7 +86,7 @@ class Response
     public function responseInternalError($message = 'Internal Error! We are Sorry!')
     {
         return $this->setStatusCode(500)
-                    ->response($message);
+                    ->respondWithError($message);
     }
 
     /**
@@ -91,8 +96,21 @@ class Response
      *
      * @return ResponseFactory|HttpResponse
      */
-    public function responseWithError($message = 'Some error occurred! Sorry!')
+    public function respondWithError($message = 'Some error occurred! Sorry!')
     {
-        return $this->response(['status' => $this->getStatusCode(), 'error' => ['message' => $message]]);
+        return $this->respond(['status' => $this->getStatusCode(), 'error' => ['message' => $message]]);
+    }
+
+    /**
+     * @author Rohit Arora
+     *
+     * @param array $data
+     * @param array $headers
+     *
+     * @return ResponseFactory|HttpResponse
+     */
+    private function respond($data, $headers = [])
+    {
+        return response($data, $this->getStatusCode(), $headers);
     }
 }

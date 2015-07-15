@@ -37,4 +37,24 @@ interface Comment
      * @return array
      */
     public function getByID($commentID, $parameters = [ALL_FIELDS]);
+
+    /**
+     * @author Rohit Arora
+     *
+     * @param int   $postID
+     * @param int   $commentID
+     * @param array $parameters
+     *
+     * @return array
+     */
+    public function getByPostAndID($postID, $commentID, $parameters = [ALL_FIELDS]);
+
+    /**
+     * @author Rohit Arora
+     *
+     * @param $by
+     *
+     * @return bool
+     */
+    public static function isValidOrderBy($by);
 }

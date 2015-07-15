@@ -9,7 +9,7 @@ use App\Adapters\Response;
 use App\Contracts\Adapter;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Query\Builder;
-use Illuminate\Support\Facades\Request;
+use Illuminate\Http\Request;
 
 /**
  * @author  Rohit Arora
@@ -19,6 +19,11 @@ use Illuminate\Support\Facades\Request;
  */
 abstract class Base
 {
+    const DEFAULT_OFFSET    = 0;
+    const DEFAULT_LIMIT     = 10;
+    const DEFAULT_SORT_BY   = self::ID;
+    const DEFAULT_SORT_TYPE = Base::SORT_ASC;
+
     const ID           = 'id';
     const SORT_ASC     = 'asc';
     const SORT_DESC    = 'desc';
@@ -195,10 +200,8 @@ abstract class Base
      */
     public function order($by = self::ID, $type = self::SORT_ASC)
     {
-        if (!self::isValidOrderType($type) || !$this->getModel()
-                                                    ->isValidOrderBy($by)
-        ) {
-            return $this;
+        if (!self::isValidOrderType($type) || !static::isValidOrderBy($by)) {
+            throw new \InvalidArgumentException;
         }
 
         return $this->setQueryBuilder($this->getQueryBuilder()
@@ -213,14 +216,14 @@ abstract class Base
     public function bindOffsetLimit()
     {
         $this->limit = (isset($this->getParameters()[self::LIMIT]) && $this->getParameters()[self::LIMIT] > 0) ? (int) $this->getParameters()[self::LIMIT] :
-            constant(get_called_class() . "::LIMIT");
+            static::DEFAULT_LIMIT;
 
         if ($this->limit > $this->getTotal()) {
             $this->limit = $this->getTotal();
         }
 
         $this->offset = isset($this->getParameters()[self::OFFSET]) && $this->getParameters()[self::OFFSET] > 0 ? (int) $this->getParameters()[self::OFFSET] :
-            constant(get_called_class() . "::OFFSET");
+            static::DEFAULT_OFFSET;
 
         if ($this->offset > $this->getTotal()) {
             $this->offset = $this->getTotal() - $this->limit;
@@ -249,8 +252,8 @@ abstract class Base
      */
     public function setOrder()
     {
-        $this->sortBy   = isset($this->getParameters()[self::SORT_BY]) ? $this->getParameters()[self::SORT_BY] : constant(get_called_class() . "::SORT_BY");
-        $this->sortType = isset($this->getParameters()[self::SORT_TYPE]) ? $this->getParameters()[self::SORT_TYPE] : constant(get_called_class() . "::SORT_TYPE");
+        $this->sortBy   = isset($this->getParameters()[self::SORT_BY]) ? $this->getParameters()[self::SORT_BY] : static::DEFAULT_SORT_BY;
+        $this->sortType = isset($this->getParameters()[self::SORT_TYPE]) ? $this->getParameters()[self::SORT_TYPE] : static::DEFAULT_SORT_TYPE;
 
         return $this->order($this->sortBy, $this->sortType);
     }
@@ -324,7 +327,7 @@ abstract class Base
     public function find($id)
     {
         if (!$this->fields) {
-            return [];
+            throw new \InvalidArgumentException;
         }
 
         /** @var Model $data */
@@ -346,7 +349,7 @@ abstract class Base
     public function get()
     {
         if (!$this->fields) {
-            return [];
+            throw new \InvalidArgumentException;
         }
 
         $total = $this->getQueryBuilder()
@@ -454,6 +457,18 @@ abstract class Base
      */
     private function getPage($fields, $sortBy, $sortType, $limit, $offset, $embed = '')
     {
-        return Request::url() . '?fields=' . $fields . '&sort_by=' . $sortBy . '&sort_type=' . $sortType . '&limit=' . $limit . '&offset=' . $offset . '&embed=' . $embed;
+        return (new Request())->url() . '?fields=' . $fields . '&sort_by=' . $sortBy . '&sort_type=' . $sortType . '&limit=' . $limit . '&offset=' . $offset . '&embed=' . $embed;
+    }
+
+    /**
+     * @author Rohit Arora
+     *
+     * @param $by
+     *
+     * @return bool
+     */
+    public static function isValidOrderBy($by)
+    {
+        return $by == static::DEFAULT_SORT_BY;
     }
 }
