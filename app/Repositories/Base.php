@@ -9,8 +9,6 @@ use App\Adapters\Response;
 use App\Contracts\Adapter;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Query\Builder;
-use Illuminate\Http\Request;
-
 /**
  * @author  Rohit Arora
  *
@@ -457,7 +455,7 @@ abstract class Base
      */
     private function getPage($fields, $sortBy, $sortType, $limit, $offset, $embed = '')
     {
-        return (new Request())->url() . '?fields=' . $fields . '&sort_by=' . $sortBy . '&sort_type=' . $sortType . '&limit=' . $limit . '&offset=' . $offset . '&embed=' . $embed;
+        return \Request::url() . '?fields=' . $fields . '&sort_by=' . $sortBy . '&sort_type=' . $sortType . '&limit=' . $limit . '&offset=' . $offset . '&embed=' . $embed;
     }
 
     /**
