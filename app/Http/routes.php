@@ -17,8 +17,7 @@ Route::group(['prefix' => 'api/1.0'], function () {
     resource('/users', 'User');
     resource('/comments', 'Comment');
     Route::group(['prefix' => 'posts'], function () {
-        Route::group(['prefix' => '{postID}'], function ($postID) {
-            unset($postID);
+        Route::group(['prefix' => '{postID}'], function () {
             resource('/comments', 'Post\Comment');
         });
     });
