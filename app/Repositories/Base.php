@@ -422,15 +422,28 @@ abstract class Base
     /**
      * @author Rohit Arora
      *
-     * @throws InvalidArguments
-     *
      * @return array
+     * @throws InvalidArguments
+     * @throws InvalidData
+     * @throws NotFound
      */
     public function save()
     {
-        if (!$this->fields) {
+        if (!$this->data || !$this->fields) {
             throw new InvalidArguments;
         }
+
+        /* @var Model $data */
+        $data = $this->getModel()
+                     ->create($this->getData());
+
+        if (!$data) {
+            throw new InvalidData;
+        }
+
+        $this->setData($data->toArray());
+
+        return $this->process(true);
     }
 
     /**

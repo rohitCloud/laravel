@@ -7,6 +7,7 @@ namespace App\Adapters;
 
 use Exception;
 use Illuminate\Contracts\Routing\ResponseFactory;
+use Illuminate\Http\Response as ResponseCode;
 use Symfony\Component\HttpFoundation\Response as HttpResponse;
 
 /**
@@ -20,6 +21,26 @@ class Response
     const DATA = 'data';
 
     protected $statusCode = 200;
+
+    /**
+     * @author Rohit Arora
+     *
+     * @param $code
+     *
+     * @return bool
+     */
+    public static function isValidErrorCode($code)
+    {
+        return in_array($code, [ResponseCode::HTTP_ACCEPTED,
+                                ResponseCode::HTTP_BAD_GATEWAY,
+                                ResponseCode::HTTP_BAD_REQUEST,
+                                ResponseCode::HTTP_CREATED,
+                                ResponseCode::HTTP_OK,
+                                ResponseCode::HTTP_NO_CONTENT,
+                                ResponseCode::HTTP_NOT_FOUND,
+                                ResponseCode::HTTP_INTERNAL_SERVER_ERROR,
+                                ResponseCode::HTTP_METHOD_NOT_ALLOWED]);
+    }
 
     /**
      * @author Rohit Arora
@@ -96,7 +117,7 @@ class Response
     public function responseWithException(Exception $e)
     {
         \Log::error($e);
-        if ($e->getCode() > 0) {
+        if (self::isValidErrorCode($e->getCode())) {
             return $this->setStatusCode($e->getCode())
                         ->respondWithError($e->getMessage());
         } else {

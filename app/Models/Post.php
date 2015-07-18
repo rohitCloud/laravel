@@ -29,6 +29,8 @@ class Post extends Model
 
     protected $table = self::TABLE;
 
+    protected $fillable = [self::TITLE, self::BODY, self::USER_ID];
+
     /**
      * @author Rohit Arora
      *
