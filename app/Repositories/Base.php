@@ -286,7 +286,13 @@ abstract class Base
      */
     public function setFieldsWithData()
     {
-        $this->fields = $this->Adapter->getModelFieldsWithData($this->getParameters());
+        $fieldsWithData = $this->Adapter->getModelFieldsWithData($this->getParameters());
+
+        $this->data = [];
+        foreach ($fieldsWithData as $key => $fields) {
+            $this->fields[$key] = key($fields);
+            $this->data += (array) $fields;
+        }
 
         return $this;
     }

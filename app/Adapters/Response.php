@@ -5,6 +5,7 @@
 
 namespace App\Adapters;
 
+use Exception;
 use Illuminate\Contracts\Routing\ResponseFactory;
 use Symfony\Component\HttpFoundation\Response as HttpResponse;
 
@@ -88,14 +89,19 @@ class Response
     /**
      * @author Rohit Arora
      *
-     * @param \Exception $e
+     * @param Exception $e
      *
      * @return ResponseFactory|HttpResponse
      */
-    public function responseWithException(\Exception $e)
+    public function responseWithException(Exception $e)
     {
-        return $this->setStatusCode($e->getCode())
-                    ->respondWithError($e->getMessage());
+        \Log::error($e);
+        if ($e->getCode() > 0) {
+            return $this->setStatusCode($e->getCode())
+                        ->respondWithError($e->getMessage());
+        } else {
+            return $this->responseInternalError();
+        }
     }
 
     /**

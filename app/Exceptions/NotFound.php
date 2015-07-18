@@ -21,7 +21,6 @@ class NotFound extends Exception
      */
     public function __construct($message = 'Data not available!', $code = 404, Exception $previous = null)
     {
-        \Log::debug($message);
         throw new Exception($message, $code, $previous);
     }
 }
