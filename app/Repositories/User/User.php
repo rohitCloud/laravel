@@ -8,6 +8,7 @@ namespace App\Repositories\User;
 
 use App\Adapters\User as UserAdapter;
 use App\Contracts\Repositories\User as UserContract;
+use App\Exceptions\InvalidArguments;
 use App\Models\User\User as UserModel;
 use App\Repositories\Base;
 
@@ -68,5 +69,28 @@ class User extends Base implements UserContract
     public static function isValidOrderBy($by)
     {
         return UserModel::isValidOrderBy($by);
+    }
+
+    /**
+     * @author Rohit Arora
+     *
+     * @param $parameters
+     *
+     * @return array
+     * @throws InvalidArguments
+     */
+    public function store($parameters)
+    {
+        $this->setPostParameters($parameters);
+
+        $data = $this->getData();
+        if ($this->exists([UserModel::EMAIL => $data[UserModel::EMAIL]])) {
+            throw new InvalidArguments('Email Already exists');
+        }
+
+        $data[UserModel::PASSWORD] = bcrypt($data[UserModel::PASSWORD]);
+        $this->setData($data);
+
+        return $this->save();
     }
 }

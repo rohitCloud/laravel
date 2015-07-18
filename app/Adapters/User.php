@@ -44,6 +44,8 @@ class User extends Base implements AdapterContract
                                  self::DATA_TYPE => self::TYPE_STRING],
             self::EMAIL      => [self::PROPERTY  => UserModel::EMAIL,
                                  self::DATA_TYPE => self::TYPE_STRING],
+            self::PASSWORD   => [self::PROPERTY  => UserModel::PASSWORD,
+                                 self::DATA_TYPE => self::TYPE_STRING],
             self::CREATED_AT => [self::PROPERTY  => UserModel::CREATED_AT,
                                  self::DATA_TYPE => self::TYPE_DATETIME],
             self::UPDATED_AT => [self::PROPERTY  => UserModel::UPDATED_AT,

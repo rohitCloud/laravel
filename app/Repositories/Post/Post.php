@@ -11,6 +11,7 @@ use App\Contracts\Repositories\Post as PostContract;
 use App\Contracts\Repositories\User;
 use App\Exceptions\InvalidData;
 use App\Models\Post as PostModel;
+use App\Models\User\User as UserModel;
 use App\Repositories\Base;
 use Illuminate\Database\Eloquent\Builder;
 
@@ -140,7 +141,7 @@ class Post extends Base implements PostContract
         return $this->setQueryBuilder($this->getQueryBuilder()
                                            ->whereHas('user', function ($query) use ($userID) {
                                                /* @var Builder $query */
-                                               $query->where(Post::ID, EQUAL, $userID);
+                                               $query->where(UserModel::ID, EQUAL, $userID);
                                            }));
     }
 }
