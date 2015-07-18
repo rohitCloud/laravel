@@ -2,9 +2,11 @@
 
 namespace App\Http\Controllers\Post;
 
+use App\Adapters\Comment as CommentAdapter;
 use App\Http\Controllers\Controller;
 use App\Http\Requests;
 use App\Contracts\Repositories\Comment as CommentContract;
+use Illuminate\Support\Facades\Response;
 
 /**
  * @author  Rohit Arora
@@ -36,6 +38,28 @@ class Comment extends Controller
     public function getCommentContract()
     {
         return $this->CommentContract;
+    }
+
+    /**
+     * @author Rohit Arora
+     *
+     * @param int $postID
+     *
+     * @return Response
+     */
+    public function store($postID)
+    {
+        $inputs                          = $this->inputs();
+        $inputs[CommentAdapter::POST_ID] = $postID;
+
+        try {
+            $post = $this->getCommentContract()
+                         ->store($inputs);
+        } catch (\Exception $Exception) {
+            return $this->responseAdapter->responseWithException($Exception);
+        }
+
+        return $this->responseAdapter->stored($post);
     }
 
     /**

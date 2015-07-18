@@ -23,6 +23,8 @@ class Comment extends Model
 
     protected $table = self::TABLE;
 
+    protected $fillable = [self::COMMENT, self::POST_ID];
+
     /**
      * @author Rohit Arora
      *

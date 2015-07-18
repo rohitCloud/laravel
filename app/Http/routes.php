@@ -20,6 +20,6 @@ Route::group(['prefix' => 'api/1.0'], function () {
     });
     resource('/comments', 'Comment', ['only' => ['index', 'show']]);
     Route::group(['prefix' => 'posts/{postID}'], function () {
-        resource('/comments', 'Post\Comment', ['only' => ['index', 'show']]);
+        resource('/comments', 'Post\Comment', ['only' => ['index', 'show', 'store']]);
     });
 });
