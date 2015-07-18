@@ -21,6 +21,15 @@ interface Post
     /**
      * @author Rohit Arora
      *
+     * @param $parameters
+     *
+     * @return array
+     */
+    public function store($parameters);
+
+    /**
+     * @author Rohit Arora
+     *
      * @param int   $postID
      * @param array $parameters
      *

@@ -34,7 +34,7 @@ abstract class Controller extends BaseController
      *
      * @return array
      */
-    protected function inputFilter()
+    protected function inputs()
     {
         return \Input::all();
     }

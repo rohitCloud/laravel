@@ -75,4 +75,30 @@ class Cache implements CommentContract
     {
         // TODO: Implement getByID() method.
     }
+
+    /**
+     * @author Rohit Arora
+     *
+     * @param int   $postID
+     * @param int   $commentID
+     * @param array $parameters
+     *
+     * @return array
+     */
+    public function getByPostAndID($postID, $commentID, $parameters = [ALL_FIELDS])
+    {
+        // TODO: Implement getByPostAndID() method.
+    }
+
+    /**
+     * @author Rohit Arora
+     *
+     * @param $by
+     *
+     * @return bool
+     */
+    public static function isValidOrderBy($by)
+    {
+        // TODO: Implement isValidOrderBy() method.
+    }
 }

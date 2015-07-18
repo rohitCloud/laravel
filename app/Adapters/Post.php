@@ -22,7 +22,6 @@ class Post extends Base implements AdapterContract
     const BODY       = 'body';
     const USER       = 'user';
     const USER_ID    = 'user_id';
-    const COMMENT    = 'comment';
     const CREATED_AT = 'created_at';
     const UPDATED_AT = 'updated_at';
 

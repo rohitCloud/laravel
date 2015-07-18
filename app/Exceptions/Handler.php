@@ -2,16 +2,22 @@
 
 namespace App\Exceptions;
 
-use Exception;
+use  Exception;
 use Symfony\Component\HttpKernel\Exception\HttpException;
 use Illuminate\Foundation\Exceptions\Handler as ExceptionHandler;
 
+/**
+ * @author  Rohit Arora
+ *
+ * Class Handler
+ * @package App\Exceptions
+ */
 class Handler extends ExceptionHandler
 {
     /**
      * A list of the exception types that should not be reported.
      *
-     * @var array
+     * @var
      */
     protected $dontReport = [
         HttpException::class,
@@ -28,7 +34,7 @@ class Handler extends ExceptionHandler
      */
     public function report(Exception $e)
     {
-        return parent::report($e);
+        parent::report($e);
     }
 
     /**

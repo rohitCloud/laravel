@@ -19,7 +19,6 @@ class User extends Base implements AdapterContract
     const ID         = 'id';
     const EMAIL      = 'email';
     const NAME       = 'name';
-    const POST       = 'post';
     const CREATED_AT = 'created_at';
     const UPDATED_AT = 'updated_at';
 

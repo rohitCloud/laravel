@@ -7,8 +7,12 @@ namespace App\Repositories;
 
 use App\Adapters\Response;
 use App\Contracts\Adapter;
+use App\Exceptions\InvalidArguments;
+use App\Exceptions\InvalidData;
+use App\Exceptions\NotFound;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Query\Builder;
+
 /**
  * @author  Rohit Arora
  *
@@ -151,12 +155,17 @@ abstract class Base
     /**
      * @author Rohit Arora
      *
-     * @param $data
+     * @param array $data
      *
      * @return $this
+     * @throws \Exception
      */
-    public function setData($data)
+    public function setData(array $data)
     {
+        if (!$data) {
+            throw new NotFound;
+        }
+
         $this->data = $data;
 
         return $this;
@@ -191,15 +200,16 @@ abstract class Base
     /**
      * @author Rohit Arora
      *
-     * @param $by
-     * @param $type
+     * @param string $by
+     * @param string $type
      *
      * @return Model
+     * @throws InvalidArguments
      */
     public function order($by = self::ID, $type = self::SORT_ASC)
     {
         if (!self::isValidOrderType($type) || !static::isValidOrderBy($by)) {
-            throw new \InvalidArgumentException;
+            throw new InvalidArguments;
         }
 
         return $this->setQueryBuilder($this->getQueryBuilder()
@@ -272,6 +282,18 @@ abstract class Base
     /**
      * @author Rohit Arora
      *
+     * @return $this
+     */
+    public function setFieldsWithData()
+    {
+        $this->fields = $this->Adapter->getModelFieldsWithData($this->getParameters());
+
+        return $this;
+    }
+
+    /**
+     * @author Rohit Arora
+     *
      * @return mixed
      */
     public function getFilteredFields()
@@ -318,43 +340,60 @@ abstract class Base
     /**
      * @author Rohit Arora
      *
-     * @param $id
+     * @param $parameters
      *
      * @return $this
+     */
+    public function setPostParameters($parameters)
+    {
+        $this->parameters = $parameters;
+
+        return $this->setFieldsWithData();
+    }
+
+    /**
+     * @author Rohit Arora
+     *
+     * @param $id
+     *
+     * @return array
+     * @throws \Exception
      */
     public function find($id)
     {
         if (!$this->fields) {
-            throw new \InvalidArgumentException;
+            throw new InvalidArguments;
         }
 
         /** @var Model $data */
         $data = $this->getQueryBuilder()
                      ->find($id);
 
-        if ($data) {
-            $this->setData($data->toArray());
+        if (!$data) {
+            throw new NotFound;
         }
 
-        return $this->process(true);
+        return $this->setData($data->toArray())
+                    ->process(true);
     }
 
     /**
      * @author Rohit Arora
      *
-     * @return $this
+     * @return array
+     * @throws \Exception
      */
     public function get()
     {
         if (!$this->fields) {
-            throw new \InvalidArgumentException;
+            throw new InvalidArguments;
         }
 
         $total = $this->getQueryBuilder()
                       ->count();
 
         if (!$total) {
-            return [];
+            throw new NotFound;
         }
 
         $this->setTotal($total);
@@ -365,9 +404,27 @@ abstract class Base
                      ->getQueryBuilder()
                      ->get($this->fields);
 
+        if (!$data) {
+            throw new NotFound;
+        }
+
         $this->setData($data->toArray());
 
         return $this->process();
+    }
+
+    /**
+     * @author Rohit Arora
+     *
+     * @throws InvalidArguments
+     *
+     * @return array
+     */
+    public function save()
+    {
+        if (!$this->fields) {
+            throw new InvalidArguments;
+        }
     }
 
     /**
@@ -468,5 +525,18 @@ abstract class Base
     public static function isValidOrderBy($by)
     {
         return $by == static::DEFAULT_SORT_BY;
+    }
+
+    /**
+     * @author Rohit Arora
+     *
+     * @param $id
+     *
+     * @return bool
+     */
+    public function exists($id)
+    {
+        return $this->getQueryBuilder()
+                    ->find($id)->exist;
     }
 }

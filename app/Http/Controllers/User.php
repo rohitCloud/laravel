@@ -55,8 +55,12 @@ class User extends Controller
      */
     public function index()
     {
-        $users = $this->getUserContract()
-                      ->fetch($this->inputFilter());
+        try {
+            $users = $this->getUserContract()
+                          ->fetch($this->inputs());
+        } catch (\Exception $Exception) {
+            return $this->responseAdapter->responseWithException($Exception);
+        }
 
         return $this->responseAdapter->response($users);
     }
@@ -70,8 +74,12 @@ class User extends Controller
      */
     public function show($id)
     {
-        $user = $this->getUserContract()
-                     ->getByID($id, $this->inputFilter());
+        try {
+            $user = $this->getUserContract()
+                         ->getByID($id, $this->inputs());
+        } catch (\Exception $Exception) {
+            return $this->responseAdapter->responseWithException($Exception);
+        }
 
         return $this->responseAdapter->response($user);
     }

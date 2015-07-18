@@ -62,4 +62,16 @@ class Cache implements UserContract
     {
         // TODO: Implement getByID() method.
     }
+
+    /**
+     * @author Rohit Arora
+     *
+     * @param $by
+     *
+     * @return bool
+     */
+    public static function isValidOrderBy($by)
+    {
+        // TODO: Implement isValidOrderBy() method.
+    }
 }

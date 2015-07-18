@@ -106,6 +106,25 @@ abstract class Base implements Adapter
     /**
      * @author Rohit Arora
      *
+     * @param array $fields
+     *
+     * @return array
+     */
+    public function getModelFieldsWithData($fields)
+    {
+        $modelFields = [];
+        foreach ($this->getBindings() as $key => $binding) {
+            if (isset($binding[self::PROPERTY]) && (in_array($key, array_keys($fields)))) {
+                $modelFields[$key] = [$binding[self::PROPERTY] => $this->typeCast($fields[$key], $binding[self::DATA_TYPE])];
+            }
+        }
+
+        return $modelFields;
+    }
+
+    /**
+     * @author Rohit Arora
+     *
      * @param $modelFields
      *
      * @return array

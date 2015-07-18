@@ -62,4 +62,28 @@ class Cache implements PostContract
     {
         // TODO: Implement getByID() method.
     }
+
+    /**
+     * @author Rohit Arora
+     *
+     * @param $parameters
+     *
+     * @return array
+     */
+    public function store($parameters)
+    {
+        // TODO: Implement store() method.
+    }
+
+    /**
+     * @author Rohit Arora
+     *
+     * @param $by
+     *
+     * @return bool
+     */
+    public static function isValidOrderBy($by)
+    {
+        // TODO: Implement isValidOrderBy() method.
+    }
 }

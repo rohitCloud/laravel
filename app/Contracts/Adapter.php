@@ -23,9 +23,9 @@ interface Adapter
     /**
      * @author Rohit Arora
      *
-     * @param array  $fields
-     * @param array  $data
-     * @param bool   $single
+     * @param array $fields
+     * @param array $data
+     * @param bool  $single
      * @param array $embed
      *
      * @return mixed
@@ -40,6 +40,15 @@ interface Adapter
      * @return array
      */
     public function getModelFields($fields = [ALL_FIELDS]);
+
+    /**
+     * @author Rohit Arora
+     *
+     * @param array $fields
+     *
+     * @return array
+     */
+    public function getModelFieldsWithData($fields);
 
     /**
      * @author Rohit Arora

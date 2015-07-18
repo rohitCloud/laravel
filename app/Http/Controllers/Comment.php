@@ -55,8 +55,12 @@ class Comment extends Controller
      */
     public function index()
     {
-        $comments = $this->getCommentContract()
-                         ->fetch($this->inputFilter());
+        try {
+            $comments = $this->getCommentContract()
+                             ->fetch($this->inputs());
+        } catch (\Exception $Exception) {
+            return $this->responseAdapter->responseWithException($Exception);
+        }
 
         return $this->responseAdapter->response($comments);
     }
@@ -70,8 +74,12 @@ class Comment extends Controller
      */
     public function show($id)
     {
-        $comment = $this->getCommentContract()
-                        ->getByID($id, $this->inputFilter());
+        try {
+            $comment = $this->getCommentContract()
+                            ->getByID($id, $this->inputs());
+        } catch (\Exception $Exception) {
+            return $this->responseAdapter->responseWithException($Exception);
+        }
 
         return $this->responseAdapter->response($comment);
     }

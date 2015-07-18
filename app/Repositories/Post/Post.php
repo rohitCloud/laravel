@@ -69,4 +69,17 @@ class Post extends Base implements PostContract
     {
         return PostModel::isValidOrderBy($by);
     }
+
+    /**
+     * @author Rohit Arora
+     *
+     * @param $parameters
+     *
+     * @return mixed
+     */
+    public function store($parameters)
+    {
+        return $this->setPostParameters($parameters)
+                    ->save();
+    }
 }

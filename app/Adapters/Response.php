@@ -54,11 +54,7 @@ class Response
      */
     public function response($data, $headers = [])
     {
-        if (!$data || !isset($data[self::DATA]) || !$data[self::DATA]) {
-            return $this->responseNotFound("Sorry no data is available!");
-        }
-
-        $data = ['status' => $this->getStatusCode()] + $data;
+        $data = ['status' => $this->getStatusCode()] + (array) $data;
 
         return $this->respond($data, $headers);
     }
@@ -83,6 +79,32 @@ class Response
      *
      * @return ResponseFactory|HttpResponse
      */
+    public function responseBadRequest($message = "Bad Request!")
+    {
+        return $this->setStatusCode(400)
+                    ->respondWithError($message);
+    }
+
+    /**
+     * @author Rohit Arora
+     *
+     * @param \Exception $e
+     *
+     * @return ResponseFactory|HttpResponse
+     */
+    public function responseWithException(\Exception $e)
+    {
+        return $this->setStatusCode($e->getCode())
+                    ->respondWithError($e->getMessage());
+    }
+
+    /**
+     * @author Rohit Arora
+     *
+     * @param string $message
+     *
+     * @return ResponseFactory|HttpResponse
+     */
     public function responseInternalError($message = 'Internal Error! We are Sorry!')
     {
         return $this->setStatusCode(500)
@@ -92,7 +114,7 @@ class Response
     /**
      * @author Rohit Arora
      *
-     * @param string $message
+     * @param string|array $message
      *
      * @return ResponseFactory|HttpResponse
      */
@@ -112,5 +134,19 @@ class Response
     private function respond($data, $headers = [])
     {
         return response($data, $this->getStatusCode(), $headers);
+    }
+
+    /**
+     * @author Rohit Arora
+     *
+     * @param array $data
+     * @param array $headers
+     *
+     * @return ResponseFactory|HttpResponse
+     */
+    public function stored($data, $headers = [])
+    {
+        return $this->setStatusCode(201)
+                    ->response($data, $headers);
     }
 }

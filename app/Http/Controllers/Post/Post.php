@@ -2,8 +2,8 @@
 
 namespace App\Http\Controllers\Post;
 
+use App\Adapters\Post as PostAdapter;
 use App\Http\Controllers\Controller;
-use App\Http\Requests;
 use App\Contracts\Repositories\Post as PostContract;
 use Illuminate\Http\Response;
 
@@ -56,8 +56,12 @@ class Post extends Controller
      */
     public function index()
     {
-        $posts = $this->getPostContract()
-                      ->fetch($this->inputFilter());
+        try {
+            $posts = $this->getPostContract()
+                          ->fetch($this->inputs());
+        } catch (\Exception $Exception) {
+            return $this->responseAdapter->responseWithException($Exception);
+        }
 
         return $this->responseAdapter->response($posts);
     }
@@ -67,13 +71,45 @@ class Post extends Controller
      *
      * @param $id
      *
-     * @return mixed
+     * @return Response
      */
     public function show($id)
     {
-        $post = $this->getPostContract()
-                     ->getByID($id, $this->inputFilter());
+        try {
+            $post = $this->getPostContract()
+                         ->getByID($id, $this->inputs());
+        } catch (\Exception $Exception) {
+            return $this->responseAdapter->responseWithException($Exception);
+        }
 
         return $this->responseAdapter->response($post);
+    }
+
+    /**
+     * @author Rohit Arora
+     *
+     * @return Response
+     */
+    public function store()
+    {
+        $validator = \Validator::make($this->inputs(), [
+            PostAdapter::TITLE   => 'required|string|min:3',
+            PostAdapter::BODY    => 'required|string|min:10',
+            PostAdapter::USER_ID => 'required|numeric'
+        ]);
+
+        if ($validator->fails()) {
+            return $this->responseAdapter->responseBadRequest($validator->errors()
+                                                                        ->all());
+        }
+
+        try {
+            $post = $this->getPostContract()
+                         ->store($this->inputs());
+        } catch (\Exception $Exception) {
+            return $this->responseAdapter->responseWithException($Exception);
+        }
+
+        return $this->responseAdapter->stored($post);
     }
 }
