@@ -45,4 +45,26 @@ interface Post
      * @return bool
      */
     public static function isValidOrderBy($by);
+
+    /**
+     * @author Rohit Arora
+     *
+     * @param array $parameters
+     * @param int   $userID
+     *
+     * @return array
+     */
+    public function getPostsByUser($parameters, $userID);
+
+    /**
+     * @author Rohit Arora
+     *
+     * @param int   $userID
+     * @param int   $postID
+     * @param array $parameters
+     *
+     * @return array
+     */
+    public function getByUserAndID($userID, $postID, $parameters = [ALL_FIELDS]);
+
 }

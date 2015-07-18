@@ -14,11 +14,12 @@ require_once 'constants.php';
 
 Route::group(['prefix' => 'api/1.0'], function () {
     resource('/posts', 'Post\Post', ['only' => ['index', 'show', 'store']]);
-    resource('/users', 'User', ['only' => ['index', 'show']]);
+    resource('/users', 'User\User', ['only' => ['index', 'show']]);
+    Route::group(['prefix' => 'users/{userID}'], function () {
+        resource('/posts', 'User\Post', ['only' => ['index', 'show']]);
+    });
     resource('/comments', 'Comment', ['only' => ['index', 'show']]);
-    Route::group(['prefix' => 'posts'], function () {
-        Route::group(['prefix' => '{postID}'], function () {
-            resource('/comments', 'Post\Comment', ['only' => ['index', 'show']]);
-        });
+    Route::group(['prefix' => 'posts/{postID}'], function () {
+        resource('/comments', 'Post\Comment', ['only' => ['index', 'show']]);
     });
 });
