@@ -100,17 +100,6 @@ class Post extends Controller
         $inputs                       = $this->inputs();
         $inputs[PostAdapter::USER_ID] = $userID;
 
-        $validator = \Validator::make($inputs, [
-            PostAdapter::TITLE   => 'required|string|min:3',
-            PostAdapter::BODY    => 'required|string|min:10',
-            PostAdapter::USER_ID => 'required|numeric'
-        ]);
-
-        if ($validator->fails()) {
-            return $this->responseAdapter->responseBadRequest($validator->errors()
-                                                                        ->all());
-        }
-
         try {
             $post = $this->getPostContract()
                          ->store($inputs);

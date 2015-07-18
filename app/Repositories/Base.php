@@ -348,10 +348,18 @@ abstract class Base
      *
      * @param $parameters
      *
-     * @return $this
+     * @return Base
+     * @throws InvalidArguments
      */
     public function setPostParameters($parameters)
     {
+        $validator = $this->Adapter->validator($parameters);
+
+        if ($validator->fails()) {
+            throw new InvalidArguments($validator->errors()
+                                                 ->all());
+        }
+
         $this->parameters = $parameters;
 
         return $this->setFieldsWithData();

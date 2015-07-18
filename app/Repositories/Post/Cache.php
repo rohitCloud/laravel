@@ -86,4 +86,43 @@ class Cache implements PostContract
     {
         // TODO: Implement isValidOrderBy() method.
     }
+
+    /**
+     * @author Rohit Arora
+     *
+     * @param array $parameters
+     * @param int   $userID
+     *
+     * @return array
+     */
+    public function getPostsByUser($parameters, $userID)
+    {
+        // TODO: Implement getPostsByUser() method.
+    }
+
+    /**
+     * @author Rohit Arora
+     *
+     * @param int   $userID
+     * @param int   $postID
+     * @param array $parameters
+     *
+     * @return array
+     */
+    public function getByUserAndID($userID, $postID, $parameters = [ALL_FIELDS])
+    {
+        // TODO: Implement getByUserAndID() method.
+    }
+
+    /**
+     * @author Rohit Arora
+     *
+     * @param int $id
+     *
+     * @return bool
+     */
+    public function exists($id)
+    {
+        // TODO: Implement exists() method.
+    }
 }

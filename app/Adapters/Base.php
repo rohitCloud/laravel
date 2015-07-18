@@ -6,6 +6,7 @@ namespace App\Adapters;
 
 use App\Contracts\Adapter;
 use App\Repositories\Base as BaseRepository;
+use Validator;
 
 /**
  * @author  Rohit Arora
@@ -162,5 +163,17 @@ abstract class Base implements Adapter
         }
 
         return $data;
+    }
+
+    /**
+     * @author Rohit Arora
+     *
+     * @param array $data
+     *
+     * @return \Illuminate\Validation\Validator
+     */
+    public function validator(array $data)
+    {
+        return Validator::make($data, $this->getValidations());
     }
 }

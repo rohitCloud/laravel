@@ -2,7 +2,6 @@
 
 namespace App\Http\Controllers\Post;
 
-use App\Adapters\Post as PostAdapter;
 use App\Http\Controllers\Controller;
 use App\Contracts\Repositories\Post as PostContract;
 use Illuminate\Http\Response;
@@ -92,17 +91,6 @@ class Post extends Controller
      */
     public function store()
     {
-        $validator = \Validator::make($this->inputs(), [
-            PostAdapter::TITLE   => 'required|string|min:3',
-            PostAdapter::BODY    => 'required|string|min:10',
-            PostAdapter::USER_ID => 'required|numeric'
-        ]);
-
-        if ($validator->fails()) {
-            return $this->responseAdapter->responseBadRequest($validator->errors()
-                                                                        ->all());
-        }
-
         try {
             $post = $this->getPostContract()
                          ->store($this->inputs());

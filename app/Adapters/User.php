@@ -42,4 +42,14 @@ class User extends Base implements AdapterContract
                                  self::DATA_TYPE => self::TYPE_DATETIME]
         ];
     }
+
+    /**
+     * @author Rohit Arora
+     *
+     * @return array
+     */
+    public function getValidations()
+    {
+        // TODO: Implement getValidations() method.
+    }
 }

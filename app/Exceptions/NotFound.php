@@ -5,8 +5,6 @@
 
 namespace App\Exceptions;
 
-use Exception;
-
 /**
  * @author Rohit Arora
  */
@@ -21,6 +19,6 @@ class NotFound extends Exception
      */
     public function __construct($message = 'Data not available!', $code = 404, Exception $previous = null)
     {
-        throw new Exception($message, $code, $previous);
+        parent::__construct($message, $code, $previous);
     }
 }

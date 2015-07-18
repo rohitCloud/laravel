@@ -74,4 +74,16 @@ class Cache implements UserContract
     {
         // TODO: Implement isValidOrderBy() method.
     }
+
+    /**
+     * @author Rohit Arora
+     *
+     * @param int $id
+     *
+     * @return bool
+     */
+    public function exists($id)
+    {
+        // TODO: Implement exists() method.
+    }
 }

@@ -4,6 +4,8 @@
  */
 namespace App\Contracts;
 
+use Validator;
+
 
 /**
  * @author  Rohit Arora
@@ -13,6 +15,13 @@ namespace App\Contracts;
  */
 interface Adapter
 {
+    /**
+     * @author Rohit Arora
+     *
+     * @return array
+     */
+    public function getValidations();
+
     /**
      * @author Rohit Arora
      *
@@ -58,4 +67,13 @@ interface Adapter
      * @return array
      */
     public function getFilteredFields($modelFields);
+
+    /**
+     * @author Rohit Arora
+     *
+     * @param array $data
+     *
+     * @return \Illuminate\Validation\Validator
+     */
+    public function validator(array $data);
 }

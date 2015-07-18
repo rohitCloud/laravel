@@ -25,6 +25,22 @@ class Post extends Base implements AdapterContract
     const CREATED_AT = 'created_at';
     const UPDATED_AT = 'updated_at';
 
+    protected $validations = [
+        self::TITLE   => 'required|string|min:3',
+        self::BODY    => 'required|string|min:10',
+        self::USER_ID => 'required|numeric'
+    ];
+
+    /**
+     * @author Rohit Arora
+     *
+     * @return array
+     */
+    public function getValidations()
+    {
+        return $this->validations;
+    }
+
     /**
      * @author Rohit Arora
      *
