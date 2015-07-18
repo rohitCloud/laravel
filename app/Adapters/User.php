@@ -16,13 +16,12 @@ use App\Models\User\User as UserModel;
  */
 class User extends Base implements AdapterContract
 {
-    const ID               = 'id';
-    const EMAIL            = 'email';
-    const NAME             = 'name';
-    const PASSWORD         = 'password';
-    const CONFIRM_PASSWORD = 'confirm_password';
-    const CREATED_AT       = 'created_at';
-    const UPDATED_AT       = 'updated_at';
+    const ID         = 'id';
+    const EMAIL      = 'email';
+    const NAME       = 'name';
+    const PASSWORD   = 'password';
+    const CREATED_AT = 'created_at';
+    const UPDATED_AT = 'updated_at';
 
     protected $validations = [
         self::EMAIL    => 'required|string|email',
