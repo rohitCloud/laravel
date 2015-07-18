@@ -34,6 +34,16 @@ class Comment extends Base implements AdapterContract
      *
      * @return array
      */
+    public function getValidations()
+    {
+        return $this->validations;
+    }
+
+    /**
+     * @author Rohit Arora
+     *
+     * @return array
+     */
     public function getBindings()
     {
         return [
@@ -52,15 +62,5 @@ class Comment extends Base implements AdapterContract
             self::UPDATED_AT => [self::PROPERTY  => CommentModel::UPDATED_AT,
                                  self::DATA_TYPE => self::TYPE_DATETIME]
         ];
-    }
-
-    /**
-     * @author Rohit Arora
-     *
-     * @return array
-     */
-    public function getValidations()
-    {
-        return $this->validations;
     }
 }
