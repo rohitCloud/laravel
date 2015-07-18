@@ -3,7 +3,7 @@
  * @author Rohit Arora
  */
 
-namespace App\Adapters;
+namespace App\Http\Responses;
 
 use Exception;
 use Illuminate\Contracts\Routing\ResponseFactory;

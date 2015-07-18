@@ -5,6 +5,7 @@
 namespace App\Adapters;
 
 use App\Contracts\Adapter;
+use App\Http\Responses\Response;
 use App\Repositories\Base as BaseRepository;
 use Validator;
 

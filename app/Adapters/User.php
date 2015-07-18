@@ -16,11 +16,19 @@ use App\Models\User\User as UserModel;
  */
 class User extends Base implements AdapterContract
 {
-    const ID         = 'id';
-    const EMAIL      = 'email';
-    const NAME       = 'name';
-    const CREATED_AT = 'created_at';
-    const UPDATED_AT = 'updated_at';
+    const ID               = 'id';
+    const EMAIL            = 'email';
+    const NAME             = 'name';
+    const PASSWORD         = 'password';
+    const CONFIRM_PASSWORD = 'confirm_password';
+    const CREATED_AT       = 'created_at';
+    const UPDATED_AT       = 'updated_at';
+
+    protected $validations = [
+        self::EMAIL    => 'required|string|email',
+        self::NAME     => 'required|string|min:3',
+        self::PASSWORD => 'required|string|min:6|alpha_num'
+    ];
 
     /**
      * @author Rohit Arora
@@ -50,6 +58,6 @@ class User extends Base implements AdapterContract
      */
     public function getValidations()
     {
-        // TODO: Implement getValidations() method.
+        return $this->validations;
     }
 }

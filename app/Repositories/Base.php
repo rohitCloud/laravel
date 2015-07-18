@@ -5,7 +5,7 @@
 
 namespace App\Repositories;
 
-use App\Adapters\Response;
+use App\Http\Responses\Response;
 use App\Contracts\Adapter;
 use App\Exceptions\InvalidArguments;
 use App\Exceptions\InvalidData;
