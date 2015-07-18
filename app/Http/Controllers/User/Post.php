@@ -91,11 +91,16 @@ class Post extends Controller
     /**
      * @author Rohit Arora
      *
+     * @param int $userID
+     *
      * @return Response
      */
-    public function store()
+    public function store($userID)
     {
-        $validator = \Validator::make($this->inputs(), [
+        $inputs                       = $this->inputs();
+        $inputs[PostAdapter::USER_ID] = $userID;
+
+        $validator = \Validator::make($inputs, [
             PostAdapter::TITLE   => 'required|string|min:3',
             PostAdapter::BODY    => 'required|string|min:10',
             PostAdapter::USER_ID => 'required|numeric'
@@ -108,7 +113,7 @@ class Post extends Controller
 
         try {
             $post = $this->getPostContract()
-                         ->store($this->inputs());
+                         ->store($inputs);
         } catch (\Exception $Exception) {
             return $this->responseAdapter->responseWithException($Exception);
         }

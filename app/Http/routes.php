@@ -16,7 +16,7 @@ Route::group(['prefix' => 'api/1.0'], function () {
     resource('/posts', 'Post\Post', ['only' => ['index', 'show', 'store']]);
     resource('/users', 'User\User', ['only' => ['index', 'show']]);
     Route::group(['prefix' => 'users/{userID}'], function () {
-        resource('/posts', 'User\Post', ['only' => ['index', 'show']]);
+        resource('/posts', 'User\Post', ['only' => ['index', 'show', 'store']]);
     });
     resource('/comments', 'Comment', ['only' => ['index', 'show']]);
     Route::group(['prefix' => 'posts/{postID}'], function () {
