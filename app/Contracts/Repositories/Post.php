@@ -67,4 +67,13 @@ interface Post
      */
     public function getByUserAndID($userID, $postID, $parameters = [ALL_FIELDS]);
 
+    /**
+     * @author Rohit Arora
+     *
+     * @param int $id
+     *
+     * @return bool
+     */
+    public function exists($id);
+
 }

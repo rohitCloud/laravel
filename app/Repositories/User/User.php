@@ -10,6 +10,7 @@ use App\Adapters\User as UserAdapter;
 use App\Contracts\Repositories\User as UserContract;
 use App\Models\User\User as UserModel;
 use App\Repositories\Base;
+use Illuminate\Database\Eloquent\Builder;
 
 /**
  * @author Rohit Arora

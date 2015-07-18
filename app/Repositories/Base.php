@@ -549,13 +549,13 @@ abstract class Base
     /**
      * @author Rohit Arora
      *
-     * @param $id
+     * @param int $id
      *
      * @return bool
      */
     public function exists($id)
     {
         return $this->getQueryBuilder()
-                    ->find($id)->exist;
+                    ->find($id);
     }
 }

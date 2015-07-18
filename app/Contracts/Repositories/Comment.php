@@ -57,4 +57,13 @@ interface Comment
      * @return bool
      */
     public static function isValidOrderBy($by);
+
+    /**
+     * @author Rohit Arora
+     *
+     * @param int $id
+     *
+     * @return bool
+     */
+    public function exists($id);
 }
