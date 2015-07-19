@@ -84,4 +84,21 @@ class User extends Controller
 
         return $this->responseAdapter->response($user);
     }
+
+    /**
+     * @author Rohit Arora
+     *
+     * @return Response
+     */
+    public function store()
+    {
+        try {
+            $post = $this->getUserContract()
+                         ->store($this->inputs());
+        } catch (\Exception $Exception) {
+            return $this->responseAdapter->responseWithException($Exception);
+        }
+
+        return $this->responseAdapter->stored($post);
+    }
 }

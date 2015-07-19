@@ -557,13 +557,22 @@ abstract class Base
     /**
      * @author Rohit Arora
      *
-     * @param int $id
+     * @param $condition
      *
-     * @return bool
+     * @return mixed
+     * @throws InvalidArguments
      */
-    public function exists($id)
+    public function exists($condition)
     {
-        return $this->getQueryBuilder()
-                    ->find($id);
+        if (is_array($condition)) {
+            return $this->getQueryBuilder()
+                        ->where($condition)
+                        ->first();
+        } else if (is_numeric($condition)) {
+            return $this->getQueryBuilder()
+                        ->find($condition);
+        }
+
+        throw new InvalidArguments('Please provide a valid condition');
     }
 }

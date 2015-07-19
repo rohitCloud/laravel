@@ -71,7 +71,9 @@ abstract class Base implements Adapter
 
         foreach ($this->getBindings() as $key => $binding) {
             if (isset($binding[self::PROPERTY]) && in_array($key, $fields)) {
-                $returnData[$key] = $this->typeCast($data[$binding[self::PROPERTY]], $binding[self::DATA_TYPE]);
+                if (isset($data[$binding[self::PROPERTY]])) {
+                    $returnData[$key] = $this->typeCast($data[$binding[self::PROPERTY]], $binding[self::DATA_TYPE]);
+                }
             } else if (isset($binding[self::CALLBACK]) && in_array($key, $embed)) {
                 if (isset($data[$binding[self::CALLBACK][self::PROPERTY]])) {
                     $embedData = call_user_func_array([\App::make($binding[self::CALLBACK][CALLBACK_CLASS]), $binding[self::CALLBACK][CALLBACK_FUNCTION]],

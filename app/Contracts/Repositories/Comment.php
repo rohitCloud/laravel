@@ -66,4 +66,13 @@ interface Comment
      * @return bool
      */
     public function exists($id);
+
+    /**
+     * @author Rohit Arora
+     *
+     * @param $parameters
+     *
+     * @return array
+     */
+    public function store($parameters);
 }
