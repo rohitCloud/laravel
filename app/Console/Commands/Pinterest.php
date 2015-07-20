@@ -14,6 +14,9 @@ use Illuminate\Console\Command;
  */
 class Pinterest extends Command
 {
+    const PAGES                      = 20;
+    const DEFAULT_PINS_LIMIT_PER_TAG = 20;
+    const KEYWORD                    = 'travel';
     /**
      * The name and signature of the console command.
      *
@@ -28,12 +31,15 @@ class Pinterest extends Command
      */
     protected $description = 'A hack for like on pinterest with tags';
 
+    protected $Client;
+
     /**
      *
      */
     public function __construct()
     {
         parent::__construct();
+        $this->Client = new Client(['base_uri' => 'https://in.pinterest.com/']);
     }
 
     /**
@@ -43,12 +49,43 @@ class Pinterest extends Command
      */
     public function handle()
     {
-        $keyword   = urlencode($this->ask('Which tag you want to like?'));
-        $email     = urlencode($this->ask('Please enter your email'));
-        $password  = urlencode($this->secret('Please enter your password'));
-        $noOfPages = $this->ask('No of pages you want to like (Default is 10)', 10);
+        $tags = $this->getTags(self::KEYWORD);
+        while (true) {
+            $keyword = $this->getRandomTag($tags);
+            foreach (\Config::get('pinterest.accounts') as $account) {
+                $email    = $account['email'];
+                $password = $account['password'];
 
-        $client = new Client(['base_uri' => 'https://in.pinterest.com/']);
+                try {
+                    $this->like($keyword, $email, $password, rand(5, self::PAGES));
+                } catch (\Exception $Exception) {
+                    $this->info("keyword -> $keyword email -> $email Error Message -> " . $Exception->getMessage());
+                }
+            }
+        }
+    }
+
+    /**
+     * @author Rohit Arora
+     *
+     * @param     $keyword
+     * @param     $email
+     * @param     $password
+     * @param int $noOfPages
+     *
+     * @throws \Exception
+     */
+    private function like($keyword, $email, $password, $noOfPages = 1)
+    {
+        if (!$keyword || !$email || !$password) {
+            throw new \Exception('Error in inputs');
+        }
+
+        $keyword  = urlencode($keyword);
+        $email    = urlencode($email);
+        $password = urlencode($password);
+
+        $client = $this->Client;
         $jar    = new CookieJar();
 
         $this->info('Opening in.pinterest.com for csrf token and cookies');
@@ -127,13 +164,30 @@ class Pinterest extends Command
                                ->getBody();
 
             $parsedPins = json_decode($pinsJson, true);
-            $pins       = array_merge($pins, $parsedPins['resource_data_cache'][0]['data']);
-            $bookmark   = $parsedPins['resource']['options']['bookmarks'][0];
+            try {
+                $pins     = array_merge($pins, $parsedPins['resource_data_cache'][0]['data']);
+                $bookmark = $parsedPins['resource']['options']['bookmarks'][0];
+            } catch (\Exception $Exception) {
+                break;
+            }
         }
 
-        $this->info('Total pins we got: ' . count($pins));
-
         $pinsLiked = 0;
+
+        $total = count($pins);
+
+        $this->info('Total pins we got: ' . $total);
+
+        shuffle($pins);
+
+        $offset = rand(0, ($total - 1));
+
+        if ($total > self::DEFAULT_PINS_LIMIT_PER_TAG) {
+            $pins = array_slice($pins, $offset, self::DEFAULT_PINS_LIMIT_PER_TAG);
+        } else {
+            $pins = array_slice($pins, $offset, rand($offset, ($total - 1)));
+        }
+
         foreach ($pins as $pin) {
             if (isset($pin['id'])) {
                 $this->info("Id liked " . $pin['id']);
@@ -170,5 +224,43 @@ class Pinterest extends Command
         }
 
         return $csrf;
+    }
+
+    /**
+     * @author Rohit Arora
+     *
+     * @param $keyword
+     *
+     * @return array
+     */
+    private function getTags($keyword)
+    {
+        $tags       = [];
+        $searchPage = $this->Client->get('/search/pins/?q=' . $keyword)
+                                   ->getBody();
+        $regex      = '/<span class="guideText">(.*)<\/span>/';
+        preg_match_all($regex, $searchPage, $matches);
+
+        if ($matches[1]) {
+            $tags = $matches[1];
+        }
+
+        return $tags;
+    }
+
+    /**
+     * @author Rohit Arora
+     *
+     * @param $tags
+     *
+     * @return string
+     */
+    private function getRandomTag($tags)
+    {
+        if ((rand(2, 4) % 2) === 0) {
+            return self::KEYWORD . ' ' . $tags[array_rand($tags)];
+        }
+
+        return self::KEYWORD . ' ' . $tags[array_rand($tags)] . ' ' . $tags[array_rand($tags)];
     }
 }
