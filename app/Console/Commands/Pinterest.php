@@ -18,7 +18,7 @@ class Pinterest extends Command
     const PAGES                      = 20;
     const DEFAULT_PINS_LIMIT_PER_TAG = 20;
     const KEYWORD                    = 'travel';
-    const TIMEOUT                    = 20;
+    const TIMEOUT                    = 10;
     /**
      * The name and signature of the console command.
      *
@@ -60,6 +60,7 @@ class Pinterest extends Command
         while ($tags) {
             $keyword  = $this->getRandomTag($tags);
             $accounts = \Config::get('pinterest.accounts');
+            shuffle($accounts);
             foreach ($accounts as $account) {
                 $email    = $account['email'];
                 $password = $account['password'];
