@@ -18,8 +18,8 @@ class OpenVPN extends Command
     protected $Command;
 
     const IP_URL               = 'http://icanhazip.com/';
-    const RETRY                = 10;
-    const RETRY_SECONDS        = 5;
+    const RETRY                = 5;
+    const RETRY_SECONDS        = 10;
     const DEFAULT_VPN_LOCATION = 'VPN';
     const TRAFFIC_SOURCE       = self::SOURCE_USA;
     const SOURCE_USA           = 'USA.';

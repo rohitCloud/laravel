@@ -18,7 +18,7 @@ class Pinterest extends Command
     const PAGES                      = 20;
     const DEFAULT_PINS_LIMIT_PER_TAG = 30;
     const KEYWORD                    = 'travel';
-    const TIMEOUT                    = 20;
+    const TIMEOUT                    = 30;
     const CONNECT_TIMEOUT            = 10;
     /**
      * The name and signature of the console command.
@@ -266,7 +266,7 @@ class Pinterest extends Command
     {
         $this->info('getting tags based on ' . $keyword);
         $tags       = [];
-        $searchPage = $this->Client->get('/search/pins/?q=' . $keyword, ['connect_timeout' => self::CONNECT_TIMEOUT, 'timeout' => self::TIMEOUT])
+        $searchPage = $this->Client->get('/search/pins/?q=' . $keyword)
                                    ->getBody();
         $regex      = '/<span class="guideText">(.*)<\/span>/';
         preg_match_all($regex, $searchPage, $matches);
