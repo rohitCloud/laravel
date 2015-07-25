@@ -59,10 +59,10 @@ class Pinterest extends Command
     {
         $tags = $this->getTags(self::KEYWORD);
         while ($tags) {
-            $keyword  = $this->getRandomTag($tags);
             $accounts = \Config::get('pinterest.accounts');
             shuffle($accounts);
             foreach ($accounts as $account) {
+                $keyword  = $this->getRandomTag($tags);
                 $email    = $account['email'];
                 $password = $account['password'];
                 if ($this->vpn->reconnect($this)) {
