@@ -21,6 +21,8 @@ class OpenVPN extends Command
     const RETRY                = 10;
     const RETRY_SECONDS        = 5;
     const DEFAULT_VPN_LOCATION = 'VPN';
+    const TRAFFIC_SOURCE       = self::SOURCE_USA;
+    const SOURCE_USA           = 'USA.';
 
     /**
      * OpenVPN constructor.
@@ -127,7 +129,7 @@ class OpenVPN extends Command
         $files = \File::files(storage_path(self::DEFAULT_VPN_LOCATION));
         shuffle($files);
         foreach ($files as $file) {
-            if (strpos($file, 'USA') !== false) {
+            if (strpos($file, self::TRAFFIC_SOURCE) !== false) {
                 return $file;
             }
         }
@@ -142,7 +144,7 @@ class OpenVPN extends Command
      */
     public function getCurrentIP()
     {
-        return trim($this->Client->get(self::IP_URL, ['connect_timeout' => 10])
+        return trim($this->Client->get(self::IP_URL, ['connect_timeout' => 10, 'timeout' => 5])
                                  ->getBody());
     }
 }
