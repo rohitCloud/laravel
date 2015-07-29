@@ -20,6 +20,7 @@ class Pinterest extends Command
     const KEYWORD                    = 'travel';
     const TIMEOUT                    = 30;
     const CONNECT_TIMEOUT            = 10;
+    const DEFAULT_RE_PIN_LIMIT       = 3;
     /**
      * The name and signature of the console command.
      *
@@ -172,24 +173,20 @@ class Pinterest extends Command
         }
 
         $pinsLiked = 0;
-        $total     = count($pins);
-        $this->info('Total pins we got: ' . $total);
         shuffle($pins);
-        $offset = rand(0, ($total - 1));
+        $offset        = 0;
+        $pins          = array_slice($pins, $offset, self::DEFAULT_PINS_LIMIT_PER_TAG);
+        $pinsCount     = count($pins);
+        $randomNumbers = $this->getRandomNumbers($offset, $pinsCount, self::DEFAULT_RE_PIN_LIMIT);
 
-        if ($total > self::DEFAULT_PINS_LIMIT_PER_TAG) {
-            $pins = array_slice($pins, $offset, self::DEFAULT_PINS_LIMIT_PER_TAG);
-        } else {
-            $pins = array_slice($pins, $offset, rand($offset, ($total - 1)));
-        }
-
-        foreach ($pins as $pin) {
-            if (isset($pin['id']) && (isset($pin["liked_by_me"]) && !$pin["liked_by_me"])) {
-                $this->info("Id liked " . $pin['id']);
+        for ($index = 0; $index < $pinsCount; $index++) {
+            if (isset($pins[$index]['id']) && (isset($pins[$index]["liked_by_me"]) && !$pins[$index]["liked_by_me"])) {
+                $this->info("Id liked " . $pins[$index]['id']);
                 $pinsLiked += 1;
-                $this->likePin($pin);
-                $this->info("Id rePined " . $pin['id'] . " with board" . $board . "with board id" . $this->boardID);
-                $this->rePin($pin);
+                $this->likePin($pins[$index]);
+                if (in_array($index, $randomNumbers) && $this->rePin($pins[$index])) {
+                    $this->info("Id rePined " . $pins[$index]['id'] . " with board " . $board . " with board id " . $this->boardID);
+                }
             }
         }
 
@@ -281,7 +278,7 @@ class Pinterest extends Command
         }
 
         $this->info('Creating board ' . $findBoard);
-        return $this->createBoard($findBoard, 'travel', 'Travel is my life');
+        return $this->createBoard($findBoard, 'travel');
     }
 
     /**
@@ -468,5 +465,21 @@ class Pinterest extends Command
         }
 
         return false;
+    }
+
+    /**
+     * @author Rohit Arora
+     *
+     * @param $min
+     * @param $max
+     * @param $quantity
+     *
+     * @return array
+     */
+    private function getRandomNumbers($min, $max, $quantity)
+    {
+        $numbers = range($min, $max);
+        shuffle($numbers);
+        return array_slice($numbers, 0, $quantity);
     }
 }
