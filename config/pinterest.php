@@ -24,5 +24,15 @@ return [
              'password' => 'Pinterest2015'],
             ['email'    => 'Ava@globalpassportproject.com',
              'password' => 'Pinterest2015'],
+            ['email'    => 'Ashley@globalpassportproject.com',
+             'password' => 'Pinterest2015'],
+            ['email'    => 'Sophia@globalpassportproject.com',
+             'password' => 'Pinterest2015'],
+            ['email'    => 'Elizabeth@globalpassportproject.com',
+             'password' => 'Pinterest2015'],
+            ['email'    => 'Alexis@globalpassportproject.com',
+             'password' => 'Pinterest2015'],
+            ['email'    => 'Grace@globalpassportproject.com',
+             'password' => 'Pinterest2015'],
         ]
 ];
