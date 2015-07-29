@@ -59,7 +59,7 @@ class Pinterest extends Command
     {
         $tags = $this->getTags(self::KEYWORD);
         while ($tags) {
-            $accounts = \Config::get('pinterest.accounts');
+            $accounts = json_decode(\File::get(storage_path('app') . DIRECTORY_SEPARATOR . 'accounts.json'), true)['accounts'];
             shuffle($accounts);
             foreach ($accounts as $account) {
                 $keyword  = $this->getRandomTag($tags);
