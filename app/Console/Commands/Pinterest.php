@@ -40,6 +40,10 @@ class Pinterest extends Command
     protected $description = 'A hack for like on pinterest with tags';
 
     protected $Client;
+    protected $jar;
+    protected $headers;
+    protected $keyword;
+    protected $boardID;
     /**
      * @var OpenVPN
      */
@@ -98,90 +102,58 @@ class Pinterest extends Command
             throw new \Exception('Error in inputs');
         }
 
-        $keyword  = urlencode($keyword);
-        $email    = urlencode($email);
-        $password = urlencode($password);
+        $this->keyword = urlencode($keyword);
+        $email         = urlencode($email);
+        $password      = urlencode($password);
 
-        $client = $this->Client;
-        $jar    = new CookieJar();
-
-        $this->info('Opening pinterest.com for csrf token and cookies');
+        $this->jar = new CookieJar();
 
         $userAgent = $this->userAgents[array_rand($this->userAgents)];
         $host      = "www.pinterest.com";
         $origin    = 'https://www.pinterest.com';
 
-        $headers = ["Host"            => $host,
-                    "Connection"      => "keep-alive",
-                    "Accept"          => "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8",
-                    "User-Agent"      => $userAgent,
-                    "Referer"         => "https://www.google.com/",
-                    "Accept-Encoding" => "gzip, deflate",
-                    "Accept-Language" => "en-US,en;q=0.8,hi;q=0.6"];
+        $this->headers = ["Host"            => $host,
+                          "Connection"      => "keep-alive",
+                          "Accept"          => "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8",
+                          "User-Agent"      => $userAgent,
+                          "Referer"         => "https://www.google.com/",
+                          "Accept-Encoding" => "gzip, deflate",
+                          "Accept-Language" => "en-US,en;q=0.8,hi;q=0.6"];
 
-        $pinterestHomePage = $client->get('/', ['cookies' => $jar, 'headers' => $headers, 'connect_timeout' => self::CONNECT_TIMEOUT, 'timeout' => self::TIMEOUT]);
+        $this->info('Opening pinterest.com for csrf token and cookies');
 
-        $this->info('cookies done');
+        $pinterestHomePage = $this->getHomePage();
 
-        $headers = ['Host'                 => $host,
-                    "Connection"           => "keep-alive",
-                    "CSP"                  => "active",
-                    "Content-Type"         => "application/x-www-form-urlencoded; charset=UTF-8",
-                    'Origin'               => $origin,
-                    'X-Pinterest-AppState' => 'active',
-                    "Referer"              => "https://www.pinterest.com/",
-                    'X-Requested-With'     => 'XMLHttpRequest',
-                    'Accept'               => 'application/json, text/javascript, */*; q=0.01',
-                    'Accept-Encoding'      => 'gzip, deflate',
-                    'X-CSRFToken'          => $this->getCSRF($pinterestHomePage->getHeader('Set-Cookie')),
-                    'Accept-Language'      => 'en-US,en;q=0.8,hi;q=0.6',
-                    'User-Agent'           => $userAgent,
-                    'X-APP-VERSION'        => $pinterestHomePage->getHeader('Pinterest-Version')[0],
+        $this->headers = ['Host'                 => $host,
+                          "Connection"           => "keep-alive",
+                          "CSP"                  => "active",
+                          "Content-Type"         => "application/x-www-form-urlencoded; charset=UTF-8",
+                          'Origin'               => $origin,
+                          'X-Pinterest-AppState' => 'active',
+                          "Referer"              => "https://www.pinterest.com/",
+                          'X-Requested-With'     => 'XMLHttpRequest',
+                          'Accept'               => 'application/json, text/javascript, */*; q=0.01',
+                          'Accept-Encoding'      => 'gzip, deflate',
+                          'X-CSRFToken'          => $this->getCSRF($pinterestHomePage->getHeader('Set-Cookie')),
+                          'Accept-Language'      => 'en-US,en;q=0.8,hi;q=0.6',
+                          'User-Agent'           => $userAgent,
+                          'X-APP-VERSION'        => $pinterestHomePage->getHeader('Pinterest-Version')[0],
         ];
 
         $this->info('Updating track actions pinterest.com/resource/UserRegisterTrackActionResource/update/');
-
-        $client->post('/resource/UserRegisterTrackActionResource/update/',
-            ['body'            => 'source_url=%2F&data=%7B%22options%22%3A%7B%22actions%22%3A%5B%22register_landing%22%2C%22register_multi_screen_username_pass_loaded%22%2C%22unauth_home%22%2C%22traffic.desktop.google.HomePage.unauth%22%5D%7D%2C%22context%22%3A%7B%7D%7D',
-             'headers'         => $headers,
-             'cookies'         => $jar,
-             'connect_timeout' => self::CONNECT_TIMEOUT,
-             'timeout'         => self::TIMEOUT]);
-
+        $this->updateTracking();
         $this->info('Checking if email already exists');
-
-        $client->get('/resource/EmailExistsResource/get/?source_url=%2F&data=%7B%22options%22%3A%7B%22email%22%3A%22' . $email .
-            '%22%7D%2C%22context%22%3A%7B%7D%7D&module_path=App%3EHomePage%3EUnauthHomePage%3ESignupForm%3EUserRegister(is_login_form%3Dnull%2C+wall_class%3DdarkWall%2C+container%3Dhome_page%2C+show_personalize_field%3Dfalse%2C+unified_auth%3Dnull%2C+next%3Dnull%2C+register%3Dtrue)&_=' . round(microtime(true) * 1000),
-            ['headers' => $headers,
-             'cookies' => $jar]);
-
+        $this->checkEmailExists($email);
         $this->info('Trying to login with you email ' . urldecode($email));
-
-        $loginPage = $client->post('/resource/UserSessionResource/create/',
-            ['body'            => 'source_url=%2F&data=%7B%22options%22%3A%7B%22username_or_email%22%3A%22' . $email . '%22%2C%22password%22%3A%22' . $password .
-                '%22%7D%2C%22context%22%3A%7B%7D%7D&module_path=App%3EHomePage%3EUnauthHomePage%3ESignupForm%3EUserRegister(is_login_form%3Dnull%2C+wall_class%3DdarkWall%2C+container%3Dhome_page%2C+show_personalize_field%3Dfalse%2C+unified_auth%3Dnull%2C+next%3Dnull%2C+register%3Dtrue)',
-             'headers'         => $headers,
-             'cookies'         => $jar,
-             'connect_timeout' => self::CONNECT_TIMEOUT,
-             'timeout'         => self::TIMEOUT]);
-
+        $loginPage = $this->login($email, $password);
         $this->info('Setting CSRFToken again after logged in');
+        $this->headers['X-CSRFToken'] = $this->getCSRF($loginPage->getHeader('Set-Cookie'));
+        $boards                       = $this->getBoards();
+        $board                        = 'travel';
+        $this->boardID                = $this->getBoard($boards, $board);
 
-        $headers['X-CSRFToken'] = $this->getCSRF($loginPage->getHeader('Set-Cookie'));
-
-        $this->info('Searching your tags: ' . urldecode($keyword));
-
-        $pinsJson = $client->get('/resource/BaseSearchResource/get/?source_url=%2Fsearch%2Fpins%2F%3Frs%3Dac%26len%3D2%26q%3D' . $keyword .
-            '%26term_meta%255B%255D%3D' . $keyword . '%257Cautocomplete%257C0&data=%7B%22options%22%3A%7B%22restrict%22%3Anull%2C%22scope%22%3A%22pins%22%2C%22constraint_string%22%3Anull%2C%22show_scope_selector%22%3Atrue%2C%22query%22%3A%22' . $keyword . '%22%7D%2C%22context%22%3A%7B%7D%2C%22module%22%3A%7B%22name%22%3A%22SearchPage%22%2C%22options%22%3A%7B%22restrict%22%3Anull%2C%22scope%22%3A%22pins%22%2C%22constraint_string%22%3Anull%2C%22show_scope_selector%22%3Atrue%2C%22query%22%3A%22' . $keyword . '%22%7D%7D%2C%22render_type%22%3A1%2C%22error_strategy%22%3A0%7D&module_path=App%3EHeader%3ESearchForm%3ETypeaheadField(support_guided_search%3Dtrue%2C+resource_name%3DAdvancedTypeaheadResource%2C+tags%3Dautocomplete%2C+class_name%3DbuttonOnRight%2C+prefetch_on_focus%3Dtrue%2C+support_advanced_typeahead%3Dnull%2C+hide_tokens_on_focus%3Dundefined%2C+search_on_focus%3Dtrue%2C+placeholder%3DSearch%2C+show_remove_all%3Dtrue%2C+enable_recent_queries%3Dtrue%2C+name%3Dq%2C+view_type%3Dguided%2C+value%3D%22%22%2C+input_log_element_type%3D227%2C+populate_on_result_highlight%3Dtrue%2C+search_delay%3D0%2C+is_multiobject_search%3Dtrue%2C+type%3Dtokenized%2C+enable_overlay%3Dtrue)&_=' . round(microtime(true) * 1000),
-            ['headers'         => $headers,
-             'cookies'         => $jar,
-             'connect_timeout' => self::CONNECT_TIMEOUT,
-             'timeout'         => self::TIMEOUT]);
-
-        $pinsJson = $pinsJson->getBody();
-
-        $parsedPins = json_decode($pinsJson, true);
-
+        $this->info('Searching your tags: ' . urldecode($this->keyword));
+        $parsedPins = $this->getDefaultPins();
         $this->info('Fetching default search page data');
 
         $pins     = $parsedPins['resource_data_cache'][0]['data']['results'];
@@ -190,15 +162,7 @@ class Pinterest extends Command
         for ($index = 0; $index < $noOfPages; $index++) {
             $this->info('Collecting data based on pages you requested - pageNo:' . ($index + 1));
 
-            $pinsJson = $client->get('/resource/SearchResource/get/?source_url=%2Fsearch%2F%3Fq%3D' . $keyword .
-                '&data=' . urlencode('{"options":{"layout":null,"places":false,"constraint_string":null,"show_scope_selector":null,"query":"' . $keyword . '","scope":"pins","bookmarks":["' . $bookmark . '"]},"context":{}}') . '&_=' . round(microtime(true) * 1000),
-                ['headers'         => $headers,
-                 'cookies'         => $jar,
-                 'connect_timeout' => self::CONNECT_TIMEOUT,
-                 'timeout'         => self::TIMEOUT])
-                               ->getBody();
-
-            $parsedPins = json_decode($pinsJson, true);
+            $parsedPins = $this->getPinsWithBookmark($bookmark);
             try {
                 $pins     = array_merge($pins, $parsedPins['resource_data_cache'][0]['data']);
                 $bookmark = $parsedPins['resource']['options']['bookmarks'][0];
@@ -208,13 +172,9 @@ class Pinterest extends Command
         }
 
         $pinsLiked = 0;
-
-        $total = count($pins);
-
+        $total     = count($pins);
         $this->info('Total pins we got: ' . $total);
-
         shuffle($pins);
-
         $offset = rand(0, ($total - 1));
 
         if ($total > self::DEFAULT_PINS_LIMIT_PER_TAG) {
@@ -227,14 +187,9 @@ class Pinterest extends Command
             if (isset($pin['id']) && (isset($pin["liked_by_me"]) && !$pin["liked_by_me"])) {
                 $this->info("Id liked " . $pin['id']);
                 $pinsLiked += 1;
-                $client->post('/resource/PinLikeResource2/create/',
-                    ['body'            => 'source_url=%2Fsearch%2Fpins%2F%3Frs%3Dac%26len%3D2%26q%3D' . $keyword . '%26term_meta%255B%255D%3D' . $keyword .
-                        '%257Cautocomplete%257C0&data=%7B%22options%22%3A%7B%22pin_id%22%3A%22' . $pin['id'] . '%22%2C%22source_interest_id%22%3Anull%7D%2C%22context%22%3A%7B%7D%7D&module_path=App%3ESearchPage%3ESearchPageContent%3EGrid%3EGridItems%3EPin%3EPinLikeButton(liked%3Dfalse%2C+source_interest_id%3Dnull%2C+has_icon%3Dtrue%2C+text%3DLike%2C+class_name%3DlikeSmall%2C+pin_id%3D' . $pin['id'] . '%2C+show_text%3Dfalse%2C+ga_category%3Dlike)',
-                     'headers'         => $headers,
-                     'cookies'         => $jar,
-                     'connect_timeout' => self::CONNECT_TIMEOUT,
-                     'timeout'         => self::TIMEOUT])
-                       ->getBody();
+                $this->likePin($pin);
+                $this->info("Id rePined " . $pin['id'] . " with board" . $board . "with board id" . $this->boardID);
+                $this->rePin($pin);
             }
         }
 
@@ -301,5 +256,217 @@ class Pinterest extends Command
         }
 
         return self::KEYWORD . ' ' . $tags[array_rand($tags)] . ' ' . $tags[array_rand($tags)];
+    }
+
+    /**
+     * @author Rohit Arora
+     *
+     * @param $boards
+     * @param $findBoard
+     *
+     * @return mixed
+     */
+    private function getBoard($boards, $findBoard)
+    {
+        if (isset($boards['resource_data_cache'][0]['data']['all_boards'])) {
+            $boards = $boards['resource_data_cache'][0]['data']['all_boards'];
+        } else {
+            $boards = [];
+        }
+
+        foreach ($boards as $board) {
+            if ($board['name'] == $findBoard) {
+                return $board['id'];
+            }
+        }
+
+        $this->info('Creating board ' . $findBoard);
+        return $this->createBoard($findBoard, 'travel', 'Travel is my life');
+    }
+
+    /**
+     * @author Rohit Arora
+     *
+     * @return \Psr\Http\Message\ResponseInterface
+     */
+    private function getHomePage()
+    {
+        return $this->Client->get('/', ['cookies' => $this->jar, 'headers' => $this->headers, 'connect_timeout' => self::CONNECT_TIMEOUT, 'timeout' => self::TIMEOUT]);
+    }
+
+    private function updateTracking()
+    {
+        $this->Client->post('/resource/UserRegisterTrackActionResource/update/',
+            ['body'            => 'source_url=%2F&data=%7B%22options%22%3A%7B%22actions%22%3A%5B%22register_landing%22%2C%22register_multi_screen_username_pass_loaded%22%2C%22unauth_home%22%2C%22traffic.desktop.google.HomePage.unauth%22%5D%7D%2C%22context%22%3A%7B%7D%7D',
+             'headers'         => $this->headers,
+             'cookies'         => $this->jar,
+             'connect_timeout' => self::CONNECT_TIMEOUT,
+             'timeout'         => self::TIMEOUT]);
+    }
+
+    /**
+     * @author Rohit Arora
+     *
+     * @param $email
+     */
+    private function checkEmailExists($email)
+    {
+        $this->Client->get('/resource/EmailExistsResource/get/?source_url=%2F&data=%7B%22options%22%3A%7B%22email%22%3A%22' . $email .
+            '%22%7D%2C%22context%22%3A%7B%7D%7D&module_path=App%3EHomePage%3EUnauthHomePage%3ESignupForm%3EUserRegister(is_login_form%3Dnull%2C+wall_class%3DdarkWall%2C+container%3Dhome_page%2C+show_personalize_field%3Dfalse%2C+unified_auth%3Dnull%2C+next%3Dnull%2C+register%3Dtrue)&_=' . round(microtime(true) * 1000),
+            ['headers' => $this->headers,
+             'cookies' => $this->jar]);
+    }
+
+    /**
+     * @author Rohit Arora
+     *
+     * @param $email
+     * @param $password
+     *
+     * @return \Psr\Http\Message\ResponseInterface
+     */
+    private function login($email, $password)
+    {
+        return $this->Client->post('/resource/UserSessionResource/create/',
+            ['body'            => 'source_url=%2F&data=%7B%22options%22%3A%7B%22username_or_email%22%3A%22' . $email . '%22%2C%22password%22%3A%22' . $password .
+                '%22%7D%2C%22context%22%3A%7B%7D%7D&module_path=App%3EHomePage%3EUnauthHomePage%3ESignupForm%3EUserRegister(is_login_form%3Dnull%2C+wall_class%3DdarkWall%2C+container%3Dhome_page%2C+show_personalize_field%3Dfalse%2C+unified_auth%3Dnull%2C+next%3Dnull%2C+register%3Dtrue)',
+             'headers'         => $this->headers,
+             'cookies'         => $this->jar,
+             'connect_timeout' => self::CONNECT_TIMEOUT,
+             'timeout'         => self::TIMEOUT]);
+    }
+
+    /**
+     * @author Rohit Arora
+     *
+     * @return mixed
+     */
+    private function getBoards()
+    {
+        $boardsJson = $this->Client->get('/resource/BoardPickerBoardsResource/get/?source_url=%2Fsearch%2Fpins%2F%3Fq%3Dtravel%2520cars&data=%7B%22options%22%3A%7B%22filter%22%3A%22all%22%2C%22field_set_key%22%3A%22board_picker%22%2C%22allow_stale%22%3Atrue%7D%2C%22context%22%3A%7B%7D%7D&module_path=App%3EHeader%3ESearchForm%3ETypeaheadField(support_guided_search%3Dtrue%2C+resource_name%3DAdvancedTypeaheadResource%2C+tags%3Dautocomplete%2C+class_name%3DbuttonOnRight%2C+prefetch_on_focus%3Dtrue%2C+support_advanced_typeahead%3Dnull%2C+hide_tokens_on_focus%3Dundefined%2C+search_on_focus%3Dtrue%2C+placeholder%3DSearch%2C+show_remove_all%3Dtrue%2C+enable_recent_queries%3Dtrue%2C+name%3Dq%2C+view_type%3Dguided%2C+value%3D%22%22%2C+input_log_element_type%3D227%2C+populate_on_result_highlight%3Dtrue%2C+search_delay%3D0%2C+is_multiobject_search%3Dtrue%2C+type%3Dtokenized%2C+enable_overlay%3Dtrue)&_=' . round(microtime(true) * 1000),
+            ['headers'         => $this->headers,
+             'cookies'         => $this->jar,
+             'connect_timeout' => self::CONNECT_TIMEOUT,
+             'timeout'         => self::TIMEOUT])
+                                   ->getBody();
+
+        $boards = json_decode($boardsJson, true);
+
+        return $boards;
+    }
+
+    /**
+     * @author Rohit Arora
+     *
+     * @return array
+     */
+    private function getDefaultPins()
+    {
+        $pinsJson = $this->Client->get('/resource/BaseSearchResource/get/?source_url=%2Fsearch%2Fpins%2F%3Frs%3Dac%26len%3D2%26q%3D' . $this->keyword .
+            '%26term_meta%255B%255D%3D' . $this->keyword . '%257Cautocomplete%257C0&data=%7B%22options%22%3A%7B%22restrict%22%3Anull%2C%22scope%22%3A%22pins%22%2C%22constraint_string%22%3Anull%2C%22show_scope_selector%22%3Atrue%2C%22query%22%3A%22' . $this->keyword . '%22%7D%2C%22context%22%3A%7B%7D%2C%22module%22%3A%7B%22name%22%3A%22SearchPage%22%2C%22options%22%3A%7B%22restrict%22%3Anull%2C%22scope%22%3A%22pins%22%2C%22constraint_string%22%3Anull%2C%22show_scope_selector%22%3Atrue%2C%22query%22%3A%22' . $this->keyword . '%22%7D%7D%2C%22render_type%22%3A1%2C%22error_strategy%22%3A0%7D&module_path=App%3EHeader%3ESearchForm%3ETypeaheadField(support_guided_search%3Dtrue%2C+resource_name%3DAdvancedTypeaheadResource%2C+tags%3Dautocomplete%2C+class_name%3DbuttonOnRight%2C+prefetch_on_focus%3Dtrue%2C+support_advanced_typeahead%3Dnull%2C+hide_tokens_on_focus%3Dundefined%2C+search_on_focus%3Dtrue%2C+placeholder%3DSearch%2C+show_remove_all%3Dtrue%2C+enable_recent_queries%3Dtrue%2C+name%3Dq%2C+view_type%3Dguided%2C+value%3D%22%22%2C+input_log_element_type%3D227%2C+populate_on_result_highlight%3Dtrue%2C+search_delay%3D0%2C+is_multiobject_search%3Dtrue%2C+type%3Dtokenized%2C+enable_overlay%3Dtrue)&_=' . round(microtime(true) * 1000),
+            ['headers'         => $this->headers,
+             'cookies'         => $this->jar,
+             'connect_timeout' => self::CONNECT_TIMEOUT,
+             'timeout'         => self::TIMEOUT]);
+
+        $pinsJson = $pinsJson->getBody();
+
+        $parsedPins = json_decode($pinsJson, true);
+        return $parsedPins;
+    }
+
+    /**
+     * @author Rohit Arora
+     *
+     * @param $bookmark
+     *
+     * @return mixed
+     */
+    private function getPinsWithBookmark($bookmark)
+    {
+        $pinsJson = $this->Client->get('/resource/SearchResource/get/?source_url=%2Fsearch%2F%3Fq%3D' . $this->keyword .
+            '&data=' . urlencode('{"options":{"layout":null,"places":false,"constraint_string":null,"show_scope_selector":null,"query":"' . $this->keyword . '","scope":"pins","bookmarks":["' . $bookmark . '"]},"context":{}}') . '&_=' . round(microtime(true) * 1000),
+            ['headers'         => $this->headers,
+             'cookies'         => $this->jar,
+             'connect_timeout' => self::CONNECT_TIMEOUT,
+             'timeout'         => self::TIMEOUT])
+                                 ->getBody();
+
+        $parsedPins = json_decode($pinsJson, true);
+        return $parsedPins;
+    }
+
+    /**
+     * @author Rohit Arora
+     *
+     * @param $pin
+     */
+    private function likePin($pin)
+    {
+        $this->Client->post('/resource/PinLikeResource2/create/',
+            ['body'            => 'source_url=%2Fsearch%2Fpins%2F%3Frs%3Dac%26len%3D2%26q%3D' . $this->keyword . '%26term_meta%255B%255D%3D' . $this->keyword .
+                '%257Cautocomplete%257C0&data=%7B%22options%22%3A%7B%22pin_id%22%3A%22' . $pin['id'] . '%22%2C%22source_interest_id%22%3Anull%7D%2C%22context%22%3A%7B%7D%7D&module_path=App%3ESearchPage%3ESearchPageContent%3EGrid%3EGridItems%3EPin%3EPinLikeButton(liked%3Dfalse%2C+source_interest_id%3Dnull%2C+has_icon%3Dtrue%2C+text%3DLike%2C+class_name%3DlikeSmall%2C+pin_id%3D' . $pin['id'] . '%2C+show_text%3Dfalse%2C+ga_category%3Dlike)',
+             'headers'         => $this->headers,
+             'cookies'         => $this->jar,
+             'connect_timeout' => self::CONNECT_TIMEOUT,
+             'timeout'         => self::TIMEOUT])
+                     ->getBody();
+    }
+
+    /**
+     * @author Rohit Arora
+     *
+     * @param $pin
+     *
+     * @return bool
+     */
+    private function rePin($pin)
+    {
+        if ($this->boardID) {
+            $this->Client->post('/resource/RepinResource/create/',
+                ['body'            => 'source_url=%2Fsearch%2Fpins%2F%3Frs%3Dac%26len%3D2%26q%3D' . $this->keyword . '%26term_meta%255B%255D%3D' . $this->keyword .
+                    '%257Cautocomplete%257C0&data=%7B%22options%22%3A%7B%22pin_id%22%3A%22' . $pin['id'] . '%22%2C%22description%22%3A%22' . urlencode($pin['description']) .
+                    '%22%2C%22link%22%3A%22' . urlencode($pin['link']) . '%22%2C%22is_video%22%3Afalse%2C%22board_id%22%3A%22' . $this->boardID .
+                    '%22%7D%2C%22context%22%3A%7B%7D%7D&module_path=App%3EModalManager%3EModal%3EPinCreate3%3EBoardPicker%3ESelectList(view_type%3DpinCreate3%2C+selected_section_index%3Dundefined%2C+selected_item_index%3Dundefined%2C+highlight_matched_text%3Dtrue%2C+suppress_hover_events%3Dundefined%2C+scroll_selected_item_into_view%3Dtrue%2C+select_first_item_after_update%3Dfalse%2C+item_module%3D%5Bobject+Object%5D)',
+                 'headers'         => $this->headers,
+                 'cookies'         => $this->jar,
+                 'connect_timeout' => self::CONNECT_TIMEOUT,
+                 'timeout'         => self::TIMEOUT])
+                         ->getBody();
+
+            return true;
+        }
+
+        return false;
+    }
+
+    /**
+     * @author Rohit Arora
+     *
+     * @param        $board
+     * @param string $category
+     * @param string $description
+     *
+     * @return bool
+     */
+    private function createBoard($board, $category = 'travel', $description = '')
+    {
+        $boardJson = $this->Client->post('/resource/BoardResource/create/',
+            ['body'            => 'source_url=%2Fsearch%2F%3Fq%3D' . $this->keyword . '&data=%7B%22options%22%3A%7B%22name%22%3A%22' . urlencode($board) .
+                '%22%2C%22category%22%3A%22' . urlencode($category) . '%22%2C%22description%22%3A%22' . urlencode($description) .
+                '%22%2C%22privacy%22%3A%22public%22%2C%22layout%22%3A%22default%22%7D%2C%22context%22%3A%7B%7D%7D&module_path=App%3ESearchPage%3ESearchPageContent%3EGrid%3EGridItems%3EPin%3EShowModalButton(module%3DPinCreate3)%23App%3EModalManager%3EModal(modal_style%3DwebNewContentNewRepin%2C+custom_entrance_animation%3Dtrue%2C+mask_type%3DwebNewContentNewRepin%2C+custom_exit_animation%3Dtrue%2C+container_class%3DwebNewContentNewRepin)',
+             'headers'         => $this->headers,
+             'cookies'         => $this->jar,
+             'connect_timeout' => self::CONNECT_TIMEOUT,
+             'timeout'         => self::TIMEOUT])
+                                  ->getBody();
+
+        $board = json_decode($boardJson, true);
+
+        if (isset($board['resource_response']['data']['id'])) {
+            return $board['resource_response']['data']['id'];
+        }
+
+        return false;
     }
 }
