@@ -102,7 +102,7 @@ class Pinterest extends Command
 
         $this->info('Opening pinterest.com for csrf token and cookies');
 
-        $headers = ["Host"            => "in.pinterest.com",
+        $headers = ["Host"            => "www.pinterest.com",
                     "Connection"      => "keep-alive",
                     "Accept"          => "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8",
                     "User-Agent"      => "Mozilla/5.0 (Windows NT 6.3; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/43.0.2357.134 Safari/537.36",
@@ -114,13 +114,13 @@ class Pinterest extends Command
 
         $this->info('cookies done');
 
-        $headers = ['Host'                 => 'in.pinterest.com',
+        $headers = ['Host'                 => 'www.pinterest.com',
                     "Connection"           => "keep-alive",
                     "CSP"                  => "active",
                     "Content-Type"         => "application/x-www-form-urlencoded; charset=UTF-8",
-                    'Origin'               => 'https://in.pinterest.com',
+                    'Origin'               => 'https://www.pinterest.com',
                     'X-Pinterest-AppState' => 'active',
-                    "Referer"              => "https://in.pinterest.com/",
+                    "Referer"              => "https://www.pinterest.com/",
                     'X-Requested-With'     => 'XMLHttpRequest',
                     'Accept'               => 'application/json, text/javascript, */*; q=0.01',
                     'Accept-Encoding'      => 'gzip, deflate',
