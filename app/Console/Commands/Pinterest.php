@@ -219,7 +219,7 @@ class Pinterest extends Command
         }
 
         foreach ($pins as $pin) {
-            if (isset($pin['id'])) {
+            if (isset($pin['id']) && (isset($pin["liked_by_me"]) && !$pin["liked_by_me"])) {
                 $this->info("Id liked " . $pin['id']);
                 $pinsLiked += 1;
                 $client->post('/resource/PinLikeResource2/create/',
