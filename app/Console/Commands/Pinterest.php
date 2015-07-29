@@ -102,11 +102,15 @@ class Pinterest extends Command
 
         $this->info('Opening pinterest.com for csrf token and cookies');
 
-        $headers = ["Host"            => "www.pinterest.com",
+        $userAgent = "Mozilla/5.0 (Windows NT 6.3; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/43.0.2357.134 Safari/537.36";
+        $host      = "www.pinterest.com";
+        $origin    = 'https://www.pinterest.com';
+
+        $headers = ["Host"            => $host,
                     "Connection"      => "keep-alive",
                     "Accept"          => "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8",
-                    "User-Agent"      => "Mozilla/5.0 (Windows NT 6.3; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/43.0.2357.134 Safari/537.36",
-                    "Referer"         => "https://www.google.co.in/",
+                    "User-Agent"      => $userAgent,
+                    "Referer"         => "https://www.google.com/",
                     "Accept-Encoding" => "gzip, deflate",
                     "Accept-Language" => "en-US,en;q=0.8,hi;q=0.6"];
 
@@ -114,11 +118,11 @@ class Pinterest extends Command
 
         $this->info('cookies done');
 
-        $headers = ['Host'                 => 'www.pinterest.com',
+        $headers = ['Host'                 => $host,
                     "Connection"           => "keep-alive",
                     "CSP"                  => "active",
                     "Content-Type"         => "application/x-www-form-urlencoded; charset=UTF-8",
-                    'Origin'               => 'https://www.pinterest.com',
+                    'Origin'               => $origin,
                     'X-Pinterest-AppState' => 'active',
                     "Referer"              => "https://www.pinterest.com/",
                     'X-Requested-With'     => 'XMLHttpRequest',
@@ -126,7 +130,7 @@ class Pinterest extends Command
                     'Accept-Encoding'      => 'gzip, deflate',
                     'X-CSRFToken'          => $this->getCSRF($pinterestHomePage->getHeader('Set-Cookie')),
                     'Accept-Language'      => 'en-US,en;q=0.8,hi;q=0.6',
-                    'User-Agent'           => 'Mozilla/5.0 (Windows NT 6.3; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/43.0.2357.134 Safari/537.36',
+                    'User-Agent'           => $userAgent,
                     'X-APP-VERSION'        => $pinterestHomePage->getHeader('Pinterest-Version')[0],
         ];
 
