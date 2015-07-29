@@ -27,6 +27,11 @@ class Pinterest extends Command
      */
     protected $signature = 'pinterest:like';
 
+    protected $userAgents = ['Mozilla/5.0 (Windows NT 6.3; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/43.0.2357.134 Safari/537.36',
+                             'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/44.0.2217.88 Safari/537.36',
+                             'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_10_4) AppleWebKit/600.7.12 (KHTML, like Gecko) Version/8.0.7 Safari/600.7.12',
+                             'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/43.0.2203.89 Safari/537.36'];
+
     /**
      * The console command description.
      *
@@ -102,7 +107,7 @@ class Pinterest extends Command
 
         $this->info('Opening pinterest.com for csrf token and cookies');
 
-        $userAgent = "Mozilla/5.0 (Windows NT 6.3; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/43.0.2357.134 Safari/537.36";
+        $userAgent = $this->userAgents[array_rand($this->userAgents)];
         $host      = "www.pinterest.com";
         $origin    = 'https://www.pinterest.com';
 
