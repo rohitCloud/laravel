@@ -149,9 +149,17 @@ class Pinterest extends Command
         $loginPage = $this->login($email, $password);
         $this->info('Setting CSRFToken again after logged in');
         $this->headers['X-CSRFToken'] = $this->getCSRF($loginPage->getHeader('Set-Cookie'));
-        $boards                       = $this->getBoards();
-        $board                        = 'travel';
-        $this->boardID                = $this->getBoard($boards, $board);
+
+        $boards        = $this->getBoards();
+        $board         = 'travel';
+        $this->boardID = $this->getBoard($boards, $board);
+
+        if (false) {
+            $link          = 'http://www.holidayiq.com/blog/14-things-you-can-do-in-pune-only-after-bunking-office-1123.html';
+            $pinnableItems = $this->getPinnableWithURL($link);
+            $this->pin($pinnableItems[array_rand($pinnableItems)], $link);
+            $this->info('Pinned');
+        }
 
         $this->info('Searching your tags: ' . urldecode($this->keyword));
         $parsedPins = $this->getDefaultPins();
@@ -440,6 +448,34 @@ class Pinterest extends Command
     /**
      * @author Rohit Arora
      *
+     * @param        $imageURL
+     * @param        $link
+     * @param string $description
+     *
+     * @return bool
+     */
+    private function pin($imageURL, $link, $description = '')
+    {
+        if ($this->boardID) {
+            $this->Client->post('/resource/PinResource/create/',
+                ['body'            => 'source_url=%2Fpin%2Ffind%2F%3Furl%3D' . urlencode($link) . '&data=%7B%22options%22%3A%7B%22method%22%3A%22scraped%22%2C%22description%22%3A%22'
+                    . urlencode($description) . '%22%2C%22link%22%3A%22' . urlencode($link) . '%22%2C%22image_url%22%3A%22' . urlencode($imageURL) . '%22%2C%22board_id%22%3A%22'
+                    . $this->boardID . '%22%7D%2C%22context%22%3A%7B%7D%7D&module_path=App%3EModalManager%3EModal%3EPinCreate3%3EBoardPicker%3ESelectList(view_type%3DpinCreate3%2C+selected_section_index%3Dundefined%2C+selected_item_index%3Dundefined%2C+highlight_matched_text%3Dtrue%2C+suppress_hover_events%3Dundefined%2C+scroll_selected_item_into_view%3Dtrue%2C+select_first_item_after_update%3Dfalse%2C+item_module%3D%5Bobject+Object%5D)',
+                 'headers'         => $this->headers,
+                 'cookies'         => $this->jar,
+                 'connect_timeout' => self::CONNECT_TIMEOUT,
+                 'timeout'         => self::TIMEOUT])
+                         ->getBody();
+
+            return true;
+        }
+
+        return false;
+    }
+
+    /**
+     * @author Rohit Arora
+     *
      * @param        $board
      * @param string $category
      * @param string $description
@@ -481,5 +517,31 @@ class Pinterest extends Command
         $numbers = range($min, $max);
         shuffle($numbers);
         return array_slice($numbers, 0, $quantity);
+    }
+
+    /**
+     * @author Rohit Arora
+     *
+     * @param $URL
+     *
+     * @return mixed
+     */
+    private function getPinnableWithURL($URL)
+    {
+        $pinnableJson = $this->Client->get('/pin/find/?url=' . urlencode($URL),
+            ['headers'         => $this->headers,
+             'cookies'         => $this->jar,
+             'connect_timeout' => self::CONNECT_TIMEOUT,
+             'timeout'         => self::TIMEOUT])
+                                     ->getBody();
+
+        $pinnableItems = json_decode($pinnableJson, true);
+        $pinnableItems = $pinnableItems['resource_data_cache'][0]['data']['items'];
+        $items         = [];
+        foreach ($pinnableItems as $item) {
+            $items[] = $item['url'];
+        }
+
+        return $items;
     }
 }
