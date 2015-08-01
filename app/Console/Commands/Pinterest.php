@@ -3,6 +3,7 @@
 namespace App\Console\Commands;
 
 use App\Commands\OpenVPN;
+use App\Exceptions\InvalidArguments;
 use GuzzleHttp\Client;
 use GuzzleHttp\Cookie\CookieJar;
 use Illuminate\Console\Command;
@@ -151,15 +152,8 @@ class Pinterest extends Command
         $this->headers['X-CSRFToken'] = $this->getCSRF($loginPage->getHeader('Set-Cookie'));
 
         $boards        = $this->getBoards();
-        $board         = 'travel';
+        $board         = self::KEYWORD;
         $this->boardID = $this->getBoard($boards, $board);
-
-        if (false) {
-            $link          = 'http://www.holidayiq.com/blog/14-things-you-can-do-in-pune-only-after-bunking-office-1123.html';
-            $pinnableItems = $this->getPinnableWithURL($link);
-            $this->pin($pinnableItems[array_rand($pinnableItems)], $link);
-            $this->info('Pinned');
-        }
 
         $this->info('Searching your tags: ' . urldecode($this->keyword));
         $parsedPins = $this->getDefaultPins();
@@ -196,6 +190,11 @@ class Pinterest extends Command
                     $this->info("Id rePined " . $pins[$index]['id'] . " with board " . $board . " with board id " . $this->boardID);
                 }
             }
+        }
+
+        $trip = $this->pinRandomTrip();
+        if ($trip) {
+            $this->info("Pinned title -> {$trip['title']} link -> {$trip['link']} image -> {$trip['image_url']} category -> {$trip['category']}");
         }
 
         $this->info('Total pins we liked: ' . $pinsLiked);
@@ -269,10 +268,15 @@ class Pinterest extends Command
      * @param $boards
      * @param $findBoard
      *
-     * @return mixed
+     * @return bool
+     * @throws InvalidArguments
      */
     private function getBoard($boards, $findBoard)
     {
+        if (!$findBoard) {
+            throw new InvalidArguments;
+        }
+
         if (isset($boards['resource_data_cache'][0]['data']['all_boards'])) {
             $boards = $boards['resource_data_cache'][0]['data']['all_boards'];
         } else {
@@ -543,5 +547,45 @@ class Pinterest extends Command
         }
 
         return $items;
+    }
+
+    /**
+     * @author Rohit Arora
+     *
+     * @return mixed
+     */
+    private function getRandomPinnable()
+    {
+        $trip = [];
+        if (!rand(0, 5)) {
+            $tripJson = file_get_contents(env('TRIP_URL'));
+            $trip     = json_decode($tripJson, true);
+        }
+
+        return $trip;
+    }
+
+    /**
+     * @author Rohit Arora
+     *
+     * @return bool
+     */
+    private function pinRandomTrip()
+    {
+        $trip = $this->getRandomPinnable();
+        if (!$trip || !$trip['link'] || !$trip['category'] || !$trip['title']) {
+            return false;
+        }
+
+        $boards        = $this->getBoards();
+        $this->boardID = $this->getBoard($boards, $trip['category']);
+        $pinnableItems = $this->getPinnableWithURL($trip['link']);
+
+        $trip['image_url'] = $pinnableItems[array_rand($pinnableItems)];
+        if ($this->pin($trip['image_url'], $trip['link'], $trip['title'])) {
+            return $trip;
+        }
+
+        return false;
     }
 }
