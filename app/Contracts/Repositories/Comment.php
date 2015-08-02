@@ -75,4 +75,14 @@ interface Comment
      * @return array
      */
     public function store($parameters);
+
+    /**
+     * @author Rohit Arora
+     *
+     * @param $parameters
+     * @param $commentID
+     *
+     * @return array
+     */
+    public function modify($parameters, $commentID);
 }

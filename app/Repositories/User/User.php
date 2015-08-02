@@ -93,4 +93,19 @@ class User extends Base implements UserContract
 
         return $this->save();
     }
+
+    /**
+     * @author Rohit Arora
+     *
+     * @param $parameters
+     * @param $userID
+     *
+     * @return array
+     */
+    public function modify($parameters, $userID)
+    {
+        $this->setPostParameters($parameters);
+
+        return $this->update($userID);
+    }
 }

@@ -30,6 +30,16 @@ interface Post
     /**
      * @author Rohit Arora
      *
+     * @param $parameters
+     * @param $postID
+     *
+     * @return array
+     */
+    public function modify($parameters, $postID);
+
+    /**
+     * @author Rohit Arora
+     *
      * @param int   $postID
      * @param array $parameters
      *

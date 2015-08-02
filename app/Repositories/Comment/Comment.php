@@ -146,4 +146,19 @@ class Comment extends Base implements CommentContract
 
         return $this->save();
     }
+
+    /**
+     * @author Rohit Arora
+     *
+     * @param $parameters
+     * @param $commentID
+     *
+     * @return array
+     */
+    public function modify($parameters, $commentID)
+    {
+        $this->setPostParameters($parameters);
+
+        return $this->update($commentID);
+    }
 }

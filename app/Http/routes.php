@@ -13,8 +13,8 @@ require_once 'constants.php';
 */
 
 Route::group(['prefix' => 'api/1.0'], function () {
-    resource('/posts', 'Post\Post', ['only' => ['index', 'show', 'store']]);
-    resource('/users', 'User\User', ['only' => ['index', 'show', 'store']]);
+    resource('/posts', 'Post\Post');
+    resource('/users', 'User\User');
     Route::group(['prefix' => 'users/{userID}'], function () {
         resource('/posts', 'User\Post', ['only' => ['index', 'show', 'store']]);
     });

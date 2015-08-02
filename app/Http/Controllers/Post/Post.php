@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Post;
 
+use App\Adapters\Post as PostAdapter;
 use App\Http\Controllers\Controller;
 use App\Contracts\Repositories\Post as PostContract;
 use Illuminate\Http\Response;
@@ -99,5 +100,23 @@ class Post extends Controller
         }
 
         return $this->responseAdapter->stored($post);
+    }
+
+    /**
+     * @author Rohit Arora
+     *
+     * @param $postID
+     *
+     * @return string
+     */
+    public function update($postID)
+    {
+        try {
+            $post = $this->PostContract->modify(\Input::only([PostAdapter::TITLE, PostAdapter::BODY]), $postID);
+        } catch (\Exception $Exception) {
+            return $this->responseAdapter->responseWithException($Exception);
+        }
+
+        return $this->responseAdapter->response($post);
     }
 }
