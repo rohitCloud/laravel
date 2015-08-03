@@ -151,6 +151,11 @@ class Pinterest extends Command
         $this->info('Setting CSRFToken again after logged in');
         $this->headers['X-CSRFToken'] = $this->getCSRF($loginPage->getHeader('Set-Cookie'));
 
+        $trip = $this->pinRandomTrip();
+        if ($trip) {
+            $this->info("Pinned title -> {$trip['title']} link -> {$trip['link']} image -> {$trip['image_url']} category -> {$trip['category']}");
+        }
+
         $boards        = $this->getBoards();
         $board         = self::KEYWORD;
         $this->boardID = $this->getBoard($boards, $board);
@@ -190,11 +195,6 @@ class Pinterest extends Command
                     $this->info("Id rePined " . $pins[$index]['id'] . " with board " . $board . " with board id " . $this->boardID);
                 }
             }
-        }
-
-        $trip = $this->pinRandomTrip();
-        if ($trip) {
-            $this->info("Pinned title -> {$trip['title']} link -> {$trip['link']} image -> {$trip['image_url']} category -> {$trip['category']}");
         }
 
         $this->info('Total pins we liked: ' . $pinsLiked);
