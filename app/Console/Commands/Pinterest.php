@@ -557,7 +557,7 @@ class Pinterest extends Command
     private function getRandomPinnable()
     {
         $trip = [];
-        if (!rand(0, 1)) {
+        if (!rand(0, 2)) {
             $tripJson = file_get_contents(env('TRIP_URL'));
             $trip     = json_decode($tripJson, true);
         }
