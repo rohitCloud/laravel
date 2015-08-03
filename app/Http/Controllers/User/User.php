@@ -101,4 +101,22 @@ class User extends Controller
 
         return $this->responseAdapter->stored($post);
     }
+
+    /**
+     * @author Rohit Arora
+     *
+     * @param $userID
+     *
+     * @return string
+     */
+    public function update($userID)
+    {
+        try {
+            $post = $this->UserContract->modify(\Input::only([\App\Adapters\User::NAME, \App\Adapters\User::PASSWORD]), $userID);
+        } catch (\Exception $Exception) {
+            return $this->responseAdapter->responseWithException($Exception);
+        }
+
+        return $this->responseAdapter->response($post);
+    }
 }

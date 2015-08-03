@@ -449,9 +449,40 @@ abstract class Base
             throw new InvalidData;
         }
 
-        $this->setData($data->toArray());
+        $this->setRequestParameters([ALL_FIELDS])
+             ->setData($data->toArray());
 
         return $this->process(true);
+    }
+
+    /**
+     * @author Rohit Arora
+     *
+     * @param $id
+     *
+     * @return array
+     * @throws InvalidArguments
+     * @throws InvalidData
+     */
+    public function update($id)
+    {
+        if (!$this->data || !$this->fields) {
+            throw new InvalidArguments;
+        }
+
+        /* @var Builder $Model */
+        $Model = $this->getModel();
+
+        $Model = $Model->find($id);
+
+        if (!$Model && !$Model->update($this->getData())) {
+            throw new InvalidData;
+        }
+
+        /* @var Model $Model */
+        return $this->setRequestParameters([ALL_FIELDS])
+                    ->setData($Model->toArray() + $this->getData())
+                    ->process(true);
     }
 
     /**

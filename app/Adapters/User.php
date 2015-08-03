@@ -23,10 +23,15 @@ class User extends Base implements AdapterContract
     const CREATED_AT = 'created_at';
     const UPDATED_AT = 'updated_at';
 
-    protected $validations = [
+    protected $postValidations = [
         self::EMAIL    => 'required|string|email',
         self::NAME     => 'required|string|min:3',
         self::PASSWORD => 'required|string|min:6|alpha_num'
+    ];
+
+    protected $putValidations = [
+        self::NAME     => 'string|min:3',
+        self::PASSWORD => 'string|min:6|alpha_num'
     ];
 
     /**
@@ -36,7 +41,7 @@ class User extends Base implements AdapterContract
      */
     public function getValidations()
     {
-        return $this->validations;
+        return $this->{strtolower(\Request::method()) . 'Validations'};
     }
 
     /**

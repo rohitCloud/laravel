@@ -125,4 +125,17 @@ class Cache implements PostContract
     {
         // TODO: Implement exists() method.
     }
+
+    /**
+     * @author Rohit Arora
+     *
+     * @param $parameters
+     * @param $postID
+     *
+     * @return array
+     */
+    public function modify($parameters, $postID)
+    {
+        // TODO: Implement modify() method.
+    }
 }

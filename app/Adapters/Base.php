@@ -118,7 +118,7 @@ abstract class Base implements Adapter
     {
         $modelFields = [];
         foreach ($this->getBindings() as $key => $binding) {
-            if (isset($binding[self::PROPERTY]) && (in_array($key, array_keys($fields)))) {
+            if (isset($binding[self::PROPERTY]) && (in_array($key, array_keys($fields))) && $fields[$key]) {
                 $modelFields[$key] = [$binding[self::PROPERTY] => $this->typeCast($fields[$key], $binding[self::DATA_TYPE])];
             }
         }

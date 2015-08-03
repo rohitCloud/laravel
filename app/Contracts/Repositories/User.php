@@ -54,4 +54,14 @@ interface User
      * @return array
      */
     public function store($parameters);
+
+    /**
+     * @author Rohit Arora
+     *
+     * @param $parameters
+     * @param $userID
+     *
+     * @return array
+     */
+    public function modify($parameters, $userID);
 }

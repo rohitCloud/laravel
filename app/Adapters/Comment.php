@@ -24,9 +24,13 @@ class Comment extends Base implements AdapterContract
     const CREATED_AT = 'created_at';
     const UPDATED_AT = 'updated_at';
 
-    protected $validations = [
+    protected $postValidations = [
         self::COMMENT => 'required|string|min:10',
         self::POST_ID => 'required|numeric'
+    ];
+
+    protected $putValidations = [
+        self::COMMENT => 'string|min:10'
     ];
 
     /**
@@ -36,7 +40,7 @@ class Comment extends Base implements AdapterContract
      */
     public function getValidations()
     {
-        return $this->validations;
+        return $this->{strtolower(\Request::method()) . 'Validations'};
     }
 
     /**

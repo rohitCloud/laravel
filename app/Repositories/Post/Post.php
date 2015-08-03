@@ -144,4 +144,19 @@ class Post extends Base implements PostContract
                                                $query->where(UserModel::ID, EQUAL, $userID);
                                            }));
     }
+
+    /**
+     * @author Rohit Arora
+     *
+     * @param $parameters
+     * @param $postID
+     *
+     * @return array
+     */
+    public function modify($parameters, $postID)
+    {
+        $this->setPostParameters($parameters);
+
+        return $this->update($postID);
+    }
 }
