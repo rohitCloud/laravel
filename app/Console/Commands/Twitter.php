@@ -190,7 +190,7 @@ class Twitter extends Command
      */
     private function randomFollow($tweets)
     {
-        if (!rand(0, 5)) {
+        if (!rand(0, 10)) {
             shuffle($tweets);
             for ($index = 0; $index < self::RANDOM_FOLLOW_LIMIT; $index++) {
                 if (!$tweets[$index][self::FOLLOWING]) {
