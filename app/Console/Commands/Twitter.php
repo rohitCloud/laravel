@@ -89,10 +89,15 @@ class Twitter extends Command
 
                     $hashTags = $this->getRandomTags();
                     $tweets   = $this->randomTweets($hashTags);
-
                     $this->randomFavourite($tweets);
                     $this->randomReTweet($tweets);
                     $this->randomFollow($tweets);
+                    if (!rand(0, 2)) {
+                        $hashTags = $this->getRandomTags('personal');
+                        $tweets   = $this->randomTweets($hashTags, 1);
+                        $this->randomFavourite($tweets, 1);
+                        $this->randomReTweet($tweets, 1);
+                    }
                 } catch
                 (\Exception $Exception) {
                     $this->info("Email {$account[self::ACCOUNT_NAME]} Error Message -> " . $Exception->getMessage());
@@ -104,11 +109,13 @@ class Twitter extends Command
     /**
      * @author Rohit Arora
      *
+     * @param string $tags
+     *
      * @return mixed
      */
-    private function getRandomTags()
+    private function getRandomTags($tags = 'tags')
     {
-        $hashTags = json_decode(\File::get(storage_path('app') . DIRECTORY_SEPARATOR . 'hashTags.json'), true)['tags'];
+        $hashTags = json_decode(\File::get(storage_path('app') . DIRECTORY_SEPARATOR . 'hashTags.json'), true)[$tags];
         shuffle($hashTags);
 
         return $hashTags;
@@ -117,14 +124,15 @@ class Twitter extends Command
     /**
      * @author Rohit Arora
      *
-     * @param $hashTags
+     * @param     $hashTags
+     * @param int $count
      *
      * @return array
      */
-    private function randomTweets($hashTags)
+    private function randomTweets($hashTags, $count = self::DEFAULT_RANDOM_TAG_LIMIT)
     {
         $tweets = [];
-        for ($index = 0; $index < self::DEFAULT_RANDOM_TAG_LIMIT; $index++) {
+        for ($index = 0; $index < $count; $index++) {
             $this->info('hash tag searched :' . $hashTags[$index]);
             $tweetStatues = $this->connection->get("search/tweets", ['q' => $hashTags[$index], 'result_type' => 'recent', 'count' => self::SEARCH_TWEET_COUNT])->statuses;
             foreach ($tweetStatues as $tweet) {
@@ -144,12 +152,13 @@ class Twitter extends Command
     /**
      * @author Rohit Arora
      *
-     * @param $tweets
+     * @param     $tweets
+     * @param int $count
      */
-    private function randomFavourite($tweets)
+    private function randomFavourite($tweets, $count = self::RANDOM_FAVOURITE_LIMIT)
     {
         shuffle($tweets);
-        for ($index = 0; $index < self::RANDOM_FAVOURITE_LIMIT; $index++) {
+        for ($index = 0; $index < $count; $index++) {
             if (!$tweets[$index][self::FAVOURITE]) {
                 $this->info('Favourite -> ' . $tweets[$index][self::NAME]);
                 $this->connection->post('favorites/create', [self::ID => $tweets[$index][self::ID]]);
@@ -160,12 +169,13 @@ class Twitter extends Command
     /**
      * @author Rohit Arora
      *
-     * @param $tweets
+     * @param     $tweets
+     * @param int $count
      */
-    private function randomReTweet($tweets)
+    private function randomReTweet($tweets, $count = self::RANDOM_RE_TWEET_LIMIT)
     {
         shuffle($tweets);
-        for ($index = 0; $index < self::RANDOM_RE_TWEET_LIMIT; $index++) {
+        for ($index = 0; $index < $count; $index++) {
             if (!$tweets[$index][self::RE_TWEETED]) {
                 $this->info('ReTweeted -> ' . $tweets[$index][self::NAME]);
                 $this->connection->post('statuses/retweet/' . $tweets[$index][self::ID]);
