@@ -77,6 +77,7 @@ class Twitter extends Command
                         continue;
                     }
 
+                    $this->info("logging in {$account[self::ACCOUNT_NAME]}");
                     $this->connection = new TwitterOAuth($account[self::CONSUMER_KEY], $account[self::CONSUMER_SECRET],
                         $account[self::ACCESS_TOKEN], $account[self::ACCESS_TOKEN_SECRET]);
                     $this->connection->setTimeouts(self::CONNECT_TIMEOUT, self::TIMEOUT);
