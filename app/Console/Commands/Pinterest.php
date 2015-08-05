@@ -70,12 +70,12 @@ class Pinterest extends Command
     {
         $tags = $this->getTags(self::KEYWORD);
         while ($tags) {
-            $accounts = json_decode(\File::get(storage_path('app') . DIRECTORY_SEPARATOR . 'accounts.json'), true)['accounts'];
+            $accounts = json_decode(\File::get(storage_path('app') . DIRECTORY_SEPARATOR . 'accounts.json'), true);
             shuffle($accounts);
             foreach ($accounts as $account) {
                 $keyword  = $this->getRandomTag($tags);
-                $email    = $account['email'];
-                $password = $account['password'];
+                $email    = $account['Email'];
+                $password = $account['Pinterest Password'];
                 if ($this->vpn->reconnect($this)) {
                     try {
                         $this->like($keyword, $email, $password, rand(5, self::PAGES));
