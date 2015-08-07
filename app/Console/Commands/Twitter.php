@@ -243,7 +243,7 @@ class Twitter extends Command
      */
     private function getPersonalTweet()
     {
-        $trip = json_decode(file_get_contents(env('TRIP_URL'), true));
+        $trip = json_decode(file_get_contents(env('TRIP_URL')), true);
         if ($trip) {
             return $trip['link'] . "\n" . $trip['title'];
         }
