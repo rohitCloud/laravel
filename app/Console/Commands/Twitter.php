@@ -245,7 +245,7 @@ class Twitter extends Command
     {
         $trip = json_decode(file_get_contents(env('TRIP_URL')), true);
         if ($trip) {
-            return $trip['link'] . "\n" . $trip['title'];
+            return $trip['link'] . " \n" . $trip['title'];
         }
 
         throw new \Exception('Trip not found');
