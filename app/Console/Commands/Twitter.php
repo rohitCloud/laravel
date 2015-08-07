@@ -221,17 +221,15 @@ class Twitter extends Command
 
     private function randomPersonalTweets()
     {
-        $randomNumber = rand(0, 2);
-        if (!$randomNumber) {
+        if (!rand(0, 2)) {
             // Get Random tweets from personal tags
             $hashTags = $this->getRandomTags('personal');
             $tweets   = $this->randomTweets($hashTags, 1);
             $this->randomFavourite($tweets, 1);
             $this->randomReTweet($tweets, 1);
-        }
-
-        if ($randomNumber === 2) {
-            $this->tweet($this->getPersonalTweet());
+            if (!rand(0, 2)) {
+                $this->tweet($this->getPersonalTweet());
+            }
         }
     }
 
