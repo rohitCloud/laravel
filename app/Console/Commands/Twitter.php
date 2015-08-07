@@ -81,26 +81,8 @@ class Twitter extends Command
                     $this->connection = new TwitterOAuth($account[self::CONSUMER_KEY], $account[self::CONSUMER_SECRET],
                         $account[self::ACCESS_TOKEN], $account[self::ACCESS_TOKEN_SECRET]);
                     $this->connection->setTimeouts(self::CONNECT_TIMEOUT, self::TIMEOUT);
-
-                    /**
-                     * Check status
-                     * $this->connection->get('application/rate_limit_status');
-                     */
-
-                    $hashTags = $this->getRandomTags();
-                    $tweets   = $this->randomTweets($hashTags);
-                    $this->randomFavourite($tweets, rand(6, 12));
-                    if (!rand(0, 2)) {
-                        $this->randomReTweet($tweets);
-                    }
-
-                    $this->randomFollow($tweets);
-                    if (!rand(0, 2)) {
-                        $hashTags = $this->getRandomTags('personal');
-                        $tweets   = $this->randomTweets($hashTags, 1);
-                        $this->randomFavourite($tweets, 1);
-                        $this->randomReTweet($tweets, 1);
-                    }
+                    $this->randomHashTweets();
+                    $this->randomPersonalTweets();
                 } catch
                 (\Exception $Exception) {
                     $this->info("Email {$account[self::ACCOUNT_NAME]} Error Message -> " . $Exception->getMessage());
@@ -180,10 +162,25 @@ class Twitter extends Command
         shuffle($tweets);
         for ($index = 0; $index < $count; $index++) {
             if (!$tweets[$index][self::RE_TWEETED]) {
-                $this->info('ReTweeted -> ' . $tweets[$index][self::NAME]);
-                $this->connection->post('statuses/retweet/' . $tweets[$index][self::ID]);
+                if (!rand(0, 1)) {
+                    $this->info('ReTweeted -> ' . $tweets[$index][self::NAME]);
+                    $this->connection->post('statuses/retweet/' . $tweets[$index][self::ID]);
+                } else {
+                    $this->tweet($tweets[$index][self::NAME]);
+                }
             }
         }
+    }
+
+    /**
+     * @author Rohit Arora
+     *
+     * @param $status
+     */
+    private function tweet($status)
+    {
+        $this->info('Tweeted -> ' . $status);
+        $this->connection->post('statuses/update/', ['status' => $status]);
     }
 
     /**
@@ -202,5 +199,55 @@ class Twitter extends Command
                 }
             }
         }
+    }
+
+    /**
+     * @author Rohit Arora
+     *
+     * @return array
+     */
+    private function randomHashTweets()
+    {
+        // Get random tweets from has tags
+
+        $hashTags = $this->getRandomTags();
+        $tweets   = $this->randomTweets($hashTags);
+        $this->randomFavourite($tweets, rand(6, 12));
+        if (!rand(0, 2)) {
+            $this->randomReTweet($tweets);
+        }
+        $this->randomFollow($tweets);
+    }
+
+    private function randomPersonalTweets()
+    {
+        $randomNumber = rand(0, 2);
+        if (!$randomNumber) {
+            // Get Random tweets from personal tags
+            $hashTags = $this->getRandomTags('personal');
+            $tweets   = $this->randomTweets($hashTags, 1);
+            $this->randomFavourite($tweets, 1);
+            $this->randomReTweet($tweets, 1);
+        }
+
+        if ($randomNumber === 2) {
+            $this->tweet($this->getPersonalTweet());
+        }
+    }
+
+    /**
+     * @author Rohit Arora
+     *
+     * @return string
+     * @throws \Exception
+     */
+    private function getPersonalTweet()
+    {
+        $trip = json_decode(file_get_contents(env('TRIP_URL'), true));
+        if ($trip) {
+            return $trip['link'] . '' . $trip['title'];
+        }
+
+        throw new \Exception('Trip not found');
     }
 }
