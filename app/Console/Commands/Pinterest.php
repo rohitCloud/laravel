@@ -577,12 +577,16 @@ class Pinterest extends Command
             return false;
         }
 
+        $keywords = explode(' ', urldecode($this->keyword) . ' ' . $trip['category']);
+        shuffle($keywords);
+        $keyword = ' #' . implode(' #', $keywords);
+
         $boards        = $this->getBoards();
         $this->boardID = $this->getBoard($boards, $trip['category']);
         $pinnableItems = $this->getPinnableWithURL($trip['link']);
 
         $trip['image_url'] = $pinnableItems[array_rand($pinnableItems)];
-        if ($this->pin($trip['image_url'], $trip['link'], $trip['title'])) {
+        if ($this->pin($trip['image_url'], $trip['link'], $trip['title'] . $keyword)) {
             return $trip;
         }
 
