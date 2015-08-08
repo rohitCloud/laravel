@@ -74,7 +74,7 @@ class Response
      *
      * @return ResponseFactory|HttpResponse
      */
-    public function response($data, $headers = [])
+    public function response($data = [], $headers = [])
     {
         $data = ['status' => $this->getStatusCode()] + (array) $data;
 

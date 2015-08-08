@@ -40,11 +40,11 @@ interface User
     /**
      * @author Rohit Arora
      *
-     * @param int $id
+     * @param $condition
      *
-     * @return bool
+     * @return mixed
      */
-    public function exists($id);
+    public function exists($condition);
 
     /**
      * @author Rohit Arora
