@@ -201,8 +201,12 @@ class Pinterest extends Command
                 $this->info("Id liked " . $pins[$index]['id']);
                 $pinsLiked += 1;
                 $this->likePin($pins[$index]);
-                if (in_array($index, $randomNumbers) && $this->rePin($pins[$index])) {
-                    $this->info("Id rePined " . $pins[$index]['id'] . " with board id " . $this->boardID);
+                try {
+                    if (in_array($index, $randomNumbers) && $this->rePin($pins[$index])) {
+                        $this->info("Id rePined " . $pins[$index]['id'] . " with board id " . $this->boardID);
+                    }
+                } catch (\Exception $Exception) {
+                    $this->info('Cant RePin -> ' . $Exception->getMessage());
                 }
             }
         }
