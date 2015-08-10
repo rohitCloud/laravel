@@ -152,13 +152,19 @@ class Pinterest extends Command
         $this->info('Setting CSRFToken again after logged in');
         $this->headers['X-CSRFToken'] = $this->getCSRF($loginPage->getHeader('Set-Cookie'));
 
-        $trip = $this->pinRandomTrip();
-        if ($trip) {
-            $this->info("Pinned title -> {$trip['title']} link -> {$trip['link']} image -> {$trip['image_url']} category -> {$trip['category']}");
+        try {
+            $trip = $this->pinRandomTrip();
+            if ($trip) {
+                $this->info("Pinned title -> {$trip['title']} link -> {$trip['link']} image -> {$trip['image_url']} category -> {$trip['category']}");
+            }
+        } catch (\Exception $Exception) {
+            $this->info('cant pin error -> ' . $Exception->getMessage());
         }
+        $boards = $this->getBoards();
 
-        $boards        = $this->getBoards();
-        $this->boardID = $this->getBoard($boards);
+        if (!$this->boardID) {
+            $this->boardID = $this->getBoard($boards);
+        }
 
         if (!$this->boardID) {
             $this->boardID = $this->getBoard($boards, self::KEYWORD);
@@ -558,7 +564,7 @@ class Pinterest extends Command
         foreach ($pinnableItems as $item) {
             if (preg_match('/static.*\/l\/.*/', $item['url'])) {
                 // $item['url'] = str_replace('filter/l', 'transfer', $item['url']);
-                $items[]     = $item['url'];
+                $items[] = $item['url'];
             }
         }
 
