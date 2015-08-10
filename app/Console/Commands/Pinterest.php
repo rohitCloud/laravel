@@ -557,7 +557,7 @@ class Pinterest extends Command
         $items         = [];
         foreach ($pinnableItems as $item) {
             if (preg_match('/static.*\/l\/.*/', $item['url'])) {
-                $item['url'] = str_replace('filter/l', 'transfer', $item['url']);
+                // $item['url'] = str_replace('filter/l', 'transfer', $item['url']);
                 $items[]     = $item['url'];
             }
         }
