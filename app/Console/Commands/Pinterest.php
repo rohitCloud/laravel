@@ -592,6 +592,8 @@ class Pinterest extends Command
             return false;
         }
 
+        $trip['category'] = explode(',', $trip['category'])[0];
+
         $keyword = $this->getHashTags($trip['category']);
 
         $boards        = $this->getBoards();
