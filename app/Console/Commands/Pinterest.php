@@ -22,6 +22,7 @@ class Pinterest extends Command
     const TIMEOUT                    = 30;
     const CONNECT_TIMEOUT            = 10;
     const DEFAULT_RE_PIN_LIMIT       = 3;
+    const TRIPOTO                    = 'tripoto';
     /**
      * The name and signature of the console command.
      *
@@ -157,8 +158,11 @@ class Pinterest extends Command
         }
 
         $boards        = $this->getBoards();
-        $board         = self::KEYWORD;
-        $this->boardID = $this->getBoard($boards, $board);
+        $this->boardID = $this->getBoard($boards);
+
+        if (!$this->boardID) {
+            $this->boardID = $this->getBoard($boards, self::KEYWORD);
+        }
 
         $this->info('Searching your tags: ' . urldecode($this->keyword));
         $parsedPins = $this->getDefaultPins();
@@ -192,7 +196,7 @@ class Pinterest extends Command
                 $pinsLiked += 1;
                 $this->likePin($pins[$index]);
                 if (in_array($index, $randomNumbers) && $this->rePin($pins[$index])) {
-                    $this->info("Id rePined " . $pins[$index]['id'] . " with board " . $board . " with board id " . $this->boardID);
+                    $this->info("Id rePined " . $pins[$index]['id'] . " with board id " . $this->boardID);
                 }
             }
         }
@@ -271,26 +275,34 @@ class Pinterest extends Command
      * @return bool
      * @throws InvalidArguments
      */
-    private function getBoard($boards, $findBoard)
+    private function getBoard($boards, $findBoard = '')
     {
-        if (!$findBoard) {
-            throw new InvalidArguments;
-        }
-
         if (isset($boards['resource_data_cache'][0]['data']['all_boards'])) {
             $boards = $boards['resource_data_cache'][0]['data']['all_boards'];
         } else {
             $boards = [];
         }
 
+        $boardList = [];
+
         foreach ($boards as $board) {
-            if ($board['name'] == $findBoard) {
+            $boardList[] = $board['id'];
+            if ($findBoard && $board['name'] == $findBoard) {
                 return $board['id'];
             }
         }
 
-        $this->info('Creating board ' . $findBoard);
-        return $this->createBoard($findBoard, 'travel');
+        if ($findBoard) {
+            $this->info('Creating board ' . $findBoard);
+
+            return $this->createBoard($findBoard, 'travel');
+        }
+
+        if ($boardList) {
+            return $boardList[array_rand($boardList)];
+        }
+
+        return false;
     }
 
     /**
@@ -460,7 +472,7 @@ class Pinterest extends Command
      */
     private function pin($imageURL, $link, $description = '')
     {
-        if ($this->boardID) {
+        if ($this->boardID && $imageURL) {
             $this->Client->post('/resource/PinResource/create/',
                 ['body'            => 'source_url=%2Fpin%2Ffind%2F%3Furl%3D' . urlencode($link) . '&data=%7B%22options%22%3A%7B%22method%22%3A%22scraped%22%2C%22description%22%3A%22'
                     . urlencode($description) . '%22%2C%22link%22%3A%22' . urlencode($link) . '%22%2C%22image_url%22%3A%22' . urlencode($imageURL) . '%22%2C%22board_id%22%3A%22'
@@ -543,7 +555,9 @@ class Pinterest extends Command
         $pinnableItems = $pinnableItems['resource_data_cache'][0]['data']['items'];
         $items         = [];
         foreach ($pinnableItems as $item) {
-            $items[] = $item['url'];
+            if (preg_match('/static.*\/l\/.*/', $item['url'])) {
+                $items[] = $item['url'];
+            }
         }
 
         return $items;
@@ -577,19 +591,38 @@ class Pinterest extends Command
             return false;
         }
 
-        $keywords = explode(' ', urldecode($this->keyword) . ' ' . $trip['category']);
-        shuffle($keywords);
-        $keyword = ' #' . implode(' #', $keywords);
+        $keyword = $this->getHashTags($trip['category']);
 
         $boards        = $this->getBoards();
         $this->boardID = $this->getBoard($boards, $trip['category']);
         $pinnableItems = $this->getPinnableWithURL($trip['link']);
 
-        $trip['image_url'] = $pinnableItems[array_rand($pinnableItems)];
+        if ((!isset($trip['image_url']) || !$trip['image_url']) && $pinnableItems) {
+            $trip['image_url'] = $pinnableItems[array_rand($pinnableItems)];
+        }
+
         if ($this->pin($trip['image_url'], $trip['link'], $trip['title'] . $keyword)) {
             return $trip;
         }
 
         return false;
+    }
+
+    /**
+     * @author Rohit Arora
+     *
+     * @param string $additionalKeyword
+     *
+     * @return string
+     */
+    private function getHashTags($additionalKeyword = '')
+    {
+        $keywords = explode(' ', trim(urldecode($this->keyword) . ' ' . $additionalKeyword));
+        if (!rand(0, 1)) {
+            $keywords[] = self::TRIPOTO;
+        }
+        shuffle($keywords);
+        $keyword = ' #' . implode(' #', $keywords);
+        return $keyword;
     }
 }
