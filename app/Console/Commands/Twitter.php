@@ -50,6 +50,7 @@ class Twitter extends Command
     /** @var  TwitterOAuth */
     protected $connection;
     protected $vpn;
+    protected $blockedUserList = ['triptroopme'];
 
     /**
      * @param OpenVPN $vpn
@@ -121,13 +122,15 @@ class Twitter extends Command
             $this->info('hash tag searched :' . $hashTags[$index]);
             $tweetStatues = $this->connection->get("search/tweets", ['q' => $hashTags[$index], 'result_type' => 'recent', 'count' => self::SEARCH_TWEET_COUNT])->statuses;
             foreach ($tweetStatues as $tweet) {
-                $tweets[] = [self::ID         => $tweet->id,
-                             self::NAME       => $tweet->text,
-                             self::FAVOURITE  => $tweet->favorited,
-                             self::RE_TWEETED => $tweet->retweeted,
-                             self::USER_ID    => $tweet->user->id,
-                             self::USER_NAME  => $tweet->user->name,
-                             self::FOLLOWING  => $tweet->user->following];
+                if (!in_array($tweet->user->screen_name, $this->blockedUserList)) {
+                    $tweets[] = [self::ID         => $tweet->id,
+                                 self::NAME       => $tweet->text,
+                                 self::FAVOURITE  => $tweet->favorited,
+                                 self::RE_TWEETED => $tweet->retweeted,
+                                 self::USER_ID    => $tweet->user->id,
+                                 self::USER_NAME  => $tweet->user->name,
+                                 self::FOLLOWING  => $tweet->user->following];
+                }
             }
         }
 
