@@ -451,11 +451,14 @@ class Pinterest extends Command
     {
         if ($this->boardID) {
             $pin['description'] .= $this->getHashTags();
+            $body = 'source_url=%2Fsearch%2Fpins%2F%3Frs%3Dac%26len%3D2%26q%3D' . $this->keyword . '%26term_meta%255B%255D%3D' . $this->keyword .
+                '%257Cautocomplete%257C0&data=%7B%22options%22%3A%7B%22pin_id%22%3A%22' . $pin['id'] . '%22%2C%22description%22%3A%22' . urlencode($pin['description']) .
+                '%22%2C%22link%22%3A%22' . urlencode($pin['link']) . '%22%2C%22is_video%22%3Afalse%2C%22board_id%22%3A%22' . $this->boardID .
+                '%22%7D%2C%22context%22%3A%7B%7D%7D&module_path=App%3EModalManager%3EModal%3EPinCreate3%3EBoardPicker%3ESelectList(view_type%3DpinCreate3%2C+selected_section_index%3Dundefined%2C+selected_item_index%3Dundefined%2C+highlight_matched_text%3Dtrue%2C+suppress_hover_events%3Dundefined%2C+scroll_selected_item_into_view%3Dtrue%2C+select_first_item_after_update%3Dfalse%2C+item_module%3D%5Bobject+Object%5D)';
+            $this->info($body);
+
             $this->Client->post('/resource/RepinResource/create/',
-                ['body'            => 'source_url=%2Fsearch%2Fpins%2F%3Frs%3Dac%26len%3D2%26q%3D' . $this->keyword . '%26term_meta%255B%255D%3D' . $this->keyword .
-                    '%257Cautocomplete%257C0&data=%7B%22options%22%3A%7B%22pin_id%22%3A%22' . $pin['id'] . '%22%2C%22description%22%3A%22' . urlencode($pin['description']) .
-                    '%22%2C%22link%22%3A%22' . urlencode($pin['link']) . '%22%2C%22is_video%22%3Afalse%2C%22board_id%22%3A%22' . $this->boardID .
-                    '%22%7D%2C%22context%22%3A%7B%7D%7D&module_path=App%3EModalManager%3EModal%3EPinCreate3%3EBoardPicker%3ESelectList(view_type%3DpinCreate3%2C+selected_section_index%3Dundefined%2C+selected_item_index%3Dundefined%2C+highlight_matched_text%3Dtrue%2C+suppress_hover_events%3Dundefined%2C+scroll_selected_item_into_view%3Dtrue%2C+select_first_item_after_update%3Dfalse%2C+item_module%3D%5Bobject+Object%5D)',
+                ['body'            => $body,
                  'headers'         => $this->headers,
                  'cookies'         => $this->jar,
                  'connect_timeout' => self::CONNECT_TIMEOUT,
@@ -480,10 +483,12 @@ class Pinterest extends Command
     private function pin($imageURL, $link, $description = '')
     {
         if ($this->boardID && $imageURL) {
+            $body = 'source_url=%2Fpin%2Ffind%2F%3Furl%3D' . urlencode($link) . '&data=%7B%22options%22%3A%7B%22method%22%3A%22scraped%22%2C%22description%22%3A%22'
+                . urlencode($description) . '%22%2C%22link%22%3A%22' . urlencode($link) . '%22%2C%22image_url%22%3A%22' . urlencode($imageURL) . '%22%2C%22board_id%22%3A%22'
+                . $this->boardID . '%22%7D%2C%22context%22%3A%7B%7D%7D&module_path=App%3EModalManager%3EModal%3EPinCreate3%3EBoardPicker%3ESelectList(view_type%3DpinCreate3%2C+selected_section_index%3Dundefined%2C+selected_item_index%3Dundefined%2C+highlight_matched_text%3Dtrue%2C+suppress_hover_events%3Dundefined%2C+scroll_selected_item_into_view%3Dtrue%2C+select_first_item_after_update%3Dfalse%2C+item_module%3D%5Bobject+Object%5D)';
+            $this->info($body);
             $this->Client->post('/resource/PinResource/create/',
-                ['body'            => 'source_url=%2Fpin%2Ffind%2F%3Furl%3D' . urlencode($link) . '&data=%7B%22options%22%3A%7B%22method%22%3A%22scraped%22%2C%22description%22%3A%22'
-                    . urlencode($description) . '%22%2C%22link%22%3A%22' . urlencode($link) . '%22%2C%22image_url%22%3A%22' . urlencode($imageURL) . '%22%2C%22board_id%22%3A%22'
-                    . $this->boardID . '%22%7D%2C%22context%22%3A%7B%7D%7D&module_path=App%3EModalManager%3EModal%3EPinCreate3%3EBoardPicker%3ESelectList(view_type%3DpinCreate3%2C+selected_section_index%3Dundefined%2C+selected_item_index%3Dundefined%2C+highlight_matched_text%3Dtrue%2C+suppress_hover_events%3Dundefined%2C+scroll_selected_item_into_view%3Dtrue%2C+select_first_item_after_update%3Dfalse%2C+item_module%3D%5Bobject+Object%5D)',
+                ['body'            => $body,
                  'headers'         => $this->headers,
                  'cookies'         => $this->jar,
                  'connect_timeout' => self::CONNECT_TIMEOUT,
