@@ -450,7 +450,6 @@ class Pinterest extends Command
     private function rePin($pin)
     {
         if ($this->boardID) {
-            $pin['description'] .= $this->getHashTags();
             $body = 'source_url=%2Fsearch%2Fpins%2F%3Frs%3Dac%26len%3D2%26q%3D' . $this->keyword . '%26term_meta%255B%255D%3D' . $this->keyword .
                 '%257Cautocomplete%257C0&data=%7B%22options%22%3A%7B%22pin_id%22%3A%22' . $pin['id'] . '%22%2C%22description%22%3A%22' . urlencode($pin['description']) .
                 '%22%2C%22link%22%3A%22' . urlencode($pin['link']) . '%22%2C%22is_video%22%3Afalse%2C%22board_id%22%3A%22' . $this->boardID .
