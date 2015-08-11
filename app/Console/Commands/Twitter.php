@@ -188,9 +188,7 @@ class Twitter extends Command
         $data = ['status' => $status];
 
         if ($media) {
-            foreach ($media as $file) {
-                $data = $data + ['media_ids' => implode(',', $file)];
-            }
+            $data = $data + ['media_ids' => implode(',', $media)];
         }
 
         $this->connection->post('statuses/update', $data);
