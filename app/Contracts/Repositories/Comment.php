@@ -61,11 +61,11 @@ interface Comment
     /**
      * @author Rohit Arora
      *
-     * @param int $id
+     * @param $condition
      *
-     * @return bool
+     * @return mixed
      */
-    public function exists($id);
+    public function exists($condition);
 
     /**
      * @author Rohit Arora
@@ -85,4 +85,22 @@ interface Comment
      * @return array
      */
     public function modify($parameters, $commentID);
+
+    /**
+     * @author Rohit Arora
+     *
+     * @param int|array $commentID
+     *
+     * @return mixed
+     */
+    public function destroy($commentID);
+
+    /**
+     * @author Rohit Arora
+     *
+     * @param $postID
+     *
+     * @return mixed
+     */
+    public function destroyByPost($postID);
 }

@@ -475,7 +475,7 @@ abstract class Base
 
         $Model = $Model->find($id);
 
-        if (!$Model && !$Model->update($this->getData())) {
+        if (!$Model || !$Model->update($this->getData())) {
             throw new InvalidData;
         }
 
@@ -605,5 +605,24 @@ abstract class Base
         }
 
         throw new InvalidArguments('Please provide a valid condition');
+    }
+
+    /**
+     * @author Rohit Arora
+     *
+     * @param $ids
+     *
+     * @return bool
+     * @throws NotFound
+     */
+    public function delete($ids)
+    {
+        if (!$this->getModel()
+                  ->destroy($ids)
+        ) {
+            throw new NotFound;
+        }
+
+        return true;
     }
 }

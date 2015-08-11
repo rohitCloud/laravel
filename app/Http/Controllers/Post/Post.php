@@ -119,4 +119,22 @@ class Post extends Controller
 
         return $this->responseAdapter->response($post);
     }
+
+    /**
+     * @author Rohit Arora
+     *
+     * @param $postID
+     *
+     * @return Response
+     */
+    public function destroy($postID)
+    {
+        try {
+            $this->PostContract->destroy($postID);
+        } catch (\Exception $Exception) {
+            return $this->responseAdapter->responseWithException($Exception);
+        }
+
+        return $this->responseAdapter->response();
+    }
 }

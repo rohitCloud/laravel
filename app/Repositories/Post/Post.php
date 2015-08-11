@@ -7,6 +7,7 @@
 namespace App\Repositories\Post;
 
 use App\Adapters\Post as PostAdapter;
+use App\Contracts\Repositories\Comment;
 use App\Contracts\Repositories\Post as PostContract;
 use App\Contracts\Repositories\User;
 use App\Exceptions\InvalidData;
@@ -24,21 +25,15 @@ class Post extends Base implements PostContract
     const DEFAULT_LIMIT     = 10;
     const DEFAULT_SORT_BY   = PostModel::ID;
     const DEFAULT_SORT_TYPE = Base::SORT_ASC;
-    /**
-     * @var User
-     */
-    private $User;
 
     /**
      * @param PostModel   $Model
      *
      * @param PostAdapter $Adapter
-     * @param User        $User
      */
-    public function __construct(PostModel $Model, PostAdapter $Adapter, User $User)
+    public function __construct(PostModel $Model, PostAdapter $Adapter)
     {
         parent::__construct($Model, $Adapter);
-        $this->User = $User;
     }
 
     /**
@@ -91,7 +86,9 @@ class Post extends Base implements PostContract
     public function store($parameters)
     {
         $this->setPostParameters($parameters);
-        if (!$this->User->exists($this->getData()[PostModel::USER_ID])) {
+        /** @var User $User */
+        $User = app(User::class);
+        if (!$User->exists($this->getData()[PostModel::USER_ID])) {
             throw new InvalidData("User does not exists!");
         }
 
@@ -159,4 +156,35 @@ class Post extends Base implements PostContract
 
         return $this->update($postID);
     }
+
+    /**
+     * @author Rohit Arora
+     *
+     * @param $postID
+     *
+     * @return mixed
+     */
+    public function destroy($postID)
+    {
+        return $this->destroyDependencies($postID)
+                    ->delete($postID);
+    }
+
+    /**
+     * @author Rohit Arora
+     *
+     * @param $postID
+     *
+     * @return $this
+     */
+    private function destroyDependencies($postID)
+    {
+        /** @var Comment $Comment */
+        $Comment = app(Comment::class);
+
+        $Comment->destroyByPost($postID);
+
+        return $this;
+    }
+
 }

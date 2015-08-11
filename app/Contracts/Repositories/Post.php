@@ -80,10 +80,19 @@ interface Post
     /**
      * @author Rohit Arora
      *
-     * @param int $id
+     * @param $condition
      *
-     * @return bool
+     * @return mixed
      */
-    public function exists($id);
+    public function exists($condition);
+
+    /**
+     * @author Rohit Arora
+     *
+     * @param int|array $postID
+     *
+     * @return mixed
+     */
+    public function destroy($postID);
 
 }

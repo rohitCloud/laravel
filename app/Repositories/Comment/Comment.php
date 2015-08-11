@@ -11,7 +11,7 @@ use App\Contracts\Repositories\Comment as CommentContract;
 use App\Contracts\Repositories\Post as PostContract;
 use App\Exceptions\InvalidData;
 use App\Models\Comment as CommentModel;
-use App\Models\Post;
+use App\Models\Post as PostModel;
 use App\Repositories\Base;
 use Illuminate\Database\Query\Builder;
 
@@ -24,21 +24,15 @@ class Comment extends Base implements CommentContract
     const DEFAULT_LIMIT     = 10;
     const DEFAULT_SORT_BY   = CommentModel::ID;
     const DEFAULT_SORT_TYPE = Base::SORT_ASC;
-    /**
-     * @var PostContract
-     */
-    private $Post;
 
     /**
      * @param CommentModel   $Model
      *
      * @param CommentAdapter $Adapter
-     * @param PostContract   $Post
      */
-    public function __construct(CommentModel $Model, CommentAdapter $Adapter, PostContract $Post)
+    public function __construct(CommentModel $Model, CommentAdapter $Adapter)
     {
         parent::__construct($Model, $Adapter);
-        $this->Post = $Post;
     }
 
     /**
@@ -81,7 +75,7 @@ class Comment extends Base implements CommentContract
         return $this->setQueryBuilder($this->getQueryBuilder()
                                            ->whereHas('post', function ($query) use ($postID) {
                                                /* @var Builder $query */
-                                               $query->where(Post::ID, EQUAL, $postID);
+                                               $query->where(PostModel::ID, EQUAL, $postID);
                                            }));
     }
 
@@ -140,7 +134,9 @@ class Comment extends Base implements CommentContract
     public function store($parameters)
     {
         $this->setPostParameters($parameters);
-        if (!$this->Post->exists($this->getData()[CommentModel::POST_ID])) {
+        /** @var PostContract $Post */
+        $Post = app(PostContract::class);
+        if (!$Post->exists($this->getData()[CommentModel::POST_ID])) {
             throw new InvalidData("Post does not exists!");
         }
 
@@ -160,5 +156,49 @@ class Comment extends Base implements CommentContract
         $this->setPostParameters($parameters);
 
         return $this->update($commentID);
+    }
+
+    /**
+     * @author Rohit Arora
+     *
+     * @param int|array $commentID
+     *
+     * @return mixed
+     */
+    public function destroy($commentID)
+    {
+        return $this->delete($commentID);
+    }
+
+    /**
+     * @author Rohit Arora
+     *
+     * @param $postID
+     *
+     * @return mixed
+     */
+    public function destroyByPost($postID)
+    {
+        $ids = $this->getCommentIDListByPost($postID);
+
+        return $this->destroy($ids);
+    }
+
+    /**
+     * @author Rohit Arora
+     *
+     * @param $postID
+     *
+     * @return array
+     */
+    private function getCommentIDListByPost($postID)
+    {
+        $ids = $this->getCommentsRelatedToPost($postID)
+                    ->getQueryBuilder()
+                    ->get()
+                    ->lists(CommentModel::ID)
+                    ->toArray();
+
+        return $ids;
     }
 }
