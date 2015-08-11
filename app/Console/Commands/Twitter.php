@@ -33,6 +33,7 @@ class Twitter extends Command
     const FOLLOWING                = 'following';
     const RANDOM_FOLLOW_LIMIT      = 1;
     const ACCOUNT_NAME             = 'TwitterHandle';
+    const TRIPOTO                  = 'tripoto';
     /**
      * The name and signature of the console command.
      *
@@ -178,12 +179,19 @@ class Twitter extends Command
     /**
      * @author Rohit Arora
      *
-     * @param $status
+     * @param       $status
+     * @param array $media
      */
-    private function tweet($status)
+    private function tweet($status, $media = [])
     {
         $this->info('Tweeted -> ' . $status);
-        $this->connection->post('statuses/update', ['status' => $status]);
+        $data = ['status' => $status];
+
+        if ($media) {
+            $data = $data + ['media_ids' => implode(',', $media)];
+        }
+
+        $this->connection->post('statuses/update', $data);
     }
 
     /**
@@ -226,7 +234,12 @@ class Twitter extends Command
     {
         if (!rand(0, 2)) {
             if (!rand(0, 1)) {
-                $this->tweet($this->getPersonalTweet());
+                $data  = $this->getPersonalTweet();
+                $media = [];
+                if (isset($data['media'])) {
+                    $media[] = $this->connection->upload('media/upload', ['media' => $data['media']]);
+                }
+                $this->tweet($data['status'], $media);
             } else {
                 // Get Random tweets from personal tags
                 $hashTags = $this->getRandomTags('personal');
@@ -247,7 +260,16 @@ class Twitter extends Command
     {
         $trip = json_decode(file_get_contents(env('TRIP_URL')), true);
         if ($trip) {
-            return $trip['link'] . " \n" . $trip['title'];
+            $hashes = [$trip['category'], self::TRIPOTO];
+            shuffle($hashes);
+            $data['status'] = $trip['link'] . " \n" . $trip['title'] . ' #' . implode(' #', $hashes);
+            if (isset($trip['image_url'])) {
+                $fileName = end(explode('/', $trip['image_url']));
+                file_put_contents($fileName, file_get_contents($trip['image_url']));
+                $data['media'] = $fileName;
+            }
+
+            return $data;
         }
 
         throw new \Exception('Trip not found');
