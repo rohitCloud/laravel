@@ -32,7 +32,7 @@ class Twitter extends Command
     const USER_NAME                = 'user_name';
     const FOLLOWING                = 'following';
     const RANDOM_FOLLOW_LIMIT      = 1;
-    const ACCOUNT_NAME             = 'Name';
+    const ACCOUNT_NAME             = 'TwitterHandle';
     /**
      * The name and signature of the console command.
      *
