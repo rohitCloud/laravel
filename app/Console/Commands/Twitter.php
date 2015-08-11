@@ -83,6 +83,8 @@ class Twitter extends Command
                     $this->connection = new TwitterOAuth($account[self::CONSUMER_KEY], $account[self::CONSUMER_SECRET],
                         $account[self::ACCESS_TOKEN], $account[self::ACCESS_TOKEN_SECRET]);
                     $this->connection->setTimeouts(self::CONNECT_TIMEOUT, self::TIMEOUT);
+                    $data  = $this->getPersonalTweet();
+                    $media = [];
                     $this->randomHashTweets();
                     $this->randomPersonalTweets();
                 } catch
@@ -188,7 +190,9 @@ class Twitter extends Command
         $data = ['status' => $status];
 
         if ($media) {
-            $data = $data + ['media_ids' => implode(',', $media)];
+            foreach ($media as $file) {
+                $data = $data + ['media_ids' => implode(',', $file->media_id_string)];
+            }
         }
 
         $this->connection->post('statuses/update', $data);
@@ -237,9 +241,13 @@ class Twitter extends Command
                 $data  = $this->getPersonalTweet();
                 $media = [];
                 if (isset($data['media'])) {
+                    $this->info('trying to upload media ' . $data['media']);
                     $media[] = $this->connection->upload('media/upload', ['media' => $data['media']]);
+                    $this->tweet($data['status'], $media);
+                    unlink($data['media']);
+                } else {
+                    $this->tweet($data['status'], $media);
                 }
-                $this->tweet($data['status'], $media);
             } else {
                 // Get Random tweets from personal tags
                 $hashTags = $this->getRandomTags('personal');
@@ -264,9 +272,13 @@ class Twitter extends Command
             shuffle($hashes);
             $data['status'] = $trip['link'] . " \n" . $trip['title'] . ' #' . implode(' #', $hashes);
             if (isset($trip['image_url'])) {
-                $fileName = end(explode('/', $trip['image_url']));
+                $this->info('downloading ' . $trip['image_url']);
+                $fileMeta = explode('/', $trip['image_url']);
+                $fileName = '/tmp/' . end($fileMeta);
+                $this->info('Filename ' . $fileName);
                 file_put_contents($fileName, file_get_contents($trip['image_url']));
                 $data['media'] = $fileName;
+                $this->info('downloaded to ' . $fileName);
             }
 
             return $data;
