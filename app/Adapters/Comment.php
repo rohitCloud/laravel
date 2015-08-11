@@ -7,7 +7,7 @@ namespace App\Adapters;
 
 use App\Contracts\Adapter as AdapterContract;
 use App\Models\Comment as CommentModel;
-use App\Repositories\Post\Post;
+use App\Repositories\Post\Post as PostRepository;
 
 /**
  * @author  Rohit Arora
@@ -58,7 +58,7 @@ class Comment extends Base implements AdapterContract
             self::POST_ID    => [self::PROPERTY  => CommentModel::POST_ID,
                                  self::DATA_TYPE => self::TYPE_INTEGER],
             self::POST       => [self::DATA_TYPE => self::TYPE_RESOURCE,
-                                 self::CALLBACK  => [CALLBACK_CLASS    => Post::class,
+                                 self::CALLBACK  => [CALLBACK_CLASS    => PostRepository::class,
                                                      CALLBACK_FUNCTION => 'getByID',
                                                      self::PROPERTY    => CommentModel::POST_ID]],
             self::CREATED_AT => [self::PROPERTY  => CommentModel::CREATED_AT,
