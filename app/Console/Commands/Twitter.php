@@ -239,11 +239,9 @@ class Twitter extends Command
                 if (isset($data['media'])) {
                     $this->info('trying to upload media ' . $data['media']);
                     $media[] = $this->connection->upload('media/upload', ['media' => $data['media']])->media_id_string;
-                    $this->tweet($data['status'], $media);
                     unlink($data['media']);
-                } else {
-                    $this->tweet($data['status'], $media);
                 }
+                $this->tweet($data['status'], $media);
             } else {
                 // Get Random tweets from personal tags
                 $hashTags = $this->getRandomTags('personal');
