@@ -83,8 +83,6 @@ class Twitter extends Command
                     $this->connection = new TwitterOAuth($account[self::CONSUMER_KEY], $account[self::CONSUMER_SECRET],
                         $account[self::ACCESS_TOKEN], $account[self::ACCESS_TOKEN_SECRET]);
                     $this->connection->setTimeouts(self::CONNECT_TIMEOUT, self::TIMEOUT);
-                    $data  = $this->getPersonalTweet();
-                    $media = [];
                     $this->randomHashTweets();
                     $this->randomPersonalTweets();
                 } catch
