@@ -183,7 +183,7 @@ class Twitter extends Command
     private function tweet($status)
     {
         $this->info('Tweeted -> ' . $status);
-        $this->connection->post('statuses/update/', ['status' => $status]);
+        dd($this->connection->post('statuses/update', ['status' => $status]));
     }
 
     /**
