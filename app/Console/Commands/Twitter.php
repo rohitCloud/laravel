@@ -189,7 +189,7 @@ class Twitter extends Command
 
         if ($media) {
             foreach ($media as $file) {
-                $data = $data + ['media_ids' => implode(',', $file->media_id_string)];
+                $data = $data + ['media_ids' => implode(',', $file)];
             }
         }
 
@@ -240,7 +240,7 @@ class Twitter extends Command
                 $media = [];
                 if (isset($data['media'])) {
                     $this->info('trying to upload media ' . $data['media']);
-                    $media[] = $this->connection->upload('media/upload', ['media' => $data['media']]);
+                    $media[] = $this->connection->upload('media/upload', ['media' => $data['media']])->media_id_string;
                     $this->tweet($data['status'], $media);
                     unlink($data['media']);
                 } else {
