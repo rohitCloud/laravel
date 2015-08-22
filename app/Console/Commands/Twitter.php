@@ -161,8 +161,6 @@ class Twitter extends Command
         $tweets = [];
         for ($index = 0; $index < $count; $index++) {
             $this->info('hash tag searched :' . $hashTags[$index]);
-            $twitter = $this->connection->get("search/tweets", ['q' => $hashTags[$index], 'result_type' => 'recent', 'count' => self::SEARCH_TWEET_COUNT]);
-            dd($twitter);
             $tweetStatues = $this->connection->get("search/tweets", ['q' => $hashTags[$index], 'result_type' => 'recent', 'count' => self::SEARCH_TWEET_COUNT])->statuses;
             foreach ($tweetStatues as $tweet) {
                 if (!in_array($tweet->user->screen_name, $this->blockedUserList)) {
