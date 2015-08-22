@@ -80,6 +80,7 @@ class Twitter extends Command
                 $this->isViral = false;
                 $this->trip    = null;
                 $this->tweet   = null;
+                $alreadyDone   = false;
             }
             foreach ($accounts as $account) {
                 if ($this->vpn->reconnect($this)) {
