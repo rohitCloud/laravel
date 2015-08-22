@@ -298,7 +298,7 @@ class Twitter extends Command
         $trip = json_decode(file_get_contents(env('TRIP_URL')), true);
         if ($trip) {
             if (!isset($trip['category'])) {
-                $trip['category'] = '';
+                $trip['category'] = 'travel';
             }
             if (isset($trip['isViral']) && $trip['isViral']) {
                 $this->isViral = true;
