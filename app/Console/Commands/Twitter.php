@@ -52,6 +52,9 @@ class Twitter extends Command
     protected $connection;
     protected $vpn;
     protected $blockedUserList = ['triptroopme'];
+    protected $isViral         = false;
+    protected $trip            = null;
+    protected $tweet           = null;
 
     /**
      * @param OpenVPN $vpn
@@ -69,26 +72,63 @@ class Twitter extends Command
      */
     public function handle()
     {
-        $accounts = json_decode(\File::get(storage_path('app') . DIRECTORY_SEPARATOR . 'accounts.json'), true);
-        shuffle($accounts);
-        foreach ($accounts as $account) {
-            if ($this->vpn->reconnect($this)) {
-                try {
-                    if (!$account[self::CONSUMER_KEY] || !$account[self::CONSUMER_SECRET] || !$account[self::ACCESS_TOKEN] || !$account[self::ACCESS_TOKEN_SECRET]) {
-                        $this->info('Account is not complete yet -> ' . $account[self::ACCOUNT_NAME]);
-                        continue;
-                    }
+        $alreadyDone = false;
+        while (true) {
+            $accounts = json_decode(\File::get(storage_path('app') . DIRECTORY_SEPARATOR . 'accounts.json'), true);
+            shuffle($accounts);
+            if ($this->isViral && $alreadyDone) {
+                $this->isViral = false;
+                $this->trip    = null;
+                $this->tweet   = null;
+            }
+            foreach ($accounts as $account) {
+                if ($this->vpn->reconnect($this)) {
+                    try {
+                        if (!$account[self::CONSUMER_KEY] || !$account[self::CONSUMER_SECRET] || !$account[self::ACCESS_TOKEN] || !$account[self::ACCESS_TOKEN_SECRET]) {
+                            $this->info('Account is not complete yet -> ' . $account[self::ACCOUNT_NAME]);
+                            continue;
+                        }
 
-                    $this->info("logging in {$account[self::ACCOUNT_NAME]}");
-                    $this->connection = new TwitterOAuth($account[self::CONSUMER_KEY], $account[self::CONSUMER_SECRET],
-                        $account[self::ACCESS_TOKEN], $account[self::ACCESS_TOKEN_SECRET]);
-                    $this->connection->setTimeouts(self::CONNECT_TIMEOUT, self::TIMEOUT);
-                    $this->randomHashTweets();
-                    $this->randomPersonalTweets();
-                } catch
-                (\Exception $Exception) {
-                    $this->info("Email {$account[self::ACCOUNT_NAME]} Error Message -> " . $Exception->getMessage());
+                        $this->info("logging in {$account[self::ACCOUNT_NAME]}");
+                        $this->connection = new TwitterOAuth($account[self::CONSUMER_KEY], $account[self::CONSUMER_SECRET],
+                            $account[self::ACCESS_TOKEN], $account[self::ACCESS_TOKEN_SECRET]);
+                        $this->connection->setTimeouts(self::CONNECT_TIMEOUT, self::TIMEOUT);
+
+                        if ($this->isViral) {
+                            $this->makeViral();
+                            $alreadyDone = true;
+                            continue;
+                        }
+
+                        $this->getPersonalTweet();
+
+                        if ($this->isViral) {
+                            $this->info('Time is to make a trip or tweet viral Woohoo!');
+                            break;
+                        }
+
+                        $this->randomHashTweets();
+                        $this->randomPersonalTweets();
+                    } catch
+                    (\Exception $Exception) {
+                        $this->info("Email {$account[self::ACCOUNT_NAME]} Error Message -> " . $Exception->getMessage());
+                    }
                 }
+            }
+        }
+    }
+
+    public function makeViral()
+    {
+        if ($this->isViral) {
+            if ($this->trip) {
+                $this->info('making a trip viral');
+                $media = $this->getMedia($this->trip);
+                $this->tweet($this->trip['status'], $media);
+            }
+            if ($this->tweet) {
+                $this->info('making a tweet viral');
+                $this->reTweet($this->tweet);
             }
         }
     }
@@ -121,6 +161,8 @@ class Twitter extends Command
         $tweets = [];
         for ($index = 0; $index < $count; $index++) {
             $this->info('hash tag searched :' . $hashTags[$index]);
+            $twitter = $this->connection->get("search/tweets", ['q' => $hashTags[$index], 'result_type' => 'recent', 'count' => self::SEARCH_TWEET_COUNT]);
+            dd($twitter);
             $tweetStatues = $this->connection->get("search/tweets", ['q' => $hashTags[$index], 'result_type' => 'recent', 'count' => self::SEARCH_TWEET_COUNT])->statuses;
             foreach ($tweetStatues as $tweet) {
                 if (!in_array($tweet->user->screen_name, $this->blockedUserList)) {
@@ -168,7 +210,7 @@ class Twitter extends Command
             if (!$tweets[$index][self::RE_TWEETED]) {
                 if (!rand(0, 1)) {
                     $this->info('ReTweeted -> ' . $tweets[$index][self::NAME]);
-                    $this->connection->post('statuses/retweet/' . $tweets[$index][self::ID]);
+                    $this->reTweet($tweets[$index][self::ID]);
                 } else {
                     $this->tweet($tweets[$index][self::NAME]);
                 }
@@ -235,12 +277,7 @@ class Twitter extends Command
         if (!rand(0, 2)) {
             if (!rand(0, 1)) {
                 $data  = $this->getPersonalTweet();
-                $media = [];
-                if (isset($data['media'])) {
-                    $this->info('trying to upload media ' . $data['media']);
-                    $media[] = $this->connection->upload('media/upload', ['media' => $data['media']])->media_id_string;
-                    unlink($data['media']);
-                }
+                $media = $this->getMedia($data);
                 $this->tweet($data['status'], $media);
             } else {
                 // Get Random tweets from personal tags
@@ -262,22 +299,65 @@ class Twitter extends Command
     {
         $trip = json_decode(file_get_contents(env('TRIP_URL')), true);
         if ($trip) {
+            if (!isset($trip['category'])) {
+                $trip['category'] = '';
+            }
+            if (isset($trip['isViral']) && $trip['isViral']) {
+                $this->isViral = true;
+            }
+            if (isset($trip['tweet_id']) && $trip['tweet_id']) {
+                $this->tweet   = $trip['tweet_id'];
+                $this->isViral = true;
+            }
+            $link   = isset($trip['link']) && $trip['link'] ? $trip['link'] : '';
+            $title  = isset($trip['title']) && $trip['title'] ? $trip['title'] : '';
             $hashes = [$trip['category'], self::TRIPOTO];
             shuffle($hashes);
-            $data['status'] = $trip['link'] . " \n" . $trip['title'] . ' #' . implode(' #', $hashes);
+            $data['status'] = $link . " \n" . $title . ' #' . implode(' #', $hashes);
             if (isset($trip['image_url'])) {
-                $this->info('downloading ' . $trip['image_url']);
-                $fileMeta = explode('/', $trip['image_url']);
-                $fileName = '/tmp/' . end($fileMeta);
-                $this->info('Filename ' . $fileName);
-                file_put_contents($fileName, file_get_contents($trip['image_url']));
-                $data['media'] = $fileName;
-                $this->info('downloaded to ' . $fileName);
+                $data['image_url'] = $trip['image_url'];
+            }
+            if ($link && $title && $this->isViral) {
+                $this->trip = $data;
             }
 
             return $data;
         }
 
         throw new \Exception('Trip not found');
+    }
+
+    /**
+     * @author Rohit Arora
+     *
+     * @param $id
+     */
+    private function reTweet($id)
+    {
+        $this->connection->post('statuses/retweet/' . $id);
+    }
+
+    /**
+     * @author Rohit Arora
+     *
+     * @param $data
+     *
+     * @return array
+     */
+    private function getMedia($data)
+    {
+        $media = [];
+        if (isset($data['image_url'])) {
+            $this->info('downloading ' . $data['image_url']);
+            $fileMeta = explode('/', $data['image_url']);
+            $fileName = '/tmp/' . end($fileMeta);
+            $this->info('Filename ' . $fileName);
+            file_put_contents($fileName, file_get_contents($data['image_url']));
+            $this->info('downloaded to ' . $fileName);
+            $this->info('trying to upload media ' . $fileName);
+            $media[] = $this->connection->upload('media/upload', ['media' => $fileName])->media_id_string;
+            unlink($fileName);
+        }
+        return $media;
     }
 }
