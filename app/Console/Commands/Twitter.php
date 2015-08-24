@@ -242,7 +242,7 @@ class Twitter extends Command
      */
     private function randomFollow($tweets)
     {
-        if (!rand(0, 10)) {
+        if (!rand(0, 5)) {
             shuffle($tweets);
             for ($index = 0; $index < self::RANDOM_FOLLOW_LIMIT; $index++) {
                 if (!$tweets[$index][self::FOLLOWING]) {
@@ -260,12 +260,10 @@ class Twitter extends Command
      */
     private function randomHashTweets()
     {
-        // Get random tweets from has tags
-
         $hashTags = $this->getRandomTags();
         $tweets   = $this->randomTweets($hashTags);
         $this->randomFavourite($tweets, rand(6, 12));
-        if (!rand(0, 2)) {
+        if (!rand(0, 1)) {
             $this->randomReTweet($tweets);
         }
         $this->randomFollow($tweets);
@@ -273,7 +271,7 @@ class Twitter extends Command
 
     private function randomPersonalTweets()
     {
-        if (!rand(0, 2)) {
+        if (!rand(0, 1)) {
             if (!rand(0, 1)) {
                 $data  = $this->getPersonalTweet();
                 $media = $this->getMedia($data);
