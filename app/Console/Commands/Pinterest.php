@@ -19,7 +19,7 @@ class Pinterest extends Command
     const PAGES                      = 20;
     const DEFAULT_PINS_LIMIT_PER_TAG = 30;
     const KEYWORD                    = 'travel';
-    const TIMEOUT                    = 30;
+    const TIMEOUT                    = 10;
     const CONNECT_TIMEOUT            = 10;
     const DEFAULT_RE_PIN_LIMIT       = 3;
     const TRIPOTO                    = 'tripoto';
