@@ -262,7 +262,7 @@ class Twitter extends Command
     {
         $hashTags = $this->getRandomTags();
         $tweets   = $this->randomTweets($hashTags);
-        $this->randomFavourite($tweets, rand(6, 12));
+        $this->randomFavourite($tweets, rand(3, 6));
         if (!rand(0, 1)) {
             $this->randomReTweet($tweets);
         }
