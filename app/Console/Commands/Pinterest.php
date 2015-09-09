@@ -23,6 +23,7 @@ class Pinterest extends Command
     const CONNECT_TIMEOUT            = 10;
     const DEFAULT_RE_PIN_LIMIT       = 3;
     const TRIPOTO                    = 'tripoto';
+    const DEFAULT_FOLLOW_LIMIT       = 2;
     /**
      * The name and signature of the console command.
      *
@@ -179,7 +180,7 @@ class Pinterest extends Command
         $bookmark = $parsedPins['resource_data_cache'][0]['resource']['options']['bookmarks'][0];
 
         for ($index = 0; $index < $noOfPages; $index++) {
-            $this->info('Collecting data based on pages you requested - pageNo:' . ($index + 1));
+            $this->info('Collecting data based on pages you requested - pageNo:' . ($index + self::DEFAULT_FOLLOW_LIMIT));
 
             $parsedPins = $this->getPinsWithBookmark($bookmark);
             try {
@@ -192,15 +193,16 @@ class Pinterest extends Command
 
         $pinsLiked = 0;
         shuffle($pins);
-        $offset        = 0;
-        $pins          = array_slice($pins, $offset, self::DEFAULT_PINS_LIMIT_PER_TAG);
-        $pinsCount     = count($pins);
-        $randomNumbers = $this->getRandomNumbers($offset, $pinsCount, self::DEFAULT_RE_PIN_LIMIT);
+        $offset              = 0;
+        $pins                = array_slice($pins, $offset, self::DEFAULT_PINS_LIMIT_PER_TAG);
+        $pinsCount           = count($pins);
+        $randomNumbers       = $this->getRandomNumbers($offset, $pinsCount, self::DEFAULT_RE_PIN_LIMIT);
+        $pinnerRandomNumbers = $this->getRandomNumbers($offset, $pinsCount, self::DEFAULT_FOLLOW_LIMIT);
 
         for ($index = 0; $index < $pinsCount; $index++) {
             if (isset($pins[$index]['id']) && (isset($pins[$index]["liked_by_me"]) && !$pins[$index]["liked_by_me"])) {
                 $this->info("Id liked " . $pins[$index]['id']);
-                $pinsLiked += 1;
+                $pinsLiked += self::DEFAULT_FOLLOW_LIMIT;
                 $this->likePin($pins[$index]);
                 try {
                     if (in_array($index, $randomNumbers) && $this->rePin($pins[$index])) {
@@ -211,7 +213,7 @@ class Pinterest extends Command
                 }
                 try {
                     $pinner = isset($pins[$index]['pinner']) ? $pins[$index]['pinner'] : [];
-                    if (!$pinner['explicitly_followed_by_me'] && in_array($index, $randomNumbers) && $this->follow($pinner['username'], $pinner['id'])) {
+                    if (!$pinner['explicitly_followed_by_me'] && in_array($index, $pinnerRandomNumbers) && $this->follow($pinner['username'], $pinner['id'])) {
                         $this->info("user followed -> " . $pinner['username']);
                     }
                 } catch (\Exception $Exception) {
@@ -238,7 +240,7 @@ class Pinterest extends Command
             if (strpos($cookie, 'csrftoken') !== false) {
                 $regex = '/csrftoken=(.*); Domain/';
                 preg_match($regex, $cookie, $matches);
-                $csrf = $matches[1];
+                $csrf = $matches[self::DEFAULT_FOLLOW_LIMIT];
                 break;
             }
         }
@@ -262,8 +264,8 @@ class Pinterest extends Command
         $regex      = '/<span class="guideText">(.*)<\/span>/';
         preg_match_all($regex, $searchPage, $matches);
 
-        if ($matches[1]) {
-            $tags = $matches[1];
+        if ($matches[self::DEFAULT_FOLLOW_LIMIT]) {
+            $tags = $matches[self::DEFAULT_FOLLOW_LIMIT];
         }
 
         return $tags;
