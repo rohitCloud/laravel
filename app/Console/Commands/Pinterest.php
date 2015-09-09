@@ -174,7 +174,8 @@ class Pinterest extends Command
         $parsedPins = $this->getDefaultPins();
         $this->info('Fetching default search page data');
 
-        $pins     = $parsedPins['resource_data_cache'][0]['data']['results'];
+        $pins = $parsedPins['resource_data_cache'][0]['data']['results'];
+
         $bookmark = $parsedPins['resource_data_cache'][0]['resource']['options']['bookmarks'][0];
 
         for ($index = 0; $index < $noOfPages; $index++) {
@@ -207,6 +208,14 @@ class Pinterest extends Command
                     }
                 } catch (\Exception $Exception) {
                     $this->info('Cant RePin -> ' . $Exception->getMessage());
+                }
+                try {
+                    $pinner = isset($pins[$index]['pinner']) ? $pins[$index]['pinner'] : [];
+                    if (!$pinner['explicitly_followed_by_me'] && in_array($index, $randomNumbers) && $this->follow($pinner['username'], $pinner['id'])) {
+                        $this->info("user followed -> " . $pinner['username']);
+                    }
+                } catch (\Exception $Exception) {
+                    $this->info('Cant Follow -> ' . $Exception->getMessage());
                 }
             }
         }
@@ -447,6 +456,27 @@ class Pinterest extends Command
     /**
      * @author Rohit Arora
      *
+     * @param $userName
+     * @param $userId
+     *
+     * @return bool
+     */
+    private function follow($userName, $userId)
+    {
+        $this->Client->post('/resource/UserFollowResource/create/',
+            ['body'            => 'source_url=%2F' . $userName . '%2F&data=%7B%22options%22%3A%7B%22user_id%22%3A%22' . $userId . '%22%7D%2C%22context%22%3A%7B%7D%7D&module_path=App%3EUserProfilePage%3EUserProfileHeader%3EUserFollowButton(followed%3Dfalse%2C+is_me%3Dfalse%2C+text%3DFollow%2C+memo%3D%5Bobject+Object%5D%2C+disabled%3Dfalse%2C+suggested_users_menu%3D%5Bobject+Object%5D%2C+follow_ga_category%3Duser_follow%2C+follow_text%3DFollow%2C+follow_class%3Dprimary%2C+user_id%3D' . $userId . '%2C+unfollow_text%3DUnfollow%2C+unfollow_ga_category%3Duser_unfollow%2C+color%3Dprimary)',
+             'headers'         => $this->headers,
+             'cookies'         => $this->jar,
+             'connect_timeout' => self::CONNECT_TIMEOUT,
+             'timeout'         => self::TIMEOUT])
+                     ->getBody();
+
+        return true;
+    }
+
+    /**
+     * @author Rohit Arora
+     *
      * @param $pin
      *
      * @return bool
@@ -572,7 +602,7 @@ class Pinterest extends Command
         foreach ($pinnableItems as $item) {
             if (preg_match('/static.*\/l\/.*/', $item['url'])) {
                 $item['url'] = str_replace('filter/l', 'transfer', $item['url']);
-                $items[] = $item['url'];
+                $items[]     = $item['url'];
             }
         }
 
