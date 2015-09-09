@@ -179,7 +179,6 @@ class Twitter extends Command
         $tweets = [];
         for ($index = 0; $index < $count; $index++) {
             $limit = $this->getLimit();
-            dd($limit);
             if ($limit && ($limit->search->{'/search/tweets'}->limit - $limit->search->{'/search/tweets'}->remaining) <= 0) {
                 $this->info("Time -> " . Carbon::now()
                                                ->toDateTimeString() . 'hash tag searched :' . $hashTags[$index] . ' and limit remaining for search -> ' . $limit->search->{'/search/tweets'}->remaining - 1);
