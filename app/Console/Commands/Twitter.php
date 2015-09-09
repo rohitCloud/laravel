@@ -181,7 +181,9 @@ class Twitter extends Command
             $limit = $this->getLimit();
             if ($limit && ($limit->search->{'/search/tweets'}->limit - $limit->search->{'/search/tweets'}->remaining) <= 0) {
                 $this->info("Time -> " . Carbon::now()
-                                               ->toDateTimeString() . 'hash tag searched :' . $hashTags[$index] . ' and limit remaining for search -> ' . $limit->search->{'/search/tweets'}->remaining - 1);
+                                               ->toDateTimeString() . 'hash tag searched :' . $hashTags[$index]);
+                dd($limit->search->{'/search/tweets'});
+                $this->info(' and limit remaining for search -> ' . ($limit->search->{'/search/tweets'}->remaining - 1));
                 $tweetStatues = $this->connection->get("search/tweets", ['q' => $hashTags[$index], 'result_type' => 'recent', 'count' => self::SEARCH_TWEET_COUNT])->statuses;
                 foreach ($tweetStatues as $tweet) {
                     if (!in_array($tweet->user->screen_name, $this->blockedUserList)) {
