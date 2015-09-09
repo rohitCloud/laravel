@@ -196,6 +196,7 @@ class Pinterest extends Command
         $pins          = array_slice($pins, $offset, self::DEFAULT_PINS_LIMIT_PER_TAG);
         $pinsCount     = count($pins);
         $randomNumbers = $this->getRandomNumbers($offset, $pinsCount, self::DEFAULT_RE_PIN_LIMIT);
+        $pinnerRandomNumbers = $this->getRandomNumbers($offset, $pinsCount, 1);
 
         for ($index = 0; $index < $pinsCount; $index++) {
             if (isset($pins[$index]['id']) && (isset($pins[$index]["liked_by_me"]) && !$pins[$index]["liked_by_me"])) {
@@ -211,7 +212,7 @@ class Pinterest extends Command
                 }
                 try {
                     $pinner = isset($pins[$index]['pinner']) ? $pins[$index]['pinner'] : [];
-                    if (!$pinner['explicitly_followed_by_me'] && in_array($index, $randomNumbers) && $this->follow($pinner['username'], $pinner['id'])) {
+                    if (!$pinner['explicitly_followed_by_me'] && in_array($index, $pinnerRandomNumbers) && $this->follow($pinner['username'], $pinner['id'])) {
                         $this->info("user followed -> " . $pinner['username']);
                     }
                 } catch (\Exception $Exception) {
