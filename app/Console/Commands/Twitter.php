@@ -194,8 +194,6 @@ class Twitter extends Command
                                      self::USER_NAME  => $tweet->user->name,
                                      self::FOLLOWING  => $tweet->user->following];
                     }
-
-                    dd($tweets);
                 }
             }
         }
@@ -217,7 +215,8 @@ class Twitter extends Command
                 $limit = $this->getLimit();
                 if ($limit && ($limit->favorites->{'/favorites/list'}->limit - $limit->favorites->{'/favorites/list'}->remaining) <= 0) {
                     $this->info("Time -> " . Carbon::now()
-                                                   ->toDateTimeString() . 'Favourite -> ' . $tweets[$index][self::NAME] . ' and limit remaining for favourite -> ' . $limit->favorites->{'/favorites/list'}->remaining - 1);
+                                                   ->toDateTimeString() . 'Favourite -> ' . $tweets[$index][self::NAME] .
+                        ' and limit remaining for favourite -> ' . ($limit->favorites->{'/favorites/list'}->remaining - 1));
                     $this->connection->post('favorites/create', [self::ID => $tweets[$index][self::ID]]);
                 }
             }
@@ -380,7 +379,8 @@ class Twitter extends Command
         $limit = $this->getLimit();
         if ($limit && ($limit->statuses->{'/statuses/retweets/:id'}->limit - $limit->statuses->{'/statuses/retweets/:id'}->remaining) <= 0) {
             $this->info("Time -> " . Carbon::now()
-                                           ->toDateTimeString() . 'limit remaining for retweets -> ' . $limit->statuses->{'/statuses/retweets/:id'}->remaining - 1);
+                                           ->toDateTimeString() .
+                'limit remaining for retweets -> ' . ($limit->statuses->{'/statuses/retweets/:id'}->remaining - 1));
             $this->connection->post('statuses/retweet/' . $id);
         }
     }
