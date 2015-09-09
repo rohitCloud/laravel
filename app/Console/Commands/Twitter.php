@@ -179,7 +179,8 @@ class Twitter extends Command
         $tweets = [];
         for ($index = 0; $index < $count; $index++) {
             $limit = $this->getLimit();
-            if ($limit && ($limit->search->{'/search/tweets'}->limit - $limit->search->{'/search/tweets'}->remaining) > 0) {
+            dd($limit);
+            if ($limit && ($limit->search->{'/search/tweets'}->limit - $limit->search->{'/search/tweets'}->remaining) <= 0) {
                 $this->info("Time -> " . Carbon::now()
                                                ->toDateTimeString() . 'hash tag searched :' . $hashTags[$index] . ' and limit remaining for search -> ' . $limit->search->{'/search/tweets'}->remaining - 1);
                 $tweetStatues = $this->connection->get("search/tweets", ['q' => $hashTags[$index], 'result_type' => 'recent', 'count' => self::SEARCH_TWEET_COUNT])->statuses;
@@ -212,7 +213,7 @@ class Twitter extends Command
         for ($index = 0; $index < $count; $index++) {
             if (!$tweets[$index][self::FAVOURITE]) {
                 $limit = $this->getLimit();
-                if ($limit && ($limit->favorites->{'/favorites/list'}->limit - $limit->favorites->{'/favorites/list'}->remaining) > 0) {
+                if ($limit && ($limit->favorites->{'/favorites/list'}->limit - $limit->favorites->{'/favorites/list'}->remaining) <= 0) {
                     $this->info("Time -> " . Carbon::now()
                                                    ->toDateTimeString() . 'Favourite -> ' . $tweets[$index][self::NAME] . ' and limit remaining for favourite -> ' . $limit->favorites->{'/favorites/list'}->remaining - 1);
                     $this->connection->post('favorites/create', [self::ID => $tweets[$index][self::ID]]);
@@ -270,7 +271,7 @@ class Twitter extends Command
             for ($index = 0; $index < self::RANDOM_FOLLOW_LIMIT; $index++) {
                 if (!$tweets[$index][self::FOLLOWING]) {
                     $limit = $this->getLimit();
-                    if ($limit && ($limit->friendships->{'/friendships/outgoing'}->limit - $limit->friendships->{'/friendships/outgoing'}->remaining) > 0) {
+                    if ($limit && ($limit->friendships->{'/friendships/outgoing'}->limit - $limit->friendships->{'/friendships/outgoing'}->remaining) <= 0) {
                         $this->info("Time -> " . Carbon::now()
                                                        ->toDateTimeString() . 'Followed -> ' . $tweets[$index][self::USER_NAME]);
                         $this->connection->post('friendships/create', ['user_id' => $tweets[$index][self::USER_ID]]);
@@ -375,7 +376,7 @@ class Twitter extends Command
     private function reTweet($id)
     {
         $limit = $this->getLimit();
-        if ($limit && ($limit->statuses->{'/statuses/retweets/:id'}->limit - $limit->statuses->{'/statuses/retweets/:id'}->remaining) > 0) {
+        if ($limit && ($limit->statuses->{'/statuses/retweets/:id'}->limit - $limit->statuses->{'/statuses/retweets/:id'}->remaining) <= 0) {
             $this->info("Time -> " . Carbon::now()
                                            ->toDateTimeString() . 'limit remaining for retweets -> ' . $limit->statuses->{'/statuses/retweets/:id'}->remaining - 1);
             $this->connection->post('statuses/retweet/' . $id);
