@@ -213,10 +213,9 @@ class Twitter extends Command
         for ($index = 0; $index < $count; $index++) {
             if (!$tweets[$index][self::FAVOURITE]) {
                 $limit = $this->getLimit();
-                if ($limit && ($limit->favorites->{'/favorites/list'}->limit - $limit->favorites->{'/favorites/list'}->remaining) <= 0) {
+                if ($limit) {
                     $this->info("Time -> " . Carbon::now()
-                                                   ->toDateTimeString() . 'Favourite -> ' . $tweets[$index][self::NAME] .
-                        ' and limit remaining for favourite -> ' . ($limit->favorites->{'/favorites/list'}->remaining - 1));
+                                                   ->toDateTimeString() . 'Favourite -> ' . $tweets[$index][self::NAME]);
                     $this->connection->post('favorites/create', [self::ID => $tweets[$index][self::ID]]);
                 }
             }
