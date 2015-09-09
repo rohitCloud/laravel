@@ -3,6 +3,7 @@
 namespace App\Console\Commands;
 
 use Abraham\TwitterOAuth\TwitterOAuth;
+use Carbon\Carbon;
 use Illuminate\Console\Command;
 use App\Commands\OpenVPN;
 
@@ -20,7 +21,7 @@ class Twitter extends Command
     const CONSUMER_SECRET          = 'API Secret';
     const ACCESS_TOKEN             = 'Access Token';
     const ACCESS_TOKEN_SECRET      = 'Access Token Secret';
-    const DEFAULT_RANDOM_TAG_LIMIT = 3;
+    const DEFAULT_RANDOM_TAG_LIMIT = 4;
     const SEARCH_TWEET_COUNT       = 30;
     const RANDOM_FAVOURITE_LIMIT   = 10;
     const RANDOM_RE_TWEET_LIMIT    = 1;
@@ -31,7 +32,7 @@ class Twitter extends Command
     const USER_ID                  = 'user_id';
     const USER_NAME                = 'user_name';
     const FOLLOWING                = 'following';
-    const RANDOM_FOLLOW_LIMIT      = 1;
+    const RANDOM_FOLLOW_LIMIT      = 2;
     const ACCOUNT_NAME             = 'TwitterHandle';
     const TRIPOTO                  = 'tripoto';
     /**
@@ -55,6 +56,7 @@ class Twitter extends Command
     protected $isViral         = false;
     protected $trip            = null;
     protected $tweet           = null;
+    protected $handleName;
 
     /**
      * @param OpenVPN $vpn
@@ -86,14 +88,21 @@ class Twitter extends Command
                 if ($this->vpn->reconnect($this)) {
                     try {
                         if (!$account[self::CONSUMER_KEY] || !$account[self::CONSUMER_SECRET] || !$account[self::ACCESS_TOKEN] || !$account[self::ACCESS_TOKEN_SECRET]) {
-                            $this->info('Account is not complete yet -> ' . $account[self::ACCOUNT_NAME]);
+                            $this->info("Time -> " . Carbon::now()
+                                                           ->toDateTimeString() . 'Account is not complete yet -> ' . $account[self::ACCOUNT_NAME]);
                             continue;
                         }
 
-                        $this->info("logging in {$account[self::ACCOUNT_NAME]}");
+                        $this->info("Time -> " . Carbon::now()
+                                                       ->toDateTimeString() . "logging in {$account[self::ACCOUNT_NAME]}");
                         $this->connection = new TwitterOAuth($account[self::CONSUMER_KEY], $account[self::CONSUMER_SECRET],
                             $account[self::ACCESS_TOKEN], $account[self::ACCESS_TOKEN_SECRET]);
                         $this->connection->setTimeouts(self::CONNECT_TIMEOUT, self::TIMEOUT);
+                        $this->handleName = $account[self::ACCOUNT_NAME];
+
+                        if (!$this->getLimit()) {
+                            continue;
+                        }
 
                         if ($this->isViral) {
                             $this->makeViral();
@@ -104,7 +113,8 @@ class Twitter extends Command
                         $this->getPersonalTweet();
 
                         if ($this->isViral) {
-                            $this->info('Time is to make a trip or tweet viral Woohoo!');
+                            $this->info("Time -> " . Carbon::now()
+                                                           ->toDateTimeString() . 'Time is to make a trip or tweet viral Woohoo!');
                             break;
                         }
 
@@ -112,23 +122,30 @@ class Twitter extends Command
                         $this->randomPersonalTweets();
                     } catch
                     (\Exception $Exception) {
-                        $this->info("Email {$account[self::ACCOUNT_NAME]} Error Message -> " . $Exception->getMessage());
+                        $this->info("Time -> " . Carbon::now()
+                                                       ->toDateTimeString() . " Email {$account[self::ACCOUNT_NAME]} Error Message -> " . $Exception->getMessage());
                     }
                 }
             }
         }
     }
 
+    /**
+     * @author Rohit Arora
+     *
+     */
     public function makeViral()
     {
         if ($this->isViral) {
             if ($this->trip) {
-                $this->info('making a trip viral');
+                $this->info("Time -> " . Carbon::now()
+                                               ->toDateTimeString() . 'making a trip viral');
                 $media = $this->getMedia($this->trip);
                 $this->tweet($this->trip['status'], $media);
             }
             if ($this->tweet) {
-                $this->info('making a tweet viral');
+                $this->info("Time -> " . Carbon::now()
+                                               ->toDateTimeString() . 'making a tweet viral');
                 $this->reTweet($this->tweet);
             }
         }
@@ -161,17 +178,21 @@ class Twitter extends Command
     {
         $tweets = [];
         for ($index = 0; $index < $count; $index++) {
-            $this->info('hash tag searched :' . $hashTags[$index]);
-            $tweetStatues = $this->connection->get("search/tweets", ['q' => $hashTags[$index], 'result_type' => 'recent', 'count' => self::SEARCH_TWEET_COUNT])->statuses;
-            foreach ($tweetStatues as $tweet) {
-                if (!in_array($tweet->user->screen_name, $this->blockedUserList)) {
-                    $tweets[] = [self::ID         => $tweet->id,
-                                 self::NAME       => $tweet->text,
-                                 self::FAVOURITE  => $tweet->favorited,
-                                 self::RE_TWEETED => $tweet->retweeted,
-                                 self::USER_ID    => $tweet->user->id,
-                                 self::USER_NAME  => $tweet->user->name,
-                                 self::FOLLOWING  => $tweet->user->following];
+            $limit = $this->getLimit();
+            if ($limit && ($limit->search->{'/search/tweets'}->limit - $limit->search->{'/search/tweets'}->remaining) > 0) {
+                $this->info("Time -> " . Carbon::now()
+                                               ->toDateTimeString() . 'hash tag searched :' . $hashTags[$index] . ' and limit remaining for search -> ' . $limit->search->{'/search/tweets'}->remaining - 1);
+                $tweetStatues = $this->connection->get("search/tweets", ['q' => $hashTags[$index], 'result_type' => 'recent', 'count' => self::SEARCH_TWEET_COUNT])->statuses;
+                foreach ($tweetStatues as $tweet) {
+                    if (!in_array($tweet->user->screen_name, $this->blockedUserList)) {
+                        $tweets[] = [self::ID         => $tweet->id,
+                                     self::NAME       => $tweet->text,
+                                     self::FAVOURITE  => $tweet->favorited,
+                                     self::RE_TWEETED => $tweet->retweeted,
+                                     self::USER_ID    => $tweet->user->id,
+                                     self::USER_NAME  => $tweet->user->name,
+                                     self::FOLLOWING  => $tweet->user->following];
+                    }
                 }
             }
         }
@@ -190,8 +211,12 @@ class Twitter extends Command
         shuffle($tweets);
         for ($index = 0; $index < $count; $index++) {
             if (!$tweets[$index][self::FAVOURITE]) {
-                $this->info('Favourite -> ' . $tweets[$index][self::NAME]);
-                $this->connection->post('favorites/create', [self::ID => $tweets[$index][self::ID]]);
+                $limit = $this->getLimit();
+                if ($limit && ($limit->favorites->{'/favorites/list'}->limit - $limit->favorites->{'/favorites/list'}->remaining) > 0) {
+                    $this->info("Time -> " . Carbon::now()
+                                                   ->toDateTimeString() . 'Favourite -> ' . $tweets[$index][self::NAME] . ' and limit remaining for favourite -> ' . $limit->favorites->{'/favorites/list'}->remaining - 1);
+                    $this->connection->post('favorites/create', [self::ID => $tweets[$index][self::ID]]);
+                }
             }
         }
     }
@@ -207,12 +232,9 @@ class Twitter extends Command
         shuffle($tweets);
         for ($index = 0; $index < $count; $index++) {
             if (!$tweets[$index][self::RE_TWEETED]) {
-                if (!rand(0, 1)) {
-                    $this->info('ReTweeted -> ' . $tweets[$index][self::NAME]);
-                    $this->reTweet($tweets[$index][self::ID]);
-                } else {
-                    $this->tweet($tweets[$index][self::NAME]);
-                }
+                $this->info("Time -> " . Carbon::now()
+                                               ->toDateTimeString() . 'ReTweeted -> ' . $tweets[$index][self::NAME]);
+                $this->reTweet($tweets[$index][self::ID]);
             }
         }
     }
@@ -225,7 +247,8 @@ class Twitter extends Command
      */
     private function tweet($status, $media = [])
     {
-        $this->info('Tweeted -> ' . $status);
+        $this->info("Time -> " . Carbon::now()
+                                       ->toDateTimeString() . 'Tweeted -> ' . $status);
         $data = ['status' => $status];
 
         if ($media) {
@@ -246,8 +269,12 @@ class Twitter extends Command
             shuffle($tweets);
             for ($index = 0; $index < self::RANDOM_FOLLOW_LIMIT; $index++) {
                 if (!$tweets[$index][self::FOLLOWING]) {
-                    $this->info('Followed -> ' . $tweets[$index][self::USER_NAME]);
-                    $this->connection->post('friendships/create', ['user_id' => $tweets[$index][self::USER_ID]]);
+                    $limit = $this->getLimit();
+                    if ($limit && ($limit->friendships->{'/friendships/outgoing'}->limit - $limit->friendships->{'/friendships/outgoing'}->remaining) > 0) {
+                        $this->info("Time -> " . Carbon::now()
+                                                       ->toDateTimeString() . 'Followed -> ' . $tweets[$index][self::USER_NAME]);
+                        $this->connection->post('friendships/create', ['user_id' => $tweets[$index][self::USER_ID]]);
+                    }
                 }
             }
         }
@@ -262,13 +289,24 @@ class Twitter extends Command
     {
         $hashTags = $this->getRandomTags();
         $tweets   = $this->randomTweets($hashTags);
+        if (!$tweets) {
+            return false;
+        }
         $this->randomFavourite($tweets, rand(3, 6));
         if (!rand(0, 1)) {
             $this->randomReTweet($tweets);
         }
         $this->randomFollow($tweets);
+
+        return true;
     }
 
+    /**
+     * @author Rohit Arora
+     *
+     * @return bool
+     * @throws \Exception
+     */
     private function randomPersonalTweets()
     {
         if (!rand(0, 1)) {
@@ -280,10 +318,15 @@ class Twitter extends Command
                 // Get Random tweets from personal tags
                 $hashTags = $this->getRandomTags('personal');
                 $tweets   = $this->randomTweets($hashTags, 1);
+                if (!$tweets) {
+                    return false;
+                }
                 $this->randomFavourite($tweets, 1);
                 $this->randomReTweet($tweets, 1);
             }
         }
+
+        return true;
     }
 
     /**
@@ -331,7 +374,47 @@ class Twitter extends Command
      */
     private function reTweet($id)
     {
-        $this->connection->post('statuses/retweet/' . $id);
+        $limit = $this->getLimit();
+        if ($limit && ($limit->statuses->{'/statuses/retweets/:id'}->limit - $limit->statuses->{'/statuses/retweets/:id'}->remaining) > 0) {
+            $this->info("Time -> " . Carbon::now()
+                                           ->toDateTimeString() . 'limit remaining for retweets -> ' . $limit->statuses->{'/statuses/retweets/:id'}->remaining - 1);
+            $this->connection->post('statuses/retweet/' . $id);
+        }
+    }
+
+    /**
+     * @author Rohit Arora
+     *
+     * @return \stdClass
+     */
+    private function getLimit()
+    {
+        $resetKey = $this->handleName . '_reset';
+        $reset    = \Cache::get($resetKey);
+        if ($reset) {
+            $resetTime = new Carbon(Carbon::createFromTimestamp($reset));
+            $diff      = $resetTime->diff(Carbon::now());
+            if (($diff->s > 0) || ($diff->i > 0)) {
+                $this->info("Time -> " . Carbon::now()
+                                               ->toDateTimeString() . " We are still on reset it will reset at -> " . $resetTime->toDateTimeString());
+                return false;
+            }
+        }
+
+        try {
+            $limit = $this->connection->get('application/rate_limit_status')->resources;
+            if ($limit && ($limit->application->{'/application/rate_limit_status'}->limit - $limit->application->{'/application/rate_limit_status'}->remaining) > 170) {
+                $this->info("Time -> " . Carbon::now()
+                                               ->toDateTimeString() . " status limit reached for " . $this->handleName);
+                \Cache::put($resetKey, $limit->application->{'/application/rate_limit_status'}->reset, 15);
+            }
+
+            return $limit;
+        } catch (\Exception $Exception) {
+            $this->info("Time -> " . Carbon::now()
+                                           ->toDateTimeString() . " Error -> " . $Exception->getMessage());
+            return false;
+        }
     }
 
     /**
@@ -345,13 +428,17 @@ class Twitter extends Command
     {
         $media = [];
         if (isset($data['image_url'])) {
-            $this->info('downloading ' . $data['image_url']);
+            $this->info("Time -> " . Carbon::now()
+                                           ->toDateTimeString() . 'downloading ' . $data['image_url']);
             $fileMeta = explode('/', $data['image_url']);
             $fileName = '/tmp/' . end($fileMeta);
-            $this->info('Filename ' . $fileName);
+            $this->info("Time -> " . Carbon::now()
+                                           ->toDateTimeString() . 'Filename ' . $fileName);
             file_put_contents($fileName, file_get_contents($data['image_url']));
-            $this->info('downloaded to ' . $fileName);
-            $this->info('trying to upload media ' . $fileName);
+            $this->info("Time -> " . Carbon::now()
+                                           ->toDateTimeString() . 'downloaded to ' . $fileName);
+            $this->info("Time -> " . Carbon::now()
+                                           ->toDateTimeString() . 'trying to upload media ' . $fileName);
             $media[] = $this->connection->upload('media/upload', ['media' => $fileName])->media_id_string;
             unlink($fileName);
         }
