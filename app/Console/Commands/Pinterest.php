@@ -159,7 +159,7 @@ class Pinterest extends Command
                 $this->info("Pinned title -> {$trip['title']} link -> {$trip['link']} image -> {$trip['image_url']} category -> {$trip['category']}");
             }
         } catch (\Exception $Exception) {
-            $this->info('cant pin error -> ' . $Exception->getMessage());
+            $this->info('email -> ' . $email . 'cant pin error -> ' . $Exception->getMessage());
         }
         $boards = $this->getBoards();
 
