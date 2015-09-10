@@ -23,7 +23,7 @@ class Pinterest extends Command
     const CONNECT_TIMEOUT            = 10;
     const DEFAULT_RE_PIN_LIMIT       = 3;
     const TRIPOTO                    = 'tripoto';
-    const DEFAULT_FOLLOW_LIMIT       = 4;
+    const DEFAULT_FOLLOW_LIMIT       = 1;
     /**
      * The name and signature of the console command.
      *
@@ -200,25 +200,23 @@ class Pinterest extends Command
         $pinnerRandomNumbers = $this->getRandomNumbers($offset, $pinsCount, self::DEFAULT_FOLLOW_LIMIT);
 
         for ($index = 0; $index < $pinsCount; $index++) {
-            if (isset($pins[$index]['id']) && (isset($pins[$index]["liked_by_me"]) && !$pins[$index]["liked_by_me"])) {
-                $this->info("Id liked " . $pins[$index]['id']);
-                $pinsLiked += 1;
-                $this->likePin($pins[$index]);
-                try {
+            try {
+                if (isset($pins[$index]['id']) && (isset($pins[$index]["liked_by_me"]) && !$pins[$index]["liked_by_me"])) {
+                    $this->info("Id liked " . $pins[$index]['id']);
+                    $pinsLiked += 1;
+                    $this->likePin($pins[$index]);
+
                     if (in_array($index, $randomNumbers) && $this->rePin($pins[$index])) {
                         $this->info("Id rePined " . $pins[$index]['id'] . " with board id " . $this->boardID);
                     }
-                } catch (\Exception $Exception) {
-                    $this->info('Cant RePin -> ' . $Exception->getMessage());
-                }
-                try {
+
                     $pinner = isset($pins[$index]['pinner']) ? $pins[$index]['pinner'] : [];
                     if (!$pinner['explicitly_followed_by_me'] && in_array($index, $pinnerRandomNumbers) && $this->follow($pinner['username'], $pinner['id'])) {
                         $this->info("user followed -> " . $pinner['username']);
                     }
-                } catch (\Exception $Exception) {
-                    $this->info('Cant Follow -> ' . $Exception->getMessage());
                 }
+            } catch (\Exception $Exception) {
+                $this->info('Error -> ' . $Exception->getMessage());
             }
         }
 
