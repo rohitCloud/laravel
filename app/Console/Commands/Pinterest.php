@@ -23,6 +23,7 @@ class Pinterest extends Command
     const CONNECT_TIMEOUT            = 10;
     const DEFAULT_RE_PIN_LIMIT       = 3;
     const TRIPOTO                    = 'tripoto';
+    const DEFAULT_FOLLOW_LIMIT       = 4;
     /**
      * The name and signature of the console command.
      *
@@ -192,11 +193,11 @@ class Pinterest extends Command
 
         $pinsLiked = 0;
         shuffle($pins);
-        $offset        = 0;
-        $pins          = array_slice($pins, $offset, self::DEFAULT_PINS_LIMIT_PER_TAG);
-        $pinsCount     = count($pins);
-        $randomNumbers = $this->getRandomNumbers($offset, $pinsCount, self::DEFAULT_RE_PIN_LIMIT);
-        $pinnerRandomNumbers = $this->getRandomNumbers($offset, $pinsCount, 1);
+        $offset              = 0;
+        $pins                = array_slice($pins, $offset, self::DEFAULT_PINS_LIMIT_PER_TAG);
+        $pinsCount           = count($pins);
+        $randomNumbers       = $this->getRandomNumbers($offset, $pinsCount, self::DEFAULT_RE_PIN_LIMIT);
+        $pinnerRandomNumbers = $this->getRandomNumbers($offset, $pinsCount, self::DEFAULT_FOLLOW_LIMIT);
 
         for ($index = 0; $index < $pinsCount; $index++) {
             if (isset($pins[$index]['id']) && (isset($pins[$index]["liked_by_me"]) && !$pins[$index]["liked_by_me"])) {
