@@ -306,7 +306,7 @@ class Pinterest extends Command
 
         foreach ($boards as $board) {
             $boardList[] = $board['id'];
-            if ($findBoard && $board['name'] == $findBoard) {
+            if ($findBoard && strtolower($board['name']) == strtolower($findBoard)) {
                 return $board['id'];
             }
         }
@@ -642,7 +642,7 @@ class Pinterest extends Command
         $keyword = $this->getHashTags($trip['category']);
 
         $boards        = $this->getBoards();
-        $this->boardID = $this->getBoard($boards, strtolower($trip['category']));
+        $this->boardID = $this->getBoard($boards, $trip['category']);
         $pinnableItems = $this->getPinnableWithURL($trip['link']);
 
         if ((!isset($trip['image_url']) || !$trip['image_url']) && $pinnableItems) {
