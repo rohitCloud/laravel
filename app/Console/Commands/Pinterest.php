@@ -216,7 +216,7 @@ class Pinterest extends Command
                     }
                 }
             } catch (\Exception $Exception) {
-                $this->info('Error -> ' . $Exception->getMessage());
+                $this->info('email -> ' . $email . ' Error -> ' . $Exception->getMessage());
             }
         }
 
