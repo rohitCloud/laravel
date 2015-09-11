@@ -23,7 +23,7 @@ class Pinterest extends Command
     const CONNECT_TIMEOUT            = 10;
     const DEFAULT_RE_PIN_LIMIT       = 3;
     const TRIPOTO                    = 'tripoto';
-    const DEFAULT_FOLLOW_LIMIT       = 3;
+    const DEFAULT_FOLLOW_LIMIT       = 1;
     /**
      * The name and signature of the console command.
      *
