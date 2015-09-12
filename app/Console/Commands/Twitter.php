@@ -271,8 +271,7 @@ class Twitter extends Command
     {
         $statuses = $this->getLimit();
         if ($statuses && $statuses->tweet > 0) {
-            // $media  = isset($tweet['image_url']) ? $this->getMedia($tweet['image_url']) : [];
-            $media  = [];
+            $media  = isset($tweet['image_url']) ? $this->getMedia($tweet['image_url']) : [];
             $status = $tweet['status'];
             $this->info("Time -> " . Carbon::now()
                                            ->toDateTimeString() . 'Tweeted -> ' . $status);
