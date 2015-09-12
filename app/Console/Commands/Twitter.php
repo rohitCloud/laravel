@@ -68,6 +68,18 @@ class Twitter extends Command
     }
 
     /**
+     * @author Rohit Arora
+     *
+     * @param     $statusKey
+     * @param     $limit
+     * @param int $minutes
+     */
+    private static function updateStatuses($statusKey, $limit, $minutes = 15)
+    {
+        \Cache::put($statusKey, $limit, $minutes);
+    }
+
+    /**
      * Execute the console command.
      *
      * @return mixed
@@ -140,8 +152,7 @@ class Twitter extends Command
             if ($this->trip) {
                 $this->info("Time -> " . Carbon::now()
                                                ->toDateTimeString() . 'making a trip viral');
-                $media = $this->getMedia($this->trip);
-                $this->tweet($this->trip['status'], $media);
+                $this->tweet($this->trip);
             }
             if ($this->tweet) {
                 $this->info("Time -> " . Carbon::now()
@@ -178,12 +189,17 @@ class Twitter extends Command
     {
         $tweets = [];
         for ($index = 0; $index < $count; $index++) {
-            $limit = $this->getLimit();
-            if ($limit && ($limit->search->{'/search/tweets'}->limit - $limit->search->{'/search/tweets'}->remaining) <= 0) {
+            $statuses = $this->getLimit();
+            if ($statuses && $statuses->search > 0) {
                 $this->info("Time -> " . Carbon::now()
-                                               ->toDateTimeString() . 'hash tag searched :' . $hashTags[$index]);
-                $this->info('and limit remaining for search -> ' . ($limit->search->{'/search/tweets'}->remaining - 1));
+                                               ->toDateTimeString() . ' hash tag searched :' . $hashTags[$index]);
                 $tweetStatues = $this->connection->get("search/tweets", ['q' => $hashTags[$index], 'result_type' => 'recent', 'count' => self::SEARCH_TWEET_COUNT])->statuses;
+                $remaining    = $statuses->search - 1;
+                $this->info("Time -> " . Carbon::now()
+                                               ->toDateTimeString() .
+                    ' and limit remaining for search -> ' . $remaining);
+                $statuses->search = $remaining;
+                self::updateStatuses($this->getStatusKey(), $statuses);
                 foreach ($tweetStatues as $tweet) {
                     if (!in_array($tweet->user->screen_name, $this->blockedUserList)) {
                         $tweets[] = [self::ID         => $tweet->id,
@@ -212,11 +228,17 @@ class Twitter extends Command
         shuffle($tweets);
         for ($index = 0; $index < $count; $index++) {
             if (!$tweets[$index][self::FAVOURITE]) {
-                $limit = $this->getLimit();
-                if ($limit) {
+                $statuses = $this->getLimit();
+                if ($statuses && $statuses->favourites > 0) {
                     $this->info("Time -> " . Carbon::now()
                                                    ->toDateTimeString() . 'Favourite -> ' . $tweets[$index][self::NAME]);
                     $this->connection->post('favorites/create', [self::ID => $tweets[$index][self::ID]]);
+                    $remaining = $statuses->favourites - 1;
+                    $this->info("Time -> " . Carbon::now()
+                                                   ->toDateTimeString() .
+                        'limit remaining for Favourite -> ' . $remaining);
+                    $statuses->favourites = $remaining;
+                    self::updateStatuses($this->getStatusKey(), $statuses);
                 }
             }
         }
@@ -243,20 +265,31 @@ class Twitter extends Command
     /**
      * @author Rohit Arora
      *
-     * @param       $status
-     * @param array $media
+     * @param       $tweet
      */
-    private function tweet($status, $media = [])
+    private function tweet($tweet)
     {
-        $this->info("Time -> " . Carbon::now()
-                                       ->toDateTimeString() . 'Tweeted -> ' . $status);
-        $data = ['status' => $status];
+        $statuses = $this->getLimit();
+        if ($statuses && $statuses->tweet > 0) {
+            $media  = isset($tweet['image_url']) ? $this->getMedia($tweet['image_url']) : [];
+            $status = $tweet['status'];
+            $this->info("Time -> " . Carbon::now()
+                                           ->toDateTimeString() . 'Tweeted -> ' . $status);
+            $data = ['status' => $status];
 
-        if ($media) {
-            $data = $data + ['media_ids' => implode(',', $media)];
+            if ($media) {
+                $data = $data + ['media_ids' => implode(',', $media)];
+            }
+
+            $this->connection->post('statuses/update', $data);
+
+            $remaining = $statuses->tweet - 1;
+            $this->info("Time -> " . Carbon::now()
+                                           ->toDateTimeString() .
+                'limit remaining for tweet -> ' . $remaining);
+            $statuses->tweet = $remaining;
+            self::updateStatuses($this->getStatusKey(), $statuses);
         }
-
-        $this->connection->post('statuses/update', $data);
     }
 
     /**
@@ -270,11 +303,17 @@ class Twitter extends Command
             shuffle($tweets);
             for ($index = 0; $index < self::RANDOM_FOLLOW_LIMIT; $index++) {
                 if (!$tweets[$index][self::FOLLOWING]) {
-                    $limit = $this->getLimit();
-                    if ($limit && ($limit->friendships->{'/friendships/outgoing'}->limit - $limit->friendships->{'/friendships/outgoing'}->remaining) <= 0) {
+                    $statuses = $this->getLimit();
+                    if ($statuses && $statuses->follow > 0) {
                         $this->info("Time -> " . Carbon::now()
                                                        ->toDateTimeString() . 'Followed -> ' . $tweets[$index][self::USER_NAME]);
                         $this->connection->post('friendships/create', ['user_id' => $tweets[$index][self::USER_ID]]);
+                        $remaining = $statuses->follow - 1;
+                        $this->info("Time -> " . Carbon::now()
+                                                       ->toDateTimeString() .
+                            'limit remaining for follow -> ' . $remaining);
+                        $statuses->follow = $remaining;
+                        self::updateStatuses($this->getStatusKey(), $statuses);
                     }
                 }
             }
@@ -312,9 +351,8 @@ class Twitter extends Command
     {
         if (!rand(0, 1)) {
             if (!rand(0, 1)) {
-                $data  = $this->getPersonalTweet();
-                $media = $this->getMedia($data);
-                $this->tweet($data['status'], $media);
+                $data = $this->getPersonalTweet();
+                $this->tweet($data);
             } else {
                 // Get Random tweets from personal tags
                 $hashTags = $this->getRandomTags('personal');
@@ -375,12 +413,15 @@ class Twitter extends Command
      */
     private function reTweet($id)
     {
-        $limit = $this->getLimit();
-        if ($limit && ($limit->statuses->{'/statuses/retweets/:id'}->limit - $limit->statuses->{'/statuses/retweets/:id'}->remaining) <= 0) {
+        $statuses = $this->getLimit();
+        if ($statuses && $statuses->reTweet > 0) {
+            $this->connection->post('statuses/retweet/' . $id);
+            $remaining = $statuses->reTweet - 1;
             $this->info("Time -> " . Carbon::now()
                                            ->toDateTimeString() .
-                'limit remaining for retweets -> ' . ($limit->statuses->{'/statuses/retweets/:id'}->remaining - 1));
-            $this->connection->post('statuses/retweet/' . $id);
+                'limit remaining for retweets -> ' . $remaining);
+            $statuses->reTweet = $remaining;
+            self::updateStatuses($this->getStatusKey(), $statuses);
         }
     }
 
@@ -391,27 +432,27 @@ class Twitter extends Command
      */
     private function getLimit()
     {
-        $resetKey = $this->handleName . '_reset';
-        $reset    = \Cache::get($resetKey);
-        if ($reset) {
-            $resetTime = new Carbon(Carbon::createFromTimestamp($reset));
-            $diff      = $resetTime->diff(Carbon::now());
-            if (($diff->s > 0) || ($diff->i > 0)) {
-                $this->info("Time -> " . Carbon::now()
-                                               ->toDateTimeString() . " We are still on reset it will reset at -> " . $resetTime->toDateTimeString());
-                return false;
+        $statusKey = $this->getStatusKey();
+        $statuses  = \Cache::get($statusKey);
+        if ($statuses) {
+            $diff = (new Carbon($statuses->time))->diff(Carbon::now());
+            if ($diff->i > 0 && $diff->s > 0) {
+                return $statuses;
             }
         }
 
         try {
-            $limit = $this->connection->get('application/rate_limit_status')->resources;
-            if ($limit && ($limit->application->{'/application/rate_limit_status'}->limit - $limit->application->{'/application/rate_limit_status'}->remaining) > 170) {
-                $this->info("Time -> " . Carbon::now()
-                                               ->toDateTimeString() . " status limit reached for " . $this->handleName);
-                \Cache::put($resetKey, $limit->application->{'/application/rate_limit_status'}->reset, 15);
-            }
+            $statuses             = new \stdClass();
+            $statuses->favourites = 12;
+            $statuses->tweet      = 10;
+            $statuses->follow     = 5;
+            $statuses->reTweet    = 30;
+            $statuses->search     = 150;
+            $statuses->time       = Carbon::now()
+                                          ->addMinute(15);
+            self::updateStatuses($statusKey, $statuses, 15);
 
-            return $limit;
+            return $statuses;
         } catch (\Exception $Exception) {
             $this->info("Time -> " . Carbon::now()
                                            ->toDateTimeString() . " Error -> " . $Exception->getMessage());
@@ -422,21 +463,21 @@ class Twitter extends Command
     /**
      * @author Rohit Arora
      *
-     * @param $data
+     * @param $imageURL
      *
      * @return array
      */
-    private function getMedia($data)
+    private function getMedia($imageURL)
     {
         $media = [];
-        if (isset($data['image_url'])) {
+        if (isset($imageURL)) {
             $this->info("Time -> " . Carbon::now()
-                                           ->toDateTimeString() . 'downloading ' . $data['image_url']);
-            $fileMeta = explode('/', $data['image_url']);
+                                           ->toDateTimeString() . 'downloading ' . $imageURL);
+            $fileMeta = explode('/', $imageURL);
             $fileName = '/tmp/' . end($fileMeta);
             $this->info("Time -> " . Carbon::now()
                                            ->toDateTimeString() . 'Filename ' . $fileName);
-            file_put_contents($fileName, file_get_contents($data['image_url']));
+            file_put_contents($fileName, file_get_contents($imageURL));
             $this->info("Time -> " . Carbon::now()
                                            ->toDateTimeString() . 'downloaded to ' . $fileName);
             $this->info("Time -> " . Carbon::now()
@@ -445,5 +486,15 @@ class Twitter extends Command
             unlink($fileName);
         }
         return $media;
+    }
+
+    /**
+     * @author Rohit Arora
+     *
+     * @return string
+     */
+    private function getStatusKey()
+    {
+        return $this->handleName . '_statuses';
     }
 }
