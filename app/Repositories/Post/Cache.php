@@ -60,7 +60,7 @@ class Cache implements PostContract
      */
     public function getByID($postID, $parameters = [ALL_FIELDS])
     {
-        // TODO: Implement getByID() method.
+        return true;
     }
 
     /**
@@ -72,7 +72,7 @@ class Cache implements PostContract
      */
     public function store($parameters)
     {
-        // TODO: Implement store() method.
+        return true;
     }
 
     /**
@@ -84,7 +84,7 @@ class Cache implements PostContract
      */
     public static function isValidOrderBy($by)
     {
-        // TODO: Implement isValidOrderBy() method.
+        return true;
     }
 
     /**
@@ -97,7 +97,7 @@ class Cache implements PostContract
      */
     public function getPostsByUser($parameters, $userID)
     {
-        // TODO: Implement getPostsByUser() method.
+        return true;
     }
 
     /**
@@ -111,7 +111,7 @@ class Cache implements PostContract
      */
     public function getByUserAndID($userID, $postID, $parameters = [ALL_FIELDS])
     {
-        // TODO: Implement getByUserAndID() method.
+        return true;
     }
 
     /**
@@ -123,7 +123,7 @@ class Cache implements PostContract
      */
     public function exists($id)
     {
-        // TODO: Implement exists() method.
+        return true;
     }
 
     /**
@@ -136,6 +136,18 @@ class Cache implements PostContract
      */
     public function modify($parameters, $postID)
     {
-        // TODO: Implement modify() method.
+        return true;
+    }
+
+    /**
+     * @author Rohit Arora
+     *
+     * @param int|array $postID
+     *
+     * @return mixed
+     */
+    public function destroy($postID)
+    {
+        return true;
     }
 }
