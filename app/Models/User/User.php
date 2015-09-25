@@ -6,17 +6,18 @@ use App\Models\Comment;
 use App\Models\Document;
 use App\Models\Post;
 use App\Models\Role;
-use App\Models\User\Details;
 use Illuminate\Auth\Authenticatable;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Auth\Passwords\CanResetPassword;
 use Illuminate\Contracts\Auth\Authenticatable as AuthenticatableContract;
+use Illuminate\Contracts\Auth\Access\Authorizable as AuthorizableContract;
 use Illuminate\Contracts\Auth\CanResetPassword as CanResetPasswordContract;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasManyThrough;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
+use Illuminate\Foundation\Auth\Access\Authorizable;
 
 /**
  * @author  Rohit Arora
@@ -24,7 +25,7 @@ use Illuminate\Database\Eloquent\Relations\MorphMany;
  * Class User
  * @package App
  */
-class User extends Model implements AuthenticatableContract, CanResetPasswordContract
+class User extends Model implements AuthenticatableContract, CanResetPasswordContract, AuthorizableContract
 {
     const TABLE = 'users';
 
@@ -36,7 +37,7 @@ class User extends Model implements AuthenticatableContract, CanResetPasswordCon
     const UPDATED_AT     = 'updated_at';
     const REMEMBER_TOKEN = 'remember_token';
 
-    use Authenticatable, CanResetPassword;
+    use Authenticatable, CanResetPassword, Authorizable;
 
     /**
      * The database table used by the model.
