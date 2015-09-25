@@ -94,5 +94,4 @@ interface Post
      * @return mixed
      */
     public function destroy($postID);
-
 }
