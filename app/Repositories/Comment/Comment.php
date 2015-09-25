@@ -73,7 +73,7 @@ class Comment extends Base implements CommentContract
     public function getCommentsRelatedToPost($postID)
     {
         return $this->setQueryBuilder($this->getQueryBuilder()
-                                           ->whereHas('post', function ($query) use ($postID) {
+                                           ->whereHas('post', function (Builder $query) use ($postID) {
                                                /* @var Builder $query */
                                                $query->where(PostModel::ID, EQUAL, $postID);
                                            }));

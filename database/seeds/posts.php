@@ -7,7 +7,7 @@ use Illuminate\Database\Seeder;
  *
  * Class posts
  */
-class posts extends Seeder
+class Posts extends Seeder
 {
     /**
      * Run the database seeds.

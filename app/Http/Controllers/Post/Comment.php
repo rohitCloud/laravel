@@ -4,7 +4,6 @@ namespace App\Http\Controllers\Post;
 
 use App\Adapters\Comment as CommentAdapter;
 use App\Http\Controllers\Controller;
-use App\Http\Requests;
 use App\Contracts\Repositories\Comment as CommentContract;
 use Illuminate\Support\Facades\Response;
 

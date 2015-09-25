@@ -4,8 +4,6 @@
  */
 namespace App\Contracts;
 
-use Validator;
-
 
 /**
  * @author  Rohit Arora

@@ -136,7 +136,7 @@ class Post extends Base implements PostContract
     public function getPostRelatedToUser($userID)
     {
         return $this->setQueryBuilder($this->getQueryBuilder()
-                                           ->whereHas('user', function ($query) use ($userID) {
+                                           ->whereHas('user', function (Builder $query) use ($userID) {
                                                /* @var Builder $query */
                                                $query->where(UserModel::ID, EQUAL, $userID);
                                            }));

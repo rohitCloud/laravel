@@ -11,7 +11,7 @@
 |
 */
 
-$factory->define(\App\Models\User\User::class, function ($faker) {
+$factory->define(\App\Models\User\User::class, function (\Laracasts\TestDummy\FakerAdapter $faker) {
     return [
         'name' => $faker->name,
         'email' => $faker->email,
