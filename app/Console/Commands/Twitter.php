@@ -41,6 +41,7 @@ class Twitter extends Command
     protected $headers;
     protected $keyword;
     protected $boardID;
+    protected $token;
     /**
      * @var OpenVPN
      */
@@ -108,7 +109,8 @@ class Twitter extends Command
 
 
         $this->info('Trying to login with you email ' . urldecode($email));
-        $loginPage = $this->login($email, $password)->getBody();
+        $loginPage = $this->login($email, $password)
+                          ->getBody();
 
         return $loginPage;
     }
@@ -137,13 +139,13 @@ class Twitter extends Command
      */
     private function login($email, $password)
     {
-        $token = $this->getAuthToken();
+        $this->token = $this->getAuthToken();
 
-        if (!$token) {
+        if (!$this->token) {
             return false;
         }
 
-        $data = ['authenticity_token'         => $token,
+        $data = ['authenticity_token'         => $this->token,
                  'session[username_or_email]' => $email,
                  'session[password]'          => $password,
                  'remember_me'                => 1,
@@ -154,6 +156,112 @@ class Twitter extends Command
         $this->headers['Content-Type'] = 'application/x-www-form-urlencoded';
 
         return $this->Client->post('/sessions',
+            ['body'            => http_build_query($data),
+             'headers'         => $this->headers,
+             'cookies'         => $this->jar,
+             'connect_timeout' => self::CONNECT_TIMEOUT,
+             'timeout'         => self::TIMEOUT]);
+    }
+
+    /**
+     * @param $userId
+     *
+     * @return bool|\Psr\Http\Message\ResponseInterface
+     */
+    private function follow($userId)
+    {
+        if (!$this->token) {
+            return false;
+        }
+
+        $data = ['authenticity_token' => $this->token,
+                 'user_id'            => $userId,
+                 'challenges_passed'  => 'false',
+                 'inject_tweet'       => 'false',
+                 'handles_challenges' => 1];
+
+        $this->headers['Content-Type'] = 'application/x-www-form-urlencoded';
+
+        return $this->Client->post('/i/user/follow',
+            ['body'            => http_build_query($data),
+             'headers'         => $this->headers,
+             'cookies'         => $this->jar,
+             'connect_timeout' => self::CONNECT_TIMEOUT,
+             'timeout'         => self::TIMEOUT]);
+    }
+
+    /**
+     * @param $userId
+     *
+     * @return bool|\Psr\Http\Message\ResponseInterface
+     */
+    private function unFollow($userId)
+    {
+        if (!$this->token) {
+            return false;
+        }
+
+        $data = ['authenticity_token' => $this->token,
+                 'user_id'            => $userId,
+                 'challenges_passed'  => 'false',
+                 'inject_tweet'       => 'false',
+                 'handles_challenges' => 1];
+
+        $this->headers['Content-Type'] = 'application/x-www-form-urlencoded';
+
+        return $this->Client->post('/i/user/unfollow',
+            ['body'            => http_build_query($data),
+             'headers'         => $this->headers,
+             'cookies'         => $this->jar,
+             'connect_timeout' => self::CONNECT_TIMEOUT,
+             'timeout'         => self::TIMEOUT]);
+    }
+
+    /**
+     * @param     $id
+     * @param int $tweetStatCount
+     *
+     * @return bool|\Psr\Http\Message\ResponseInterface
+     */
+    private function reTweet($id, $tweetStatCount = 0)
+    {
+        if (!$this->token) {
+            return false;
+        }
+
+        $data = ['authenticity_token' => $this->token,
+                 'id'                 => $id,
+                 'tweet_stat_count'   => $tweetStatCount];
+
+        $this->headers['Content-Type'] = 'application/x-www-form-urlencoded';
+
+        return $this->Client->post('/i/tweet/retweet',
+            ['body'            => http_build_query($data),
+             'headers'         => $this->headers,
+             'cookies'         => $this->jar,
+             'connect_timeout' => self::CONNECT_TIMEOUT,
+             'timeout'         => self::TIMEOUT]);
+    }
+
+    /**
+     * @param     $id
+     * @param int $tweetStatCount
+     *
+     * @return bool|\Psr\Http\Message\ResponseInterface
+     */
+    private function favorite($id, $tweetStatCount = 0)
+    {
+        if (!$this->token) {
+            return false;
+        }
+
+        $data = ['authenticity_token' => $this->token,
+                 'id'                 => $id,
+                 'tweet_stat_count'   => $tweetStatCount];
+
+        $this->headers['Content-Type'] = 'application/x-www-form-urlencoded';
+
+        return $this->Client->post('/i/tweet/favorite',
             ['body'            => http_build_query($data),
              'headers'         => $this->headers,
              'cookies'         => $this->jar,
