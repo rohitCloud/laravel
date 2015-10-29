@@ -109,10 +109,10 @@ class Twitter extends Command
 
 
         $this->info('Trying to login with you email ' . urldecode($email));
-        $loginPage = $this->login($email, $password)
-                          ->getBody();
+        $this->login($email, $password)
+             ->getBody();
 
-        return $loginPage;
+        return true;
     }
 
     /**
@@ -267,5 +267,49 @@ class Twitter extends Command
              'cookies'         => $this->jar,
              'connect_timeout' => self::CONNECT_TIMEOUT,
              'timeout'         => self::TIMEOUT]);
+    }
+
+    /**
+     * @param $keyword
+     *
+     * @return bool
+     */
+    private function search($keyword)
+    {
+        if (!$this->token) {
+            return false;
+        }
+
+        $data = ['f'        => 'tweet',
+                 'vertical' => 'default',
+                 'q'        => urlencode($keyword),
+                 'src'      => 'typd',
+                 'lang'     => 'en'];
+
+        $searchPage = $this->Client->get('/search?' . http_build_query($data),
+            ['headers'         => $this->headers,
+             'cookies'         => $this->jar,
+             'connect_timeout' => self::CONNECT_TIMEOUT,
+             'timeout'         => self::TIMEOUT]);
+
+        unset($searchPage);
+
+        $data = ['f'                          => 'tweets',
+                 'composed_count'             => 0,
+                 'include_available_features' => 1,
+                 'include_entities'           => 1,
+                 'include_new_items_bar'      => 'true',
+                 'interval'                   => 30000,
+                 'last_note_ts'               => 23,
+                 'latent_count'               => 0,
+                 'min_position'               => ''];
+
+        $searchTimeLine = $this->Client->get('/i/search/timeline?' . http_build_query($data),
+            ['headers'         => $this->headers,
+             'cookies'         => $this->jar,
+             'connect_timeout' => self::CONNECT_TIMEOUT,
+             'timeout'         => self::TIMEOUT]);
+
+        return $searchTimeLine;
     }
 }
