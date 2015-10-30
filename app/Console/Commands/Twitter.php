@@ -112,7 +112,11 @@ class Twitter extends Command
         $this->login($email, $password)
              ->getBody();
 
-        return true;
+        list($userList, $tweetList) = $this->search('#travel', 1);
+
+        $this->favorite($tweetList[0]);
+        $this->reTweet($tweetList[0]);
+        $this->follow($userList[0]);
     }
 
     /**
@@ -195,7 +199,7 @@ class Twitter extends Command
      *
      * @return bool|\Psr\Http\Message\ResponseInterface
      */
-    private function unFollow($userId)
+    protected function unFollow($userId)
     {
         if (!$this->token) {
             return false;
@@ -259,30 +263,29 @@ class Twitter extends Command
                  'id'                 => $id,
                  'tweet_stat_count'   => $tweetStatCount];
 
-        $this->headers['Content-Type'] = 'application/x-www-form-urlencoded';
+        $headers = $this->headers;
+
+        $headers['Content-Type'] = 'application/x-www-form-urlencoded';
 
         return $this->Client->post('/i/tweet/favorite',
             ['body'            => http_build_query($data),
-             'headers'         => $this->headers,
+             'headers'         => $headers,
              'cookies'         => $this->jar,
              'connect_timeout' => self::CONNECT_TIMEOUT,
              'timeout'         => self::TIMEOUT]);
     }
 
     /**
-     * @param $keyword
+     * @param     $keyword
+     * @param int $pages
      *
-     * @return bool
+     * @return array
      */
-    private function search($keyword)
+    private function search($keyword, $pages = 10)
     {
-        if (!$this->token) {
-            return false;
-        }
-
         $data = ['f'        => 'tweet',
                  'vertical' => 'default',
-                 'q'        => urlencode($keyword),
+                 'q'        => $keyword,
                  'src'      => 'typd',
                  'lang'     => 'en'];
 
@@ -290,26 +293,73 @@ class Twitter extends Command
             ['headers'         => $this->headers,
              'cookies'         => $this->jar,
              'connect_timeout' => self::CONNECT_TIMEOUT,
-             'timeout'         => self::TIMEOUT]);
+             'timeout'         => self::TIMEOUT])
+                                   ->getBody();
 
-        unset($searchPage);
+        preg_match('/data-min-position="(.*)"/', $searchPage, $result);
+        $minPosition = isset($result[1]) ? $result[1] : false;
+        $maxPosition = false;
+        $data += ['f'                          => 'tweets',
+                  'include_available_features' => 1,
+                  'include_entities'           => 1,
+                  'include_new_items_bar'      => 'true'];
+        for ($index = 0; $index < $pages; $index++) {
 
-        $data = ['f'                          => 'tweets',
-                 'composed_count'             => 0,
-                 'include_available_features' => 1,
-                 'include_entities'           => 1,
-                 'include_new_items_bar'      => 'true',
-                 'interval'                   => 30000,
-                 'last_note_ts'               => 23,
-                 'latent_count'               => 0,
-                 'min_position'               => ''];
+            if ($index === 0) {
+                $newData = $data + [
+                        'composed_count'        => 0,
+                        'include_new_items_bar' => 'true',
+                        'interval'              => 30000,
+                        'min_position'          => $minPosition,
+                        'latent_count'          => 0,
+                        'last_note_ts'          => $index + 23];
+            } else {
+                $newData = $data + ['reset_error_state' => 'false',
+                                    'max_position'      => $maxPosition,
+                                    'last_note_ts'      => $index + 23];
+            }
+
+
+            $returnData = $this->timeLineSearch($newData);
+            $searchPage .= isset($returnData['inner']['items_html']) ? $returnData['inner']['items_html'] : '';
+
+            $maxPosition = isset($returnData['inner']['min_position']) ? $returnData['inner']['min_position'] :
+                (isset($returnData['inner']['max_position']) ? $returnData['inner']['max_position'] : false);
+            if (!$maxPosition) {
+                break;
+            }
+        }
+
+        preg_match_all('/data-tweet-id="(.*)"/', $searchPage, $tweetList);
+        $tweetList = isset($tweetList[1]) ? array_unique($tweetList[1]) : [];
+
+        preg_match_all('/data-user-id="(.*)"/', $searchPage, $userList);
+        $userList = isset($userList[1]) ? $filtered = array_filter(array_unique($userList[1]), 'is_numeric') : [];
+
+        array_shift($userList);
+        return [$userList, array_values($tweetList)];
+    }
+
+    /**
+     * @param $data
+     *
+     * @return mixed
+     */
+    private function timeLineSearch($data)
+    {
+        $headers = $this->headers;
+
+        $headers['Accept']           = 'application/json, text/javascript, */*; q=0.01';
+        $headers['X-Requested-With'] = 'XMLHttpRequest';
 
         $searchTimeLine = $this->Client->get('/i/search/timeline?' . http_build_query($data),
-            ['headers'         => $this->headers,
+            ['headers'         => $headers,
              'cookies'         => $this->jar,
              'connect_timeout' => self::CONNECT_TIMEOUT,
              'timeout'         => self::TIMEOUT]);
 
-        return $searchTimeLine;
+        $json = $searchTimeLine->getBody();
+
+        return json_decode($json, true);
     }
 }
