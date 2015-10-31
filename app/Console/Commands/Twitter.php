@@ -117,6 +117,7 @@ class Twitter extends Command
         $this->favorite($tweetList[0]);
         $this->reTweet($tweetList[0]);
         $this->follow($userList[0]);
+        $this->tweet('testing #travel');
     }
 
     /**
@@ -361,5 +362,34 @@ class Twitter extends Command
         $json = $searchTimeLine->getBody();
 
         return json_decode($json, true);
+    }
+
+    /**
+     * @param $status
+     *
+     * @return bool|\Psr\Http\Message\ResponseInterface
+     */
+    private function tweet($status)
+    {
+        if (!$this->token) {
+            return false;
+        }
+
+        $data = ['authenticity_token' => $this->token,
+                 'is_permalink_page'  => 'false',
+                 'place_id'           => '',
+                 'status'             => $status,
+                 'tagged_users'       => ''];
+
+        $headers = $this->headers;
+
+        $headers['Content-Type'] = 'application/x-www-form-urlencoded';
+
+        return $this->Client->post('/i/tweet/create',
+            ['body'            => http_build_query($data),
+             'headers'         => $headers,
+             'cookies'         => $this->jar,
+             'connect_timeout' => self::CONNECT_TIMEOUT,
+             'timeout'         => self::TIMEOUT]);
     }
 }
