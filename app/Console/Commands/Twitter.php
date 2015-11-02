@@ -6,6 +6,7 @@ use App\Commands\OpenVPN;
 use GuzzleHttp\Client;
 use GuzzleHttp\Cookie\CookieJar;
 use Illuminate\Console\Command;
+use Carbon\Carbon;
 
 /**
  * @author  Rohit Arora
@@ -15,8 +16,17 @@ use Illuminate\Console\Command;
  */
 class Twitter extends Command
 {
-    const TIMEOUT         = 10;
-    const CONNECT_TIMEOUT = 10;
+    const TIMEOUT                  = 10;
+    const CONNECT_TIMEOUT          = 10;
+    const EMAIL                    = 'Email';
+    const PASSWORD                 = 'Password';
+    const DEFAULT_RANDOM_TAG_LIMIT = 2;
+    const USER_LIST                = 'user_list';
+    const TWEET_LIST               = 'tweet_list';
+    const RANDOM_FAVOURITE_LIMIT   = 3;
+    const RANDOM_RE_TWEET_LIMIT    = 1;
+    const RANDOM_FOLLOW_LIMIT      = 1;
+    const TRIPOTO                  = 'tripoto';
     /**
      * The name and signature of the console command.
      *
@@ -42,6 +52,11 @@ class Twitter extends Command
     protected $keyword;
     protected $boardID;
     protected $token;
+    protected $blockedUserList = ['triptroopme'];
+    protected $isViral         = false;
+    protected $trip            = null;
+    protected $tweet           = null;
+
     /**
      * @var OpenVPN
      */
@@ -64,29 +79,278 @@ class Twitter extends Command
      */
     public function handle()
     {
-        $accounts = json_decode(\File::get(storage_path('app') . DIRECTORY_SEPARATOR . 'accounts.json'), true);
-        shuffle($accounts);
-        foreach ($accounts as $account) {
-            $email    = $account['Email'];
-            $password = $account['Password'];
-            if (true) {
-                try {
-                    $this->start($email, $password);
-                } catch
-                (\Exception $Exception) {
+        $alreadyDone = false;
+        while (true) {
+            $accounts = json_decode(\File::get(storage_path('app') . DIRECTORY_SEPARATOR . 'accounts.json'), true);
+            shuffle($accounts);
+            if ($this->isViral && $alreadyDone) {
+                $this->isViral = false;
+                $this->trip    = null;
+                $this->tweet   = null;
+                $alreadyDone   = false;
+            }
+            foreach ($accounts as $account) {
+                $email    = $account[self::EMAIL];
+                $password = $account[self::PASSWORD];
+                if (!$account[self::EMAIL] || !$account[self::PASSWORD]) {
+                    $this->info("Time -> " . Carbon::now()
+                                                   ->toDateTimeString() . ' Account is not complete yet -> ' . $account[self::EMAIL]);
+
+                    continue;
+                }
+
+                if ($this->vpn->reconnect($this)) {
+                    try {
+                        $this->login($email, $password)
+                             ->getBody();
+
+                        if ($this->isViral) {
+                            $this->makeViral();
+                            $alreadyDone = true;
+                            continue;
+                        }
+
+                        $this->getPersonalTweet();
+
+                        if ($this->isViral) {
+                            $this->info("Time -> " . Carbon::now()
+                                                           ->toDateTimeString() . 'Time is to make a trip or tweet viral Woohoo!');
+                            break;
+                        }
+
+                        $this->randomHashTweets();
+                        $this->randomPersonalTweets();
+                    } catch
+                    (\Exception $Exception) {
+                        $this->info("Time -> " . Carbon::now()
+                                                       ->toDateTimeString() . " Email {$account[self::EMAIL]} Error Message -> " . $Exception->getMessage());
+                    }
                 }
             }
         }
     }
 
     /**
+     * @author Rohit Arora
+     *
+     */
+    public function makeViral()
+    {
+        if ($this->isViral) {
+            if ($this->trip) {
+                $this->info("Time -> " . Carbon::now()
+                                               ->toDateTimeString() . ' making a trip viral');
+                $this->tweet($this->trip);
+            }
+            if ($this->tweet) {
+                $this->info("Time -> " . Carbon::now()
+                                               ->toDateTimeString() . ' making a tweet viral');
+                $this->reTweet($this->tweet);
+            }
+        }
+    }
+
+    /**
+     * @author Rohit Arora
+     *
+     * @param string $tags
+     *
+     * @return mixed
+     */
+    private function getRandomTags($tags = 'tags')
+    {
+        $hashTags = json_decode(\File::get(storage_path('app') . DIRECTORY_SEPARATOR . 'hashTags.json'), true)[$tags];
+        shuffle($hashTags);
+
+        return $hashTags;
+    }
+
+    /**
+     * @author Rohit Arora
+     *
+     * @return array
+     */
+    private function randomHashTweets()
+    {
+        $hashTags = $this->getRandomTags();
+        list($userList, $tweetList) = $this->getTweetsAndUsers($hashTags);
+
+        $this->randomFavourite($tweetList, rand(3, 6));
+        $this->randomReTweet($tweetList, rand(1, 2));
+        $this->randomFollow($userList, rand(0, 1));
+
+        return true;
+    }
+
+
+    /**
+     * @author Rohit Arora
+     *
+     * @return bool
+     * @throws \Exception
+     */
+    private function randomPersonalTweets()
+    {
+        if (!rand(0, 1)) {
+            if (!rand(0, 1)) {
+                $data = $this->getPersonalTweet();
+                $this->tweet($data);
+            } else {
+                // Get Random tweets from personal tags
+                $hashTags = $this->getRandomTags('personal');
+                list($userList, $tweetList) = $this->getTweetsAndUsers($hashTags, 1);
+                unset($userList);
+                if (!$tweetList) {
+                    return false;
+                }
+                $this->randomFavourite($tweetList, 1);
+                $this->randomReTweet($tweetList, 1);
+            }
+        }
+
+        return true;
+    }
+
+
+    /**
+     * @author Rohit Arora
+     *
+     * @return string
+     * @throws \Exception
+     */
+    private function getPersonalTweet()
+    {
+        $trip = json_decode(file_get_contents(env('TRIP_URL')), true);
+        if ($trip) {
+            if (!isset($trip['category'])) {
+                $trip['category'] = 'travel';
+            }
+            if (isset($trip['isViral']) && $trip['isViral']) {
+                $this->isViral = true;
+            }
+            if (isset($trip['tweet_id']) && $trip['tweet_id']) {
+                $this->tweet   = $trip['tweet_id'];
+                $this->isViral = true;
+            }
+            $link   = isset($trip['link']) && $trip['link'] ? $trip['link'] : '';
+            $title  = isset($trip['title']) && $trip['title'] ? $trip['title'] : '';
+            $hashes = [$trip['category'], self::TRIPOTO];
+            shuffle($hashes);
+            $data['status'] = $link . " \n" . $title . ' #' . implode(' #', $hashes);
+            if (isset($trip['image_url'])) {
+                $data['image_url'] = $trip['image_url'];
+            }
+            if ($link && $title && $this->isViral) {
+                $this->trip = $data;
+            }
+
+            return $data;
+        }
+
+        throw new \Exception('Trip not found');
+    }
+
+    /**
+     * @param     $tweets
+     * @param int $count
+     *
+     * @throws \Exception
+     */
+    private function randomFavourite($tweets, $count = self::RANDOM_FAVOURITE_LIMIT)
+    {
+        if (!$tweets) {
+            throw new \Exception('No tweets found');
+        }
+        shuffle($tweets);
+        for ($index = 0; $index < $count; $index++) {
+            $this->favorite($tweets[$index]);
+        }
+    }
+
+
+    /**
+     * @param     $tweets
+     * @param int $count
+     *
+     * @throws \Exception
+     */
+    private function randomReTweet($tweets, $count = self::RANDOM_RE_TWEET_LIMIT)
+    {
+        if (!$tweets) {
+            throw new \Exception('No tweets found');
+        }
+
+        shuffle($tweets);
+        for ($index = 0; $index < $count; $index++) {
+            $this->reTweet($tweets[$index]);
+        }
+    }
+
+
+    /**
+     * @param     $users
+     * @param int $count
+     *
+     * @throws \Exception
+     */
+    private function randomFollow($users, $count = self::RANDOM_FOLLOW_LIMIT)
+    {
+        if (!$users) {
+            throw new \Exception('No users found');
+        }
+        shuffle($users);
+        for ($index = 0; $index < $count; $index++) {
+            $this->follow($users[$index]);
+        }
+    }
+
+    /**
+     * @author Rohit Arora
+     *
+     * @param     $hashTags
+     * @param int $count
+     *
+     * @return array
+     */
+    private function getTweetsAndUsers($hashTags, $count = self::DEFAULT_RANDOM_TAG_LIMIT)
+    {
+        $tweets = [];
+        for ($index = 0; $index < $count; $index++) {
+            $this->info("Time -> " . Carbon::now()
+                                           ->toDateTimeString() . ' hash tag searched :' . $hashTags[$index]);
+            list($userList, $tweetList) = $this->search($hashTags[$index], 1);
+
+            $tweets[self::USER_LIST]  = $tweets[self::USER_LIST] + $userList;
+            $tweets[self::TWEET_LIST] = $tweets[self::TWEET_LIST] + $tweetList;
+            shuffle($tweets[self::USER_LIST]);
+            shuffle($tweets[self::TWEET_LIST]);
+        }
+
+        return [$tweets[self::USER_LIST], $tweets[self::TWEET_LIST]];
+    }
+
+    /**
+     * @author Rohit Arora
+     *
+     * @return \Psr\Http\Message\ResponseInterface
+     */
+    private function getAuthToken()
+    {
+        $homePage = $this->Client->get('/', ['cookies' => $this->jar, 'headers' => $this->headers, 'connect_timeout' => self::CONNECT_TIMEOUT, 'timeout' => self::TIMEOUT])
+                                 ->getBody();
+        preg_match('/(<input type="hidden" name="authenticity_token" value=")(.*)(">)/', $homePage, $result);
+
+        return isset($result[2]) ? $result[2] : false;
+    }
+
+    /**
      * @param $email
      * @param $password
      *
-     * @return \Psr\Http\Message\StreamInterface
+     * @return bool|\Psr\Http\Message\ResponseInterface
      * @throws \Exception
      */
-    private function start($email, $password)
+    private function login($email, $password)
     {
         if (!$email || !$password) {
             throw new \Exception('Error in inputs');
@@ -108,42 +372,9 @@ class Twitter extends Command
                           "Accept-Language"           => "en-US,en;q=0.8,hi;q=0.6"];
 
 
-        $this->info('Trying to login with you email ' . urldecode($email));
-        $this->login($email, $password)
-             ->getBody();
+        $this->info("Time -> " . Carbon::now()
+                                       ->toDateTimeString() . ' Trying to login with you email ' . $email);
 
-        list($userList, $tweetList) = $this->search('#travel', 1);
-
-        $this->favorite($tweetList[0]);
-        $this->reTweet($tweetList[0]);
-        $this->follow($userList[0]);
-        $this->tweet('testing #travel');
-    }
-
-    /**
-     * @author Rohit Arora
-     *
-     * @return \Psr\Http\Message\ResponseInterface
-     */
-    private function getAuthToken()
-    {
-        $homePage = $this->Client->get('/', ['cookies' => $this->jar, 'headers' => $this->headers, 'connect_timeout' => self::CONNECT_TIMEOUT, 'timeout' => self::TIMEOUT])
-                                 ->getBody();
-        preg_match('/(<input type="hidden" name="authenticity_token" value=")(.*)(">)/', $homePage, $result);
-
-        return isset($result[2]) ? $result[2] : false;
-    }
-
-    /**
-     * @author Rohit Arora
-     *
-     * @param $email
-     * @param $password
-     *
-     * @return \Psr\Http\Message\ResponseInterface
-     */
-    private function login($email, $password)
-    {
         $this->token = $this->getAuthToken();
 
         if (!$this->token) {
@@ -365,15 +596,17 @@ class Twitter extends Command
     }
 
     /**
-     * @param $status
+     * @param $tweet
      *
      * @return bool|\Psr\Http\Message\ResponseInterface
      */
-    private function tweet($status)
+    private function tweet($tweet)
     {
         if (!$this->token) {
             return false;
         }
+
+        $status = $tweet['status'];
 
         $data = ['authenticity_token' => $this->token,
                  'is_permalink_page'  => 'false',
