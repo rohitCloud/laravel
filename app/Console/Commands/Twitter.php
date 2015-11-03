@@ -27,6 +27,7 @@ class Twitter extends Command
     const RANDOM_RE_TWEET_LIMIT    = 1;
     const RANDOM_FOLLOW_LIMIT      = 1;
     const TRIPOTO                  = 'tripoto';
+    const TRENDING_BASED_ON        = 'travel';
     /**
      * The name and signature of the console command.
      *
@@ -160,6 +161,10 @@ class Twitter extends Command
     private function getRandomTags($tags = 'tags')
     {
         $hashTags = json_decode(\File::get(storage_path('app') . DIRECTORY_SEPARATOR . 'hashTags.json'), true)[$tags];
+        if ($tags == 'tags') {
+            $trendingTags = $this->search(self::TRENDING_BASED_ON, 'trending');
+            $hashTags     = array_merge($hashTags, $trendingTags);
+        }
         shuffle($hashTags);
 
         return $hashTags;
@@ -203,6 +208,7 @@ class Twitter extends Command
                 if (!$tweetList) {
                     return false;
                 }
+
                 $this->randomFavourite($tweetList, 1);
                 $this->randomReTweet($tweetList, 1);
             }
@@ -223,7 +229,7 @@ class Twitter extends Command
         $trip = json_decode(file_get_contents(env('TRIP_URL')), true);
         if ($trip) {
             if (!isset($trip['category'])) {
-                $trip['category'] = 'travel';
+                $trip['category'] = self::TRENDING_BASED_ON;
             }
             if (isset($trip['isViral']) && $trip['isViral']) {
                 $this->isViral = true;
@@ -314,11 +320,11 @@ class Twitter extends Command
      */
     private function getTweetsAndUsers($hashTags, $count = self::DEFAULT_RANDOM_TAG_LIMIT)
     {
-        $tweets = [];
+        $tweets[self::USER_LIST] = $tweets[self::TWEET_LIST] = [];
         for ($index = 0; $index < $count; $index++) {
             $this->info("Time -> " . Carbon::now()
                                            ->toDateTimeString() . ' hash tag searched :' . $hashTags[$index]);
-            list($userList, $tweetList) = $this->search($hashTags[$index], 1);
+            list($userList, $tweetList) = $this->search($hashTags[$index]);
 
             $tweets[self::USER_LIST]  = $tweets[self::USER_LIST] + $userList;
             $tweets[self::TWEET_LIST] = $tweets[self::TWEET_LIST] + $tweetList;
@@ -471,6 +477,9 @@ class Twitter extends Command
 
         $this->headers['Content-Type'] = 'application/x-www-form-urlencoded';
 
+        $this->info("Time -> " . Carbon::now()
+                                       ->toDateTimeString() . 'ReTweeted -> ' . $id);
+
         return $this->Client->post('/i/tweet/retweet',
             ['body'            => http_build_query($data),
              'headers'         => $this->headers,
@@ -499,6 +508,9 @@ class Twitter extends Command
 
         $headers['Content-Type'] = 'application/x-www-form-urlencoded';
 
+        $this->info("Time -> " . Carbon::now()
+                                       ->toDateTimeString() . 'Favourite -> ' . $id);
+
         return $this->Client->post('/i/tweet/favorite',
             ['body'            => http_build_query($data),
              'headers'         => $headers,
@@ -508,12 +520,13 @@ class Twitter extends Command
     }
 
     /**
-     * @param     $keyword
-     * @param int $pages
+     * @param        $keyword
+     * @param string $type
+     * @param int    $pages
      *
      * @return array
      */
-    private function search($keyword, $pages = 10)
+    private function search($keyword, $type = '', $pages = 1)
     {
         $data = ['f'        => 'tweet',
                  'vertical' => 'default',
@@ -529,6 +542,11 @@ class Twitter extends Command
                                    ->getBody();
 
         preg_match('/data-min-position="(.*)"/', $searchPage, $result);
+
+        if ($type == 'trending') {
+            return $this->getTrendingTags($keyword, $searchPage);
+        }
+
         $minPosition = isset($result[1]) ? $result[1] : false;
         $maxPosition = false;
         $data += ['f'                          => 'tweets',
@@ -618,11 +636,53 @@ class Twitter extends Command
 
         $headers['Content-Type'] = 'application/x-www-form-urlencoded';
 
+        $this->info("Time -> " . Carbon::now()
+                                       ->toDateTimeString() . 'Tweeted -> ' . $status);
+
         return $this->Client->post('/i/tweet/create',
             ['body'            => http_build_query($data),
              'headers'         => $headers,
              'cookies'         => $this->jar,
              'connect_timeout' => self::CONNECT_TIMEOUT,
              'timeout'         => self::TIMEOUT]);
+    }
+
+    /**
+     * @param $keyword
+     * @param $searchPage
+     *
+     * @return array
+     */
+    private function getTrendingTags($keyword, $searchPage)
+    {
+        $trendJson = [];
+        preg_match('/<input type="hidden" id="init-data" class="json-data" value="(.*)">/', $searchPage, $trendJson);
+        $trending = isset($trendJson[1]) ? json_decode(htmlspecialchars_decode($trendJson[1]), true) : false;
+
+        if (!isset($trending['trendsCacheKey'])) {
+            return false;
+        }
+
+        $this->info("Time -> " . Carbon::now()
+                                       ->toDateTimeString() . ' Searching trending tags');
+
+        $data = ['k'            => $trending['trendsCacheKey'],
+                 'lang'         => 'en',
+                 'pc'           => 'true',
+                 'query'        => $keyword,
+                 'show_context' => 'true',
+                 'src'          => 'module'];
+
+        $trendingPage = $this->Client->get('/i/trends?' . http_build_query($data),
+            ['headers'         => $this->headers,
+             'cookies'         => $this->jar,
+             'connect_timeout' => self::CONNECT_TIMEOUT,
+             'timeout'         => self::TIMEOUT])
+                                     ->getBody();
+        $trendingList = json_decode($trendingPage, true);
+
+        preg_match_all('/data-trend-name="(.*)" >/', $trendingList['module_html'], $trendJson);
+
+        return isset($trendJson[1]) ? $trendJson[1] : [];
     }
 }
