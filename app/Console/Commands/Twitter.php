@@ -342,7 +342,10 @@ class Twitter extends Command
      */
     private function getAuthToken()
     {
-        $homePage = $this->Client->get('/', ['cookies' => $this->jar, 'headers' => $this->headers, 'connect_timeout' => self::CONNECT_TIMEOUT, 'timeout' => self::TIMEOUT])
+        $homePage = $this->Client->get('/', ['cookies'         => $this->jar,
+                                             'headers'         => $this->headers,
+                                             'connect_timeout' => self::CONNECT_TIMEOUT,
+                                             'timeout'         => self::TIMEOUT])
                                  ->getBody();
         preg_match('/(<input type="hidden" name="authenticity_token" value=")(.*)(">)/', $homePage, $result);
 
