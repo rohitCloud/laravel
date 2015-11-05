@@ -187,7 +187,6 @@ class Twitter extends Command
         return true;
     }
 
-
     /**
      * @author Rohit Arora
      *
@@ -196,7 +195,7 @@ class Twitter extends Command
      */
     private function randomPersonalTweets()
     {
-        if (!rand(0, 1)) {
+        if (!rand(0, 2)) {
             if (!rand(0, 1)) {
                 $data = $this->getPersonalTweet();
                 $this->tweet($data);
@@ -216,7 +215,6 @@ class Twitter extends Command
 
         return true;
     }
-
 
     /**
      * @author Rohit Arora
@@ -349,6 +347,10 @@ class Twitter extends Command
                                  ->getBody();
         preg_match('/(<input type="hidden" name="authenticity_token" value=")(.*)(">)/', $homePage, $result);
 
+        if (!isset($result[2])) {
+            preg_match('/(<input type="hidden" value=")(.*)(" name="authenticity_token")/', $homePage, $result);
+        }
+
         return isset($result[2]) ? $result[2] : false;
     }
 
@@ -386,9 +388,7 @@ class Twitter extends Command
 
         $this->token = $this->getAuthToken();
 
-        if (!$this->token) {
-            return false;
-        }
+        $this->checkToken();
 
         $data = ['authenticity_token'         => $this->token,
                  'session[username_or_email]' => $email,
@@ -415,9 +415,7 @@ class Twitter extends Command
      */
     private function follow($userId)
     {
-        if (!$this->token) {
-            return false;
-        }
+        $this->checkToken();
 
         $data = ['authenticity_token' => $this->token,
                  'user_id'            => $userId,
@@ -442,9 +440,7 @@ class Twitter extends Command
      */
     protected function unFollow($userId)
     {
-        if (!$this->token) {
-            return false;
-        }
+        $this->checkToken();
 
         $data = ['authenticity_token' => $this->token,
                  'user_id'            => $userId,
@@ -470,9 +466,7 @@ class Twitter extends Command
      */
     private function reTweet($id, $tweetStatCount = 0)
     {
-        if (!$this->token) {
-            return false;
-        }
+        $this->checkToken();
 
         $data = ['authenticity_token' => $this->token,
                  'id'                 => $id,
@@ -499,9 +493,7 @@ class Twitter extends Command
      */
     private function favorite($id, $tweetStatCount = 0)
     {
-        if (!$this->token) {
-            return false;
-        }
+        $this->checkToken();
 
         $data = ['authenticity_token' => $this->token,
                  'id'                 => $id,
@@ -623,9 +615,7 @@ class Twitter extends Command
      */
     private function tweet($tweet)
     {
-        if (!$this->token) {
-            return false;
-        }
+        $this->checkToken();
 
         $status = $tweet['status'];
 
@@ -687,5 +677,12 @@ class Twitter extends Command
         preg_match_all('/data-trend-name="(.*)" >/', $trendingList['module_html'], $trendJson);
 
         return isset($trendJson[1]) ? $trendJson[1] : [];
+    }
+
+    private function checkToken()
+    {
+        if (!$this->token) {
+            throw new \Exception('Sorry token not available');
+        }
     }
 }
