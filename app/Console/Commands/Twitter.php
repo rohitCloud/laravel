@@ -429,6 +429,9 @@ class Twitter extends Command
 
         $this->headers['Content-Type'] = 'application/x-www-form-urlencoded';
 
+        $this->info("Time -> " . Carbon::now()
+                                       ->toDateTimeString() . ' Followed :' . $userId);
+
         return $this->Client->post('/i/user/follow',
             ['body'            => http_build_query($data),
              'headers'         => $this->headers,
