@@ -182,7 +182,9 @@ class Twitter extends Command
 
         $this->randomFavourite($tweetList, rand(3, 6));
         $this->randomReTweet($tweetList, rand(1, 2));
-        $this->randomFollow($userList, rand(0, 1));
+        if (!rand(0, 2)) {
+            $this->randomFollow($userList, rand(0, 2));
+        }
 
         return true;
     }
@@ -326,11 +328,13 @@ class Twitter extends Command
 
             $tweets[self::USER_LIST]  = $tweets[self::USER_LIST] + $userList;
             $tweets[self::TWEET_LIST] = $tweets[self::TWEET_LIST] + $tweetList;
-            shuffle($tweets[self::USER_LIST]);
-            shuffle($tweets[self::TWEET_LIST]);
         }
 
-        return [$tweets[self::USER_LIST], $tweets[self::TWEET_LIST]];
+        $userList = $this->cleanUsers($tweets[self::USER_LIST]);
+        shuffle($userList);
+        shuffle($tweets[self::TWEET_LIST]);
+
+        return [$userList, $tweets[self::TWEET_LIST]];
     }
 
     /**
@@ -684,5 +688,18 @@ class Twitter extends Command
         if (!$this->token) {
             throw new \Exception('Sorry token not available');
         }
+    }
+
+    /**
+     * @param array $users
+     *
+     * @return array
+     */
+    private function cleanUsers($users)
+    {
+        $blockedUsers = json_decode(\File::get(storage_path('app') . DIRECTORY_SEPARATOR . 'blockedUsers.json'), true);
+        $cleanedUser  = array_intersect($users, $blockedUsers);
+        $result       = array_diff($users, $cleanedUser);
+        return $result;
     }
 }
