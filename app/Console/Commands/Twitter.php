@@ -700,6 +700,9 @@ class Twitter extends Command
         $blockedUsers = json_decode(\File::get(storage_path('app') . DIRECTORY_SEPARATOR . 'blockedUsers.json'), true);
         $cleanedUser  = array_intersect($users, $blockedUsers);
         $result       = array_diff($users, $cleanedUser);
+
+        $this->info("Time -> " . Carbon::now()
+                                       ->toDateTimeString() . ' CleanUser -> ' .json_encode($cleanedUser));
         return $result;
     }
 }
