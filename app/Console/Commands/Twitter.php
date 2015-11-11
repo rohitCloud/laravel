@@ -119,8 +119,8 @@ class Twitter extends Command
                             break;
                         }
 
-                        $this->randomHashTweets();
                         $this->randomPersonalTweets();
+                        $this->randomHashTweets();
                     } catch
                     (\Exception $Exception) {
                         $this->info("Time -> " . Carbon::now()
