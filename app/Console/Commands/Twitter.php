@@ -484,12 +484,16 @@ class Twitter extends Command
         $this->info("Time -> " . Carbon::now()
                                        ->toDateTimeString() . 'ReTweeted -> ' . $id);
 
-        return $this->Client->post('/i/tweet/retweet',
-            ['body'            => http_build_query($data),
-             'headers'         => $this->headers,
-             'cookies'         => $this->jar,
-             'connect_timeout' => self::CONNECT_TIMEOUT,
-             'timeout'         => self::TIMEOUT]);
+        try {
+            return $this->Client->post('/i/tweet/retweet',
+                ['body'            => http_build_query($data),
+                 'headers'         => $this->headers,
+                 'cookies'         => $this->jar,
+                 'connect_timeout' => self::CONNECT_TIMEOUT,
+                 'timeout'         => self::TIMEOUT]);
+        } catch (\Exception $Exception) {
+            return false;
+        }
     }
 
     /**
@@ -513,12 +517,16 @@ class Twitter extends Command
         $this->info("Time -> " . Carbon::now()
                                        ->toDateTimeString() . 'Favourite -> ' . $id);
 
-        return $this->Client->post('/i/tweet/favorite',
-            ['body'            => http_build_query($data),
-             'headers'         => $headers,
-             'cookies'         => $this->jar,
-             'connect_timeout' => self::CONNECT_TIMEOUT,
-             'timeout'         => self::TIMEOUT]);
+        try {
+            return $this->Client->post('/i/tweet/favorite',
+                ['body'            => http_build_query($data),
+                 'headers'         => $headers,
+                 'cookies'         => $this->jar,
+                 'connect_timeout' => self::CONNECT_TIMEOUT,
+                 'timeout'         => self::TIMEOUT]);
+        } catch (\Exception $Exception) {
+            return false;
+        }
     }
 
     /**
@@ -705,7 +713,7 @@ class Twitter extends Command
         $result       = array_diff($users, $cleanedUser);
 
         $this->info("Time -> " . Carbon::now()
-                                       ->toDateTimeString() . ' CleanUser -> ' .json_encode($cleanedUser));
+                                       ->toDateTimeString() . ' CleanUser -> ' . json_encode($cleanedUser));
         return $result;
     }
 }
