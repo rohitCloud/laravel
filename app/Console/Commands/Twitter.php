@@ -197,8 +197,8 @@ class Twitter extends Command
      */
     private function randomPersonalTweets()
     {
-        if (!rand(0, 2)) {
-            if (!rand(0, 1)) {
+        if (rand(0, 2)) {
+            if (rand(0, 1)) {
                 $data = $this->getPersonalTweet();
                 $this->tweet($data);
             } else {
