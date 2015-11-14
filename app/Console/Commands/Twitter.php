@@ -656,12 +656,16 @@ class Twitter extends Command
         $this->info("Time -> " . Carbon::now()
                                        ->toDateTimeString() . 'Tweeted -> ' . $status);
 
-        return $this->Client->post('/i/tweet/create',
-            ['body'            => http_build_query($data),
-             'headers'         => $headers,
-             'cookies'         => $this->jar,
-             'connect_timeout' => self::CONNECT_TIMEOUT,
-             'timeout'         => self::TIMEOUT]);
+        try {
+            return $this->Client->post('/i/tweet/create',
+                ['body'            => http_build_query($data),
+                 'headers'         => $headers,
+                 'cookies'         => $this->jar,
+                 'connect_timeout' => self::CONNECT_TIMEOUT,
+                 'timeout'         => self::TIMEOUT]);
+        } catch (\Exception $Exception) {
+            return false;
+        }
     }
 
     /**
@@ -759,17 +763,21 @@ class Twitter extends Command
 
             $headers['Content-Type'] = 'application/x-www-form-urlencoded';
 
-            $mediaJson = (new Client())->request('POST', 'https://upload.twitter.com/i/media/upload.json?origin=https%3A%2F%2Ftwitter.com',
-                ['body'            => http_build_query($data),
-                 'headers'         => $headers,
-                 'cookies'         => $this->jar,
-                 'connect_timeout' => self::CONNECT_TIMEOUT,
-                 'timeout'         => self::TIMEOUT])
-                                       ->getBody();
+            try {
+                $mediaJson = (new Client())->request('POST', 'https://upload.twitter.com/i/media/upload.json?origin=https%3A%2F%2Ftwitter.com',
+                    ['body'            => http_build_query($data),
+                     'headers'         => $headers,
+                     'cookies'         => $this->jar,
+                     'connect_timeout' => self::CONNECT_TIMEOUT,
+                     'timeout'         => self::TIMEOUT])
+                                           ->getBody();
 
-            unlink($fileName);
+                unlink($fileName);
 
-            $media = json_decode($mediaJson, true);
+                $media = json_decode($mediaJson, true);
+            } catch (\Exception $Exception) {
+                return false;
+            }
         }
         return isset($media['media_id']) ? $media['media_id'] : false;
     }
