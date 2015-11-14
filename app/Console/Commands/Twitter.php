@@ -492,6 +492,7 @@ class Twitter extends Command
                  'connect_timeout' => self::CONNECT_TIMEOUT,
                  'timeout'         => self::TIMEOUT]);
         } catch (\Exception $Exception) {
+            $this->logException($Exception);
             return false;
         }
     }
@@ -525,6 +526,7 @@ class Twitter extends Command
                  'connect_timeout' => self::CONNECT_TIMEOUT,
                  'timeout'         => self::TIMEOUT]);
         } catch (\Exception $Exception) {
+            $this->logException($Exception);
             return false;
         }
     }
@@ -664,6 +666,7 @@ class Twitter extends Command
                  'connect_timeout' => self::CONNECT_TIMEOUT,
                  'timeout'         => self::TIMEOUT]);
         } catch (\Exception $Exception) {
+            $this->logException($Exception);
             return false;
         }
     }
@@ -776,9 +779,19 @@ class Twitter extends Command
 
                 $media = json_decode($mediaJson, true);
             } catch (\Exception $Exception) {
+                $this->logException($Exception);
                 return false;
             }
         }
         return isset($media['media_id']) ? $media['media_id'] : false;
+    }
+
+    /**
+     * @param $Exception
+     */
+    private function logException($Exception)
+    {
+        $this->info("Time -> " . Carbon::now()
+                                       ->toDateTimeString() . 'Error -> ' . $Exception->getMessage());
     }
 }
