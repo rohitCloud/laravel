@@ -638,7 +638,8 @@ class Twitter extends Command
 
         $mediaID = null;
         if (isset($tweet['image_url'])) {
-            $mediaID = $this->getMedia($tweet['image_url']);
+            $mediaID = false;
+            //$mediaID = $this->getMedia($tweet['image_url']);
         }
 
         $data = ['authenticity_token' => $this->token,
