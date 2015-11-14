@@ -242,7 +242,7 @@ class Twitter extends Command
             $title  = isset($trip['title']) && $trip['title'] ? $trip['title'] : '';
             $hashes = [$trip['category'], self::TRIPOTO];
             shuffle($hashes);
-            $data['status'] = $link . " \n" . $title . ' #' . implode(' #', $hashes);
+            $data['status'] = $title . " \n" . $link . ' #' . implode(' #', $hashes);
             if (isset($trip['image_url'])) {
                 $data['image_url'] = $trip['image_url'];
             }
@@ -634,11 +634,20 @@ class Twitter extends Command
 
         $status = $tweet['status'];
 
+        $mediaID = null;
+        if (isset($tweet['image_url'])) {
+            $mediaID = $this->getMedia($tweet['image_url']);
+        }
+
         $data = ['authenticity_token' => $this->token,
                  'is_permalink_page'  => 'false',
                  'place_id'           => '',
                  'status'             => $status,
                  'tagged_users'       => ''];
+
+        if ($mediaID) {
+            $data['media_ids'] = $mediaID;
+        }
 
         $headers = $this->headers;
 
@@ -715,5 +724,53 @@ class Twitter extends Command
         $this->info("Time -> " . Carbon::now()
                                        ->toDateTimeString() . ' CleanUser -> ' . json_encode($cleanedUser));
         return $result;
+    }
+
+
+    /**
+     * @author Rohit Arora
+     *
+     * @param $imageURL
+     *
+     * @return array
+     */
+    private function getMedia($imageURL)
+    {
+        $media = [];
+        if (isset($imageURL)) {
+            $this->info("Time -> " . Carbon::now()
+                                           ->toDateTimeString() . 'downloading ' . $imageURL);
+            $fileMeta = explode('/', $imageURL);
+            $fileName = '/tmp/' . end($fileMeta);
+            $this->info("Time -> " . Carbon::now()
+                                           ->toDateTimeString() . 'Filename ' . $fileName);
+            file_put_contents($fileName, file_get_contents($imageURL));
+            $this->info("Time -> " . Carbon::now()
+                                           ->toDateTimeString() . 'downloaded to ' . $fileName);
+            $this->info("Time -> " . Carbon::now()
+                                           ->toDateTimeString() . 'trying to upload media ' . $fileName);
+            $this->checkToken();
+
+            $data = ['authenticity_token' => $this->token,
+                     'media'              => base64_encode(file_get_contents($fileName)),
+                     'origin'             => 'https://twitter.com'];
+
+            $headers = $this->headers;
+
+            $headers['Content-Type'] = 'application/x-www-form-urlencoded';
+
+            $mediaJson = (new Client())->request('POST', 'https://upload.twitter.com/i/media/upload.json?origin=https%3A%2F%2Ftwitter.com',
+                ['body'            => http_build_query($data),
+                 'headers'         => $headers,
+                 'cookies'         => $this->jar,
+                 'connect_timeout' => self::CONNECT_TIMEOUT,
+                 'timeout'         => self::TIMEOUT])
+                                       ->getBody();
+
+            unlink($fileName);
+
+            $media = json_decode($mediaJson, true);
+        }
+        return isset($media['media_id']) ? $media['media_id'] : false;
     }
 }
