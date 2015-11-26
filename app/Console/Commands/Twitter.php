@@ -751,7 +751,12 @@ class Twitter extends Command
             $fileName = '/tmp/' . end($fileMeta);
             $this->info("Time -> " . Carbon::now()
                                            ->toDateTimeString() . 'Filename ' . $fileName);
-            file_put_contents($fileName, file_get_contents($imageURL));
+            $ctx = stream_context_create(array('http'=>
+                                                   array(
+                                                       'timeout' => 50,  //1200 Seconds is 20 Minutes
+                                                   )
+            ));
+            file_put_contents($fileName, file_get_contents($imageURL, false, $ctx));
             $this->info("Time -> " . Carbon::now()
                                            ->toDateTimeString() . 'downloaded to ' . $fileName);
             $this->info("Time -> " . Carbon::now()
@@ -787,7 +792,7 @@ class Twitter extends Command
     }
 
     /**
-     * @param $Exception
+     * @param \Exception $Exception
      */
     private function logException($Exception)
     {
