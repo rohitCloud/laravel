@@ -493,6 +493,7 @@ class Twitter extends Command
                  'timeout'         => self::TIMEOUT]);
         } catch (\Exception $Exception) {
             $this->logException($Exception);
+
             return false;
         }
     }
@@ -527,6 +528,7 @@ class Twitter extends Command
                  'timeout'         => self::TIMEOUT]);
         } catch (\Exception $Exception) {
             $this->logException($Exception);
+
             return false;
         }
     }
@@ -599,6 +601,7 @@ class Twitter extends Command
         $userList = isset($userList[1]) ? $filtered = array_filter(array_unique($userList[1]), 'is_numeric') : [];
 
         array_shift($userList);
+
         return [$userList, array_values($tweetList)];
     }
 
@@ -667,6 +670,7 @@ class Twitter extends Command
                  'timeout'         => self::TIMEOUT]);
         } catch (\Exception $Exception) {
             $this->logException($Exception);
+
             return false;
         }
     }
@@ -730,6 +734,7 @@ class Twitter extends Command
 
         $this->info("Time -> " . Carbon::now()
                                        ->toDateTimeString() . ' CleanUser -> ' . json_encode($cleanedUser));
+
         return $result;
     }
 
@@ -751,14 +756,23 @@ class Twitter extends Command
             $fileName = '/tmp/' . end($fileMeta);
             $this->info("Time -> " . Carbon::now()
                                            ->toDateTimeString() . 'Filename ' . $fileName);
-            $ctx = stream_context_create(array('http'=>
-                                                   array(
-                                                       'timeout' => 50,  //1200 Seconds is 20 Minutes
-                                                   )
-            ));
-            file_put_contents($fileName, file_get_contents($imageURL, false, $ctx));
-            $this->info("Time -> " . Carbon::now()
-                                           ->toDateTimeString() . 'downloaded to ' . $fileName);
+            $ctx = stream_context_create(['http' =>
+                                              [
+                                                  'timeout' => 30,  //1200 Seconds is 20 Minutes
+                                              ]
+            ]);
+            try {
+                file_put_contents($fileName, file_get_contents($imageURL, false, $ctx));
+                $this->info("Time -> " . Carbon::now()
+                                               ->toDateTimeString() . 'downloaded to ' . $fileName);
+            } catch (\Exception $Exception) {
+                $this->info("Time -> " . Carbon::now()
+                                               ->toDateTimeString() . 'can not download because ' . $Exception->getMessage());
+
+                return false;
+            }
+
+
             $this->info("Time -> " . Carbon::now()
                                            ->toDateTimeString() . 'trying to upload media ' . $fileName);
             $this->checkToken();
@@ -785,9 +799,11 @@ class Twitter extends Command
                 $media = json_decode($mediaJson, true);
             } catch (\Exception $Exception) {
                 $this->logException($Exception);
+
                 return false;
             }
         }
+
         return isset($media['media_id']) ? $media['media_id'] : false;
     }
 
