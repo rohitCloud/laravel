@@ -649,7 +649,7 @@ class Pinterest extends Command
             $trip['image_url'] = $pinnableItems[array_rand($pinnableItems)];
         }
 
-        if ($this->pin($trip['image_url'], $trip['link'], $trip['title'] . $keyword)) {
+        if ($this->pin($trip['image_url'], $trip['link'], "{$trip['title']} {$trip['link']} $keyword")) {
             return $trip;
         }
 
